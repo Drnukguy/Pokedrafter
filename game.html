@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pok&eacute;drafter</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --ink: #1b1b1f;
+    --paper: #f6f2e9;
+    --panel: #ffffff;
+    --line: #e4dcc8;
+    --win: #2f6b3a;
+    --loss: #a13d3d;
+    --gold: #b3801f;
+  }
+
+  body.dark-mode {
+    --ink: #ede8dd;
+    --paper: #15141a;
+    --panel: #1e1d26;
+    --line: #3a3745;
+    --win: #5fae70;
+    --loss: #e0837f;
+    --gold: #d9a54b;
+  }
+
+  body {
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    min-height: 100%;
+  }
+
+  .app-shell {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  .hero {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 20px;
+    margin-bottom: 32px;
+  }
+
+  .hero-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .hero-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .hero-brand h1 {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 1.7rem;
+    letter-spacing: 0.01em;
+    margin: 0;
+  }
+
+  .hero-mark {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex: none;
+  }
+
+  .hero-tagline {
+    font-size: 0.9rem;
+    opacity: 0.7;
+    margin: 10px 0 0;
+    max-width: 52ch;
+  }
+
+  .site-nav {
+    display: flex;
+    gap: 18px;
+    margin-top: 14px;
+  }
+
+  .site-nav a {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+    opacity: 0.6;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 2px;
+  }
+
+  .site-nav a:hover { opacity: 1; }
+  .site-nav a.current { opacity: 1; border-bottom-color: var(--gold); }
+
+  .tally {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.75;
+    white-space: nowrap;
+    text-align: right;
+    margin-top: 14px;
+  }
+
+  .layout-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+
+  @media (min-width: 900px) {
+    .layout-grid {
+      grid-template-columns: 1.35fr 1fr;
+    }
+    .team-column {
+      position: sticky;
+      top: 24px;
+    }
+  }
+
+  .panel-block {
+    margin-top: 28px;
+  }
+
+  .panel-block:first-child {
+    margin-top: 0;
+  }
+
+  .panel-head {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    border-left: 3px solid var(--gold);
+    padding-left: 10px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .panel-head .panel-head-meta {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 0.72rem;
+    opacity: 0.55;
+  }
+
+  .stage {
+    position: relative;
+    background: var(--panel);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 32px 24px;
+    text-align: center;
+    transition: border-color 0.3s ease;
+  }
+
+  .slot-row {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  .slot {
+    flex: 1;
+    max-width: 220px;
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 20px 10px 14px;
+    background: var(--paper);
+  }
+
+  .slot-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    opacity: 0.55;
+    margin-bottom: 8px;
+  }
+
+  .slot-value {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    line-height: 1.15;
+    min-height: 1.3em;
+  }
+
+  @keyframes slotRoll {
+    0% { transform: translateY(-6px); opacity: 0.5; filter: blur(0.5px); }
+    50% { transform: translateY(0); opacity: 1; filter: blur(0); }
+    100% { transform: translateY(6px); opacity: 0.5; filter: blur(0.5px); }
+  }
+
+  .slot-value.rolling {
+    animation: slotRoll 0.11s linear infinite;
+  }
+
+  .slot-sub {
+    font-size: 0.72rem;
+    opacity: 0.6;
+    margin-top: 4px;
+    min-height: 1.1em;
+  }
+
+  .spin-btn {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 0.03em;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 4px;
+    padding: 13px 38px;
+    cursor: pointer;
+    transition: transform 0.08s ease, opacity 0.2s ease;
+  }
+
+  .spin-btn:hover:not(:disabled) { opacity: 0.85; }
+  .spin-btn:active:not(:disabled) { transform: scale(0.97); }
+  .spin-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .reset-link {
+    display: block;
+    margin-top: 14px;
+    font-size: 0.78rem;
+    color: var(--ink);
+    opacity: 0.55;
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: 'Inter', sans-serif;
+  }
+  .reset-link:hover { opacity: 0.85; }
+
+  .status-note {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    opacity: 0.75;
+  }
+
+  .candidates {
+    margin-top: 22px;
+    text-align: left;
+  }
+
+  .candidates-head {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    opacity: 0.55;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .filter-input, .filter-select {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 8px 10px;
+    color: var(--ink);
+  }
+
+  .filter-input {
+    flex: 1 1 160px;
+    min-width: 120px;
+  }
+
+  .filter-select {
+    flex: 1 1 140px;
+  }
+
+  .candidate-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .candidate-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 10px 12px;
+    background: var(--paper);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .candidate-row:hover { border-color: var(--ink); }
+  .candidate-row.selected { border-color: var(--ink); border-width: 2px; background: var(--panel); }
+
+  .candidate-row img { width: 44px; height: 44px; image-rendering: pixelated; flex: none; }
+
+  .candidate-row-main { flex: 1; min-width: 0; }
+
+  .candidate-row-name {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .candidate-row-gen {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 0.7rem;
+    opacity: 0.55;
+  }
+
+  .list-empty-inline {
+    padding: 20px 4px;
+    text-align: center;
+    font-size: 0.85rem;
+    opacity: 0.5;
+  }
+
+  .nav-btn {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.85rem;
+    background: var(--panel);
+    border: 1px solid var(--ink);
+    border-radius: 4px;
+    padding: 9px 14px;
+    cursor: pointer;
+  }
+  .nav-btn:hover:not(:disabled) { opacity: 0.75; }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  #themeToggle {
+    background: #1b1b1f;
+    color: #ffffff;
+    border: 1px solid #1b1b1f;
+  }
+
+  .draft-btn {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 4px;
+    padding: 10px 22px;
+    cursor: pointer;
+    flex: 1;
+  }
+  .draft-btn:hover:not(:disabled) { opacity: 0.85; }
+  .draft-btn:active:not(:disabled) { transform: scale(0.98); }
+  .draft-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .history-list, .team-list, .board-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .history-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 9px 2px;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.88rem;
+  }
+
+  .history-list .n {
+    opacity: 0.4;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.78rem;
+    width: 28px;
+    flex: none;
+  }
+
+  .history-list .outcome-reroll {
+    opacity: 0.45;
+    font-size: 0.76rem;
+    font-style: italic;
+  }
+
+  .swatch {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    margin-right: 8px;
+    position: relative;
+    top: -1px;
+  }
+
+  .list-empty {
+    padding: 16px 2px;
+    font-size: 0.85rem;
+    opacity: 0.5;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .team-card {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 2px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .team-card img { width: 48px; height: 48px; image-rendering: pixelated; flex: none; }
+
+  .team-card-main { flex: 1; min-width: 0; }
+
+  .team-card-name {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .rating-pill {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.66rem;
+    font-weight: 700;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 3px;
+    padding: 1px 6px;
+  }
+
+  .team-card-tag {
+    font-size: 0.72rem;
+    opacity: 0.6;
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    font-size: 0.7rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 2px 7px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat b { font-family: 'Chakra Petch', sans-serif; }
+
+  .team-avg {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    padding: 10px 2px 0;
+  }
+
+  .data-note {
+    margin-top: 30px;
+    font-size: 0.72rem;
+    opacity: 0.4;
+    text-align: center;
+  }
+
+  /* Battle / season styling */
+
+  .season-cta {
+    background: var(--panel);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 26px 24px;
+    text-align: center;
+  }
+
+  .season-cta p {
+    font-size: 0.9rem;
+    opacity: 0.75;
+    margin: 0 0 16px;
+    line-height: 1.5;
+  }
+
+  .record-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    background: var(--panel);
+  }
+
+  .record-banner.perfect {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, var(--panel) 60%, color-mix(in srgb, var(--gold) 14%, var(--panel)));
+  }
+  .record-banner.perfect .record-verdict { color: var(--gold); }
+
+  .record-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    opacity: 0.55;
+  }
+
+  .record-value {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 1.6rem;
+  }
+
+  .record-verdict {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .match-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .match-item {
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    background: var(--panel);
+  }
+
+  .match-item summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    font-size: 0.86rem;
+  }
+  .match-item summary::-webkit-details-marker { display: none; }
+
+  .match-badge {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 3px 9px;
+    border-radius: 3px;
+    color: var(--paper);
+    flex: none;
+  }
+  .match-badge.win { background: var(--win); }
+  .match-badge.loss { background: var(--loss); }
+
+  .match-stage {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.72rem;
+    opacity: 0.55;
+    flex: none;
+    width: 92px;
+  }
+
+  .match-opp {
+    flex: 1;
+    opacity: 0.75;
+    min-width: 0;
+  }
+
+  .match-score {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.8rem;
+    opacity: 0.55;
+    flex: none;
+  }
+
+  .match-log {
+    border-top: 1px solid var(--line);
+    padding: 10px 14px 12px;
+    font-size: 0.8rem;
+  }
+
+  .match-log-line {
+    padding: 4px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .match-log-line:last-child { border-bottom: none; }
+
+  .match-log-line b { font-family: 'Chakra Petch', sans-serif; }
+
+  .board-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 2px;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.86rem;
+  }
+
+  .board-rank {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    width: 22px;
+    flex: none;
+    opacity: 0.6;
+  }
+
+  .board-record {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    width: 54px;
+    flex: none;
+  }
+
+  .board-team {
+    flex: 1;
+    opacity: 0.7;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .board-rating {
+    font-size: 0.75rem;
+    opacity: 0.55;
+    flex: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stage, .spin-btn, .candidate-thumb, .slot-value.rolling { transition: none; animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <header class="hero">
+    <div class="hero-top">
+      <div class="hero-brand">
+        <span class="hero-mark"></span>
+        <h1>Pokédrafter</h1>
+      </div>
+      <button class="nav-btn" id="themeToggle">&#127769; Dark Mode</button>
+    </div>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="game.html" class="current">Play</a>
+      <a href="leaderboard.html">Leaderboard</a>
+      <a href="profile.html">Profile</a>
+    </nav>
+    <p class="hero-tagline">Draft one Pokémon per role — Starter, Intermediate, Final, Legendary, and two Bench slots — then see if your team is strong enough to clear all 13 stages.</p>
+    <div class="tally" id="tally">Slot 1 of 6 · 0 drafted</div>
+  </header>
+
+  <div class="layout-grid">
+    <main class="draft-column">
+      <div class="stage" id="stage">
+        <div class="slot-heading" id="slotHeading" style="font-family:'Chakra Petch',sans-serif; font-weight:600; font-size:0.95rem; margin-bottom:14px; opacity:0.85;">Now drafting: Legendary / Mythical</div>
+        <div class="slot-row">
+          <div class="slot" id="typeSlotBox">
+            <div class="slot-label">TYPE</div>
+            <div class="slot-value" id="typeValue">—</div>
+          </div>
+          <div class="slot" id="regionSlotBox">
+            <div class="slot-label">REGION</div>
+            <div class="slot-value" id="regionValue">—</div>
+            <div class="slot-sub" id="regionSub">&nbsp;</div>
+          </div>
+        </div>
+
+        <button class="spin-btn" id="spinBtn">Spin</button>
+        <button class="reset-link" id="resetBtn">start a new game</button>
+        <div class="status-note" id="statusNote"></div>
+
+        <div class="candidates" id="candidatesBlock" style="display:none;">
+          <div class="candidates-head">
+            <span>Eligible Pokémon</span>
+            <span id="candidateCount"></span>
+          </div>
+
+          <div class="filter-row">
+            <input type="text" id="filterName" class="filter-input" placeholder="Search by name...">
+            <select id="filterGen" class="filter-select"></select>
+            <select id="sortKey" class="filter-select">
+              <option value="name">Name (A-Z)</option>
+              <option value="hp">Highest HP</option>
+              <option value="atk">Highest Attack</option>
+              <option value="def">Highest Defense</option>
+              <option value="spa">Highest Sp. Atk</option>
+              <option value="spd">Highest Sp. Def</option>
+              <option value="spe">Highest Speed</option>
+            </select>
+          </div>
+
+          <div class="candidate-list" id="candidateList"></div>
+
+          <button class="draft-btn" id="draftBtn" style="width:100%; margin-top:14px;">Draft Selected Pokémon</button>
+          <button class="draft-btn" id="rerollBtn" style="margin-top:10px; width:100%;">Reroll this spin</button>
+        </div>
+      </div>
+    </main>
+
+    <aside class="team-column">
+      <div class="panel-block">
+        <div class="panel-head">Your team</div>
+        <ul class="team-list" id="teamList">
+          <li class="list-empty">No Pokémon drafted yet.</li>
+        </ul>
+        <div class="team-avg" id="teamAvg"></div>
+      </div>
+
+      <div class="panel-block" id="seasonSection" style="display:none;">
+        <div class="panel-head">Season</div>
+
+        <div id="seasonResults" style="display:none;">
+          <div class="record-banner" id="recordBanner">
+            <div>
+              <div class="record-label">Season record</div>
+              <div class="record-value" id="recordValue">0–0</div>
+            </div>
+            <div class="record-verdict" id="recordVerdict"></div>
+          </div>
+          <ul class="match-list" id="matchList"></ul>
+          <div class="status-note" style="margin-top:14px;">This season is complete. Start a new game above to draft a new roster.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="data-note">Data bundled locally — no external requests at runtime.</div>
+
+</div>
+
+<script>
+  // Full species dataset, generated once from public game data (id, name, generation,
+  // primary type, is_legendary, is_mythical, and 6 base stats incl. HP). No network calls needed.
+  const POKEDEX = [{"id":1,"n":"bulbasaur","g":1,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":49,"def":49,"spa":65,"spd":65,"spe":45},"t2":"poison"},{"id":2,"n":"ivysaur","g":1,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":62,"def":63,"spa":80,"spd":80,"spe":60},"t2":"poison"},{"id":3,"n":"venusaur","g":1,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":82,"def":83,"spa":100,"spd":100,"spe":80},"t2":"poison"},{"id":4,"n":"charmander","g":1,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":39,"atk":52,"def":43,"spa":60,"spd":50,"spe":65}},{"id":5,"n":"charmeleon","g":1,"t":"fire","leg":false,"myt":false,"st":"mid","s":{"hp":58,"atk":64,"def":58,"spa":80,"spd":65,"spe":80}},{"id":6,"n":"charizard","g":1,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":78,"atk":84,"def":78,"spa":109,"spd":85,"spe":100},"t2":"flying"},{"id":7,"n":"squirtle","g":1,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":44,"atk":48,"def":65,"spa":50,"spd":64,"spe":43}},{"id":8,"n":"wartortle","g":1,"t":"water","leg":false,"myt":false,"st":"mid","s":{"hp":59,"atk":63,"def":80,"spa":65,"spd":80,"spe":58}},{"id":9,"n":"blastoise","g":1,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":79,"atk":83,"def":100,"spa":85,"spd":105,"spe":78}},{"id":10,"n":"caterpie","g":1,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":30,"def":35,"spa":20,"spd":20,"spe":45}},{"id":11,"n":"metapod","g":1,"t":"bug","leg":false,"myt":false,"st":"mid","s":{"hp":50,"atk":20,"def":55,"spa":25,"spd":25,"spe":30}},{"id":12,"n":"butterfree","g":1,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":45,"def":50,"spa":90,"spd":80,"spe":70},"t2":"flying"},{"id":13,"n":"weedle","g":1,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":35,"def":30,"spa":20,"spd":20,"spe":50},"t2":"poison"},{"id":14,"n":"kakuna","g":1,"t":"bug","leg":false,"myt":false,"st":"mid","s":{"hp":45,"atk":25,"def":50,"spa":25,"spd":25,"spe":35},"t2":"poison"},{"id":15,"n":"beedrill","g":1,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":90,"def":40,"spa":45,"spd":80,"spe":75},"t2":"poison"},{"id":16,"n":"pidgey","g":1,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":45,"def":40,"spa":35,"spd":35,"spe":56},"t2":"flying"},{"id":17,"n":"pidgeotto","g":1,"t":"normal","leg":false,"myt":false,"st":"mid","s":{"hp":63,"atk":60,"def":55,"spa":50,"spd":50,"spe":71},"t2":"flying"},{"id":18,"n":"pidgeot","g":1,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":83,"atk":80,"def":75,"spa":70,"spd":70,"spe":101},"t2":"flying"},{"id":19,"n":"rattata","g":1,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":56,"def":35,"spa":25,"spd":35,"spe":72}},{"id":20,"n":"raticate","g":1,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":55,"atk":81,"def":60,"spa":50,"spd":70,"spe":97}},{"id":21,"n":"spearow","g":1,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":60,"def":30,"spa":31,"spd":31,"spe":70},"t2":"flying"},{"id":22,"n":"fearow","g":1,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":90,"def":65,"spa":61,"spd":61,"spe":100},"t2":"flying"},{"id":23,"n":"ekans","g":1,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":60,"def":44,"spa":40,"spd":54,"spe":55}},{"id":24,"n":"arbok","g":1,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":95,"def":69,"spa":65,"spd":79,"spe":80}},{"id":25,"n":"pikachu","g":1,"t":"electric","leg":false,"myt":false,"st":"mid","s":{"hp":35,"atk":55,"def":40,"spa":50,"spd":50,"spe":90}},{"id":26,"n":"raichu","g":1,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":90,"def":55,"spa":90,"spd":80,"spe":110}},{"id":27,"n":"sandshrew","g":1,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":75,"def":85,"spa":20,"spd":30,"spe":40}},{"id":28,"n":"sandslash","g":1,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":100,"def":110,"spa":45,"spd":55,"spe":65}},{"id":29,"n":"nidoran-f","g":1,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":47,"def":52,"spa":40,"spd":40,"spe":41}},{"id":30,"n":"nidorina","g":1,"t":"poison","leg":false,"myt":false,"st":"mid","s":{"hp":70,"atk":62,"def":67,"spa":55,"spd":55,"spe":56}},{"id":31,"n":"nidoqueen","g":1,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":92,"def":87,"spa":75,"spd":85,"spe":76},"t2":"ground"},{"id":32,"n":"nidoran-m","g":1,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":46,"atk":57,"def":40,"spa":40,"spd":40,"spe":50}},{"id":33,"n":"nidorino","g":1,"t":"poison","leg":false,"myt":false,"st":"mid","s":{"hp":61,"atk":72,"def":57,"spa":55,"spd":55,"spe":65}},{"id":34,"n":"nidoking","g":1,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":81,"atk":102,"def":77,"spa":85,"spd":75,"spe":85},"t2":"ground"},{"id":35,"n":"clefairy","g":1,"t":"fairy","leg":false,"myt":false,"st":"mid","s":{"hp":70,"atk":45,"def":48,"spa":60,"spd":65,"spe":35}},{"id":36,"n":"clefable","g":1,"t":"fairy","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":70,"def":73,"spa":95,"spd":90,"spe":60}},{"id":37,"n":"vulpix","g":1,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":38,"atk":41,"def":40,"spa":50,"spd":65,"spe":65}},{"id":38,"n":"ninetales","g":1,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":73,"atk":76,"def":75,"spa":81,"spd":100,"spe":100}},{"id":39,"n":"jigglypuff","g":1,"t":"normal","leg":false,"myt":false,"st":"mid","s":{"hp":115,"atk":45,"def":20,"spa":45,"spd":25,"spe":20},"t2":"fairy"},{"id":40,"n":"wigglytuff","g":1,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":140,"atk":70,"def":45,"spa":85,"spd":50,"spe":45},"t2":"fairy"},{"id":41,"n":"zubat","g":1,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":45,"def":35,"spa":30,"spd":40,"spe":55},"t2":"flying"},{"id":42,"n":"golbat","g":1,"t":"poison","leg":false,"myt":false,"st":"mid","s":{"hp":75,"atk":80,"def":70,"spa":65,"spd":75,"spe":90},"t2":"flying"},{"id":43,"n":"oddish","g":1,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":50,"def":55,"spa":75,"spd":65,"spe":30},"t2":"poison"},{"id":44,"n":"gloom","g":1,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":65,"def":70,"spa":85,"spd":75,"spe":40},"t2":"poison"},{"id":45,"n":"vileplume","g":1,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":80,"def":85,"spa":110,"spd":90,"spe":50},"t2":"poison"},{"id":46,"n":"paras","g":1,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":70,"def":55,"spa":45,"spd":55,"spe":25},"t2":"grass"},{"id":47,"n":"parasect","g":1,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":95,"def":80,"spa":60,"spd":80,"spe":30},"t2":"grass"},{"id":48,"n":"venonat","g":1,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":55,"def":50,"spa":40,"spd":55,"spe":45},"t2":"poison"},{"id":49,"n":"venomoth","g":1,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":65,"def":60,"spa":90,"spd":75,"spe":90},"t2":"poison"},{"id":50,"n":"diglett","g":1,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":10,"atk":55,"def":25,"spa":35,"spd":45,"spe":95}},{"id":51,"n":"dugtrio","g":1,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":35,"atk":100,"def":50,"spa":50,"spd":70,"spe":120}},{"id":52,"n":"meowth","g":1,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":45,"def":35,"spa":40,"spd":40,"spe":90}},{"id":53,"n":"persian","g":1,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":70,"def":60,"spa":65,"spd":65,"spe":115}},{"id":54,"n":"psyduck","g":1,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":52,"def":48,"spa":65,"spd":50,"spe":55}},{"id":55,"n":"golduck","g":1,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":82,"def":78,"spa":95,"spd":80,"spe":85}},{"id":56,"n":"mankey","g":1,"t":"fighting","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":80,"def":35,"spa":35,"spd":45,"spe":70}},{"id":57,"n":"primeape","g":1,"t":"fighting","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":105,"def":60,"spa":60,"spd":70,"spe":95}},{"id":58,"n":"growlithe","g":1,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":70,"def":45,"spa":70,"spd":50,"spe":60}},{"id":59,"n":"arcanine","g":1,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":110,"def":80,"spa":100,"spd":80,"spe":95}},{"id":60,"n":"poliwag","g":1,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":50,"def":40,"spa":40,"spd":40,"spe":90}},{"id":61,"n":"poliwhirl","g":1,"t":"water","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":65,"def":65,"spa":50,"spd":50,"spe":90}},{"id":62,"n":"poliwrath","g":1,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":95,"def":95,"spa":70,"spd":90,"spe":70},"t2":"fighting"},{"id":63,"n":"abra","g":1,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":25,"atk":20,"def":15,"spa":105,"spd":55,"spe":90}},{"id":64,"n":"kadabra","g":1,"t":"psychic","leg":false,"myt":false,"st":"mid","s":{"hp":40,"atk":35,"def":30,"spa":120,"spd":70,"spe":105}},{"id":65,"n":"alakazam","g":1,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":55,"atk":50,"def":45,"spa":135,"spd":95,"spe":120}},{"id":66,"n":"machop","g":1,"t":"fighting","leg":false,"myt":false,"st":"basic","s":{"hp":70,"atk":80,"def":50,"spa":35,"spd":35,"spe":35}},{"id":67,"n":"machoke","g":1,"t":"fighting","leg":false,"myt":false,"st":"mid","s":{"hp":80,"atk":100,"def":70,"spa":50,"spd":60,"spe":45}},{"id":68,"n":"machamp","g":1,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":130,"def":80,"spa":65,"spd":85,"spe":55}},{"id":69,"n":"bellsprout","g":1,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":75,"def":35,"spa":70,"spd":30,"spe":40},"t2":"poison"},{"id":70,"n":"weepinbell","g":1,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":90,"def":50,"spa":85,"spd":45,"spe":55},"t2":"poison"},{"id":71,"n":"victreebel","g":1,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":105,"def":65,"spa":100,"spd":70,"spe":70},"t2":"poison"},{"id":72,"n":"tentacool","g":1,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":40,"def":35,"spa":50,"spd":100,"spe":70},"t2":"poison"},{"id":73,"n":"tentacruel","g":1,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":70,"def":65,"spa":80,"spd":120,"spe":100},"t2":"poison"},{"id":74,"n":"geodude","g":1,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":80,"def":100,"spa":30,"spd":30,"spe":20},"t2":"ground"},{"id":75,"n":"graveler","g":1,"t":"rock","leg":false,"myt":false,"st":"mid","s":{"hp":55,"atk":95,"def":115,"spa":45,"spd":45,"spe":35},"t2":"ground"},{"id":76,"n":"golem","g":1,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":120,"def":130,"spa":55,"spd":65,"spe":45},"t2":"ground"},{"id":77,"n":"ponyta","g":1,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":85,"def":55,"spa":65,"spd":65,"spe":90}},{"id":78,"n":"rapidash","g":1,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":100,"def":70,"spa":80,"spd":80,"spe":105}},{"id":79,"n":"slowpoke","g":1,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":90,"atk":65,"def":65,"spa":40,"spd":40,"spe":15},"t2":"psychic"},{"id":80,"n":"slowbro","g":1,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":75,"def":110,"spa":100,"spd":80,"spe":30},"t2":"psychic"},{"id":81,"n":"magnemite","g":1,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":25,"atk":35,"def":70,"spa":95,"spd":55,"spe":45},"t2":"steel"},{"id":82,"n":"magneton","g":1,"t":"electric","leg":false,"myt":false,"st":"mid","s":{"hp":50,"atk":60,"def":95,"spa":120,"spd":70,"spe":70},"t2":"steel"},{"id":83,"n":"farfetchd","g":1,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":52,"atk":90,"def":55,"spa":58,"spd":62,"spe":60},"t2":"flying"},{"id":84,"n":"doduo","g":1,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":85,"def":45,"spa":35,"spd":35,"spe":75},"t2":"flying"},{"id":85,"n":"dodrio","g":1,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":110,"def":70,"spa":60,"spd":60,"spe":110},"t2":"flying"},{"id":86,"n":"seel","g":1,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":65,"atk":45,"def":55,"spa":45,"spd":70,"spe":45}},{"id":87,"n":"dewgong","g":1,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":70,"def":80,"spa":70,"spd":95,"spe":70},"t2":"ice"},{"id":88,"n":"grimer","g":1,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":80,"atk":80,"def":50,"spa":40,"spd":50,"spe":25}},{"id":89,"n":"muk","g":1,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":105,"atk":105,"def":75,"spa":65,"spd":100,"spe":50}},{"id":90,"n":"shellder","g":1,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":65,"def":100,"spa":45,"spd":25,"spe":40}},{"id":91,"n":"cloyster","g":1,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":50,"atk":95,"def":180,"spa":85,"spd":45,"spe":70},"t2":"ice"},{"id":92,"n":"gastly","g":1,"t":"ghost","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":35,"def":30,"spa":100,"spd":35,"spe":80},"t2":"poison"},{"id":93,"n":"haunter","g":1,"t":"ghost","leg":false,"myt":false,"st":"mid","s":{"hp":45,"atk":50,"def":45,"spa":115,"spd":55,"spe":95},"t2":"poison"},{"id":94,"n":"gengar","g":1,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":65,"def":60,"spa":130,"spd":75,"spe":110},"t2":"poison"},{"id":95,"n":"onix","g":1,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":45,"def":160,"spa":30,"spd":45,"spe":70},"t2":"ground"},{"id":96,"n":"drowzee","g":1,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":48,"def":45,"spa":43,"spd":90,"spe":42}},{"id":97,"n":"hypno","g":1,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":73,"def":70,"spa":73,"spd":115,"spe":67}},{"id":98,"n":"krabby","g":1,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":105,"def":90,"spa":25,"spd":25,"spe":50}},{"id":99,"n":"kingler","g":1,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":55,"atk":130,"def":115,"spa":50,"spd":50,"spe":75}},{"id":100,"n":"voltorb","g":1,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":30,"def":50,"spa":55,"spd":55,"spe":100}},{"id":101,"n":"electrode","g":1,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":50,"def":70,"spa":80,"spd":80,"spe":150}},{"id":102,"n":"exeggcute","g":1,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":40,"def":80,"spa":60,"spd":45,"spe":40},"t2":"psychic"},{"id":103,"n":"exeggutor","g":1,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":95,"def":85,"spa":125,"spd":75,"spe":55},"t2":"psychic"},{"id":104,"n":"cubone","g":1,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":50,"def":95,"spa":40,"spd":50,"spe":35}},{"id":105,"n":"marowak","g":1,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":80,"def":110,"spa":50,"spd":80,"spe":45}},{"id":106,"n":"hitmonlee","g":1,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":50,"atk":120,"def":53,"spa":35,"spd":110,"spe":87}},{"id":107,"n":"hitmonchan","g":1,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":50,"atk":105,"def":79,"spa":35,"spd":110,"spe":76}},{"id":108,"n":"lickitung","g":1,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":90,"atk":55,"def":75,"spa":60,"spd":75,"spe":30}},{"id":109,"n":"koffing","g":1,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":65,"def":95,"spa":60,"spd":45,"spe":35}},{"id":110,"n":"weezing","g":1,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":90,"def":120,"spa":85,"spd":70,"spe":60}},{"id":111,"n":"rhyhorn","g":1,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":80,"atk":85,"def":95,"spa":30,"spd":30,"spe":25},"t2":"rock"},{"id":112,"n":"rhydon","g":1,"t":"ground","leg":false,"myt":false,"st":"mid","s":{"hp":105,"atk":130,"def":120,"spa":45,"spd":45,"spe":40},"t2":"rock"},{"id":113,"n":"chansey","g":1,"t":"normal","leg":false,"myt":false,"st":"mid","s":{"hp":250,"atk":5,"def":5,"spa":35,"spd":105,"spe":50}},{"id":114,"n":"tangela","g":1,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":65,"atk":55,"def":115,"spa":100,"spd":40,"spe":60}},{"id":115,"n":"kangaskhan","g":1,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":105,"atk":95,"def":80,"spa":40,"spd":80,"spe":90}},{"id":116,"n":"horsea","g":1,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":40,"def":70,"spa":70,"spd":25,"spe":60}},{"id":117,"n":"seadra","g":1,"t":"water","leg":false,"myt":false,"st":"mid","s":{"hp":55,"atk":65,"def":95,"spa":95,"spd":45,"spe":85}},{"id":118,"n":"goldeen","g":1,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":67,"def":60,"spa":35,"spd":50,"spe":63}},{"id":119,"n":"seaking","g":1,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":92,"def":65,"spa":65,"spd":80,"spe":68}},{"id":120,"n":"staryu","g":1,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":45,"def":55,"spa":70,"spd":55,"spe":85}},{"id":121,"n":"starmie","g":1,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":75,"def":85,"spa":100,"spd":85,"spe":115},"t2":"psychic"},{"id":122,"n":"mr-mime","g":1,"t":"psychic","leg":false,"myt":false,"st":"mid","s":{"hp":40,"atk":45,"def":65,"spa":100,"spd":120,"spe":90},"t2":"fairy"},{"id":123,"n":"scyther","g":1,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":70,"atk":110,"def":80,"spa":55,"spd":80,"spe":105},"t2":"flying"},{"id":124,"n":"jynx","g":1,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":50,"def":35,"spa":115,"spd":95,"spe":95},"t2":"psychic"},{"id":125,"n":"electabuzz","g":1,"t":"electric","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":83,"def":57,"spa":95,"spd":85,"spe":105}},{"id":126,"n":"magmar","g":1,"t":"fire","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":95,"def":57,"spa":100,"spd":85,"spe":93}},{"id":127,"n":"pinsir","g":1,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":125,"def":100,"spa":55,"spd":70,"spe":85}},{"id":128,"n":"tauros","g":1,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":100,"def":95,"spa":40,"spd":70,"spe":110}},{"id":129,"n":"magikarp","g":1,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":20,"atk":10,"def":55,"spa":15,"spd":20,"spe":80}},{"id":130,"n":"gyarados","g":1,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":125,"def":79,"spa":60,"spd":100,"spe":81},"t2":"flying"},{"id":131,"n":"lapras","g":1,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":130,"atk":85,"def":80,"spa":85,"spd":95,"spe":60},"t2":"ice"},{"id":132,"n":"ditto","g":1,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":48,"atk":48,"def":48,"spa":48,"spd":48,"spe":48}},{"id":133,"n":"eevee","g":1,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":55,"def":50,"spa":45,"spd":65,"spe":55}},{"id":134,"n":"vaporeon","g":1,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":130,"atk":65,"def":60,"spa":110,"spd":95,"spe":65}},{"id":135,"n":"jolteon","g":1,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":65,"def":60,"spa":110,"spd":95,"spe":130}},{"id":136,"n":"flareon","g":1,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":130,"def":60,"spa":95,"spd":110,"spe":65}},{"id":137,"n":"porygon","g":1,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":65,"atk":60,"def":70,"spa":85,"spd":75,"spe":40}},{"id":138,"n":"omanyte","g":1,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":40,"def":100,"spa":90,"spd":55,"spe":35},"t2":"water"},{"id":139,"n":"omastar","g":1,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":60,"def":125,"spa":115,"spd":70,"spe":55},"t2":"water"},{"id":140,"n":"kabuto","g":1,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":80,"def":90,"spa":55,"spd":45,"spe":55},"t2":"water"},{"id":141,"n":"kabutops","g":1,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":115,"def":105,"spa":65,"spd":70,"spe":80},"t2":"water"},{"id":142,"n":"aerodactyl","g":1,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":105,"def":65,"spa":60,"spd":75,"spe":130},"t2":"flying"},{"id":143,"n":"snorlax","g":1,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":160,"atk":110,"def":65,"spa":65,"spd":110,"spe":30}},{"id":144,"n":"articuno","g":1,"t":"ice","leg":true,"myt":false,"st":"legendary","s":{"hp":90,"atk":85,"def":100,"spa":95,"spd":125,"spe":85},"t2":"flying"},{"id":145,"n":"zapdos","g":1,"t":"electric","leg":true,"myt":false,"st":"legendary","s":{"hp":90,"atk":90,"def":85,"spa":125,"spd":90,"spe":100},"t2":"flying"},{"id":146,"n":"moltres","g":1,"t":"fire","leg":true,"myt":false,"st":"legendary","s":{"hp":90,"atk":100,"def":90,"spa":125,"spd":85,"spe":90},"t2":"flying"},{"id":147,"n":"dratini","g":1,"t":"dragon","leg":false,"myt":false,"st":"basic","s":{"hp":41,"atk":64,"def":45,"spa":50,"spd":50,"spe":50}},{"id":148,"n":"dragonair","g":1,"t":"dragon","leg":false,"myt":false,"st":"mid","s":{"hp":61,"atk":84,"def":65,"spa":70,"spd":70,"spe":70}},{"id":149,"n":"dragonite","g":1,"t":"dragon","leg":false,"myt":false,"st":"final","s":{"hp":91,"atk":134,"def":95,"spa":100,"spd":100,"spe":80},"t2":"flying"},{"id":150,"n":"mewtwo","g":1,"t":"psychic","leg":true,"myt":false,"st":"legendary","s":{"hp":106,"atk":110,"def":90,"spa":154,"spd":90,"spe":130}},{"id":151,"n":"mew","g":1,"t":"psychic","leg":false,"myt":true,"st":"legendary","s":{"hp":100,"atk":100,"def":100,"spa":100,"spd":100,"spe":100}},{"id":152,"n":"chikorita","g":2,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":49,"def":65,"spa":49,"spd":65,"spe":45}},{"id":153,"n":"bayleef","g":2,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":62,"def":80,"spa":63,"spd":80,"spe":60}},{"id":154,"n":"meganium","g":2,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":82,"def":100,"spa":83,"spd":100,"spe":80}},{"id":155,"n":"cyndaquil","g":2,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":39,"atk":52,"def":43,"spa":60,"spd":50,"spe":65}},{"id":156,"n":"quilava","g":2,"t":"fire","leg":false,"myt":false,"st":"mid","s":{"hp":58,"atk":64,"def":58,"spa":80,"spd":65,"spe":80}},{"id":157,"n":"typhlosion","g":2,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":78,"atk":84,"def":78,"spa":109,"spd":85,"spe":100}},{"id":158,"n":"totodile","g":2,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":65,"def":64,"spa":44,"spd":48,"spe":43}},{"id":159,"n":"croconaw","g":2,"t":"water","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":80,"def":80,"spa":59,"spd":63,"spe":58}},{"id":160,"n":"feraligatr","g":2,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":105,"def":100,"spa":79,"spd":83,"spe":78}},{"id":161,"n":"sentret","g":2,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":46,"def":34,"spa":35,"spd":45,"spe":20}},{"id":162,"n":"furret","g":2,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":76,"def":64,"spa":45,"spd":55,"spe":90}},{"id":163,"n":"hoothoot","g":2,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":30,"def":30,"spa":36,"spd":56,"spe":50},"t2":"flying"},{"id":164,"n":"noctowl","g":2,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":50,"def":50,"spa":86,"spd":96,"spe":70},"t2":"flying"},{"id":165,"n":"ledyba","g":2,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":20,"def":30,"spa":40,"spd":80,"spe":55},"t2":"flying"},{"id":166,"n":"ledian","g":2,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":55,"atk":35,"def":50,"spa":55,"spd":110,"spe":85},"t2":"flying"},{"id":167,"n":"spinarak","g":2,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":60,"def":40,"spa":40,"spd":40,"spe":30},"t2":"poison"},{"id":168,"n":"ariados","g":2,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":90,"def":70,"spa":60,"spd":70,"spe":40},"t2":"poison"},{"id":169,"n":"crobat","g":2,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":90,"def":80,"spa":70,"spd":80,"spe":130},"t2":"flying"},{"id":170,"n":"chinchou","g":2,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":75,"atk":38,"def":38,"spa":56,"spd":56,"spe":67},"t2":"electric"},{"id":171,"n":"lanturn","g":2,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":125,"atk":58,"def":58,"spa":76,"spd":76,"spe":67},"t2":"electric"},{"id":172,"n":"pichu","g":2,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":20,"atk":40,"def":15,"spa":35,"spd":35,"spe":60}},{"id":173,"n":"cleffa","g":2,"t":"fairy","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":25,"def":28,"spa":45,"spd":55,"spe":15}},{"id":174,"n":"igglybuff","g":2,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":90,"atk":30,"def":15,"spa":40,"spd":20,"spe":15},"t2":"fairy"},{"id":175,"n":"togepi","g":2,"t":"fairy","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":20,"def":65,"spa":40,"spd":65,"spe":20}},{"id":176,"n":"togetic","g":2,"t":"fairy","leg":false,"myt":false,"st":"mid","s":{"hp":55,"atk":40,"def":85,"spa":80,"spd":105,"spe":40},"t2":"flying"},{"id":177,"n":"natu","g":2,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":50,"def":45,"spa":70,"spd":45,"spe":70},"t2":"flying"},{"id":178,"n":"xatu","g":2,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":75,"def":70,"spa":95,"spd":70,"spe":95},"t2":"flying"},{"id":179,"n":"mareep","g":2,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":40,"def":40,"spa":65,"spd":45,"spe":35}},{"id":180,"n":"flaaffy","g":2,"t":"electric","leg":false,"myt":false,"st":"mid","s":{"hp":70,"atk":55,"def":55,"spa":80,"spd":60,"spe":45}},{"id":181,"n":"ampharos","g":2,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":75,"def":85,"spa":115,"spd":90,"spe":55}},{"id":182,"n":"bellossom","g":2,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":80,"def":95,"spa":90,"spd":100,"spe":50}},{"id":183,"n":"marill","g":2,"t":"water","leg":false,"myt":false,"st":"mid","s":{"hp":70,"atk":20,"def":50,"spa":20,"spd":50,"spe":40},"t2":"fairy"},{"id":184,"n":"azumarill","g":2,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":50,"def":80,"spa":60,"spd":80,"spe":50},"t2":"fairy"},{"id":185,"n":"sudowoodo","g":2,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":100,"def":115,"spa":30,"spd":65,"spe":30}},{"id":186,"n":"politoed","g":2,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":75,"def":75,"spa":90,"spd":100,"spe":70}},{"id":187,"n":"hoppip","g":2,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":35,"def":40,"spa":35,"spd":55,"spe":50},"t2":"flying"},{"id":188,"n":"skiploom","g":2,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":55,"atk":45,"def":50,"spa":45,"spd":65,"spe":80},"t2":"flying"},{"id":189,"n":"jumpluff","g":2,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":55,"def":70,"spa":55,"spd":95,"spe":110},"t2":"flying"},{"id":190,"n":"aipom","g":2,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":70,"def":55,"spa":40,"spd":55,"spe":85}},{"id":191,"n":"sunkern","g":2,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":30,"def":30,"spa":30,"spd":30,"spe":30}},{"id":192,"n":"sunflora","g":2,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":75,"def":55,"spa":105,"spd":85,"spe":30}},{"id":193,"n":"yanma","g":2,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":65,"atk":65,"def":45,"spa":75,"spd":45,"spe":95},"t2":"flying"},{"id":194,"n":"wooper","g":2,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":45,"def":45,"spa":25,"spd":25,"spe":15},"t2":"ground"},{"id":195,"n":"quagsire","g":2,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":85,"def":85,"spa":65,"spd":65,"spe":35},"t2":"ground"},{"id":196,"n":"espeon","g":2,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":65,"def":60,"spa":130,"spd":95,"spe":110}},{"id":197,"n":"umbreon","g":2,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":65,"def":110,"spa":60,"spd":130,"spe":65}},{"id":198,"n":"murkrow","g":2,"t":"dark","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":85,"def":42,"spa":85,"spd":42,"spe":91},"t2":"flying"},{"id":199,"n":"slowking","g":2,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":75,"def":80,"spa":100,"spd":110,"spe":30},"t2":"psychic"},{"id":200,"n":"misdreavus","g":2,"t":"ghost","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":60,"def":60,"spa":85,"spd":85,"spe":85}},{"id":201,"n":"unown","g":2,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":48,"atk":72,"def":48,"spa":72,"spd":48,"spe":48}},{"id":202,"n":"wobbuffet","g":2,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":190,"atk":33,"def":58,"spa":33,"spd":58,"spe":33}},{"id":203,"n":"girafarig","g":2,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":70,"atk":80,"def":65,"spa":90,"spd":65,"spe":85},"t2":"psychic"},{"id":204,"n":"pineco","g":2,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":65,"def":90,"spa":35,"spd":35,"spe":15}},{"id":205,"n":"forretress","g":2,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":90,"def":140,"spa":60,"spd":60,"spe":40},"t2":"steel"},{"id":206,"n":"dunsparce","g":2,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":100,"atk":70,"def":70,"spa":65,"spd":65,"spe":45}},{"id":207,"n":"gligar","g":2,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":65,"atk":75,"def":105,"spa":35,"spd":65,"spe":85},"t2":"flying"},{"id":208,"n":"steelix","g":2,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":85,"def":200,"spa":55,"spd":65,"spe":30},"t2":"ground"},{"id":209,"n":"snubbull","g":2,"t":"fairy","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":80,"def":50,"spa":40,"spd":40,"spe":30}},{"id":210,"n":"granbull","g":2,"t":"fairy","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":120,"def":75,"spa":60,"spd":60,"spe":45}},{"id":211,"n":"qwilfish","g":2,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":65,"atk":95,"def":85,"spa":55,"spd":55,"spe":85},"t2":"poison"},{"id":212,"n":"scizor","g":2,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":130,"def":100,"spa":55,"spd":80,"spe":65},"t2":"steel"},{"id":213,"n":"shuckle","g":2,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":20,"atk":10,"def":230,"spa":10,"spd":230,"spe":5},"t2":"rock"},{"id":214,"n":"heracross","g":2,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":125,"def":75,"spa":40,"spd":95,"spe":85},"t2":"fighting"},{"id":215,"n":"sneasel","g":2,"t":"dark","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":95,"def":55,"spa":35,"spd":75,"spe":115},"t2":"ice"},{"id":216,"n":"teddiursa","g":2,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":80,"def":50,"spa":50,"spd":50,"spe":40}},{"id":217,"n":"ursaring","g":2,"t":"normal","leg":false,"myt":false,"st":"mid","s":{"hp":90,"atk":130,"def":75,"spa":75,"spd":75,"spe":55}},{"id":218,"n":"slugma","g":2,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":40,"def":40,"spa":70,"spd":40,"spe":20}},{"id":219,"n":"magcargo","g":2,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":50,"def":120,"spa":90,"spd":80,"spe":30},"t2":"rock"},{"id":220,"n":"swinub","g":2,"t":"ice","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":50,"def":40,"spa":30,"spd":30,"spe":50},"t2":"ground"},{"id":221,"n":"piloswine","g":2,"t":"ice","leg":false,"myt":false,"st":"mid","s":{"hp":100,"atk":100,"def":80,"spa":60,"spd":60,"spe":50},"t2":"ground"},{"id":222,"n":"corsola","g":2,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":65,"atk":55,"def":95,"spa":65,"spd":95,"spe":35},"t2":"rock"},{"id":223,"n":"remoraid","g":2,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":65,"def":35,"spa":65,"spd":35,"spe":65}},{"id":224,"n":"octillery","g":2,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":105,"def":75,"spa":105,"spd":75,"spe":45}},{"id":225,"n":"delibird","g":2,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":45,"atk":55,"def":45,"spa":65,"spd":45,"spe":75},"t2":"flying"},{"id":226,"n":"mantine","g":2,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":40,"def":70,"spa":80,"spd":140,"spe":70},"t2":"flying"},{"id":227,"n":"skarmory","g":2,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":80,"def":140,"spa":40,"spd":70,"spe":70},"t2":"flying"},{"id":228,"n":"houndour","g":2,"t":"dark","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":60,"def":30,"spa":80,"spd":50,"spe":65},"t2":"fire"},{"id":229,"n":"houndoom","g":2,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":90,"def":50,"spa":110,"spd":80,"spe":95},"t2":"fire"},{"id":230,"n":"kingdra","g":2,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":95,"def":95,"spa":95,"spd":95,"spe":85},"t2":"dragon"},{"id":231,"n":"phanpy","g":2,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":90,"atk":60,"def":60,"spa":40,"spd":40,"spe":40}},{"id":232,"n":"donphan","g":2,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":120,"def":120,"spa":60,"spd":60,"spe":50}},{"id":233,"n":"porygon2","g":2,"t":"normal","leg":false,"myt":false,"st":"mid","s":{"hp":85,"atk":80,"def":90,"spa":105,"spd":95,"spe":60}},{"id":234,"n":"stantler","g":2,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":73,"atk":95,"def":62,"spa":85,"spd":65,"spe":85}},{"id":235,"n":"smeargle","g":2,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":55,"atk":20,"def":35,"spa":20,"spd":45,"spe":75}},{"id":236,"n":"tyrogue","g":2,"t":"fighting","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":35,"def":35,"spa":35,"spd":35,"spe":35}},{"id":237,"n":"hitmontop","g":2,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":50,"atk":95,"def":95,"spa":35,"spd":110,"spe":70}},{"id":238,"n":"smoochum","g":2,"t":"ice","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":30,"def":15,"spa":85,"spd":65,"spe":65},"t2":"psychic"},{"id":239,"n":"elekid","g":2,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":63,"def":37,"spa":65,"spd":55,"spe":95}},{"id":240,"n":"magby","g":2,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":75,"def":37,"spa":70,"spd":55,"spe":83}},{"id":241,"n":"miltank","g":2,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":80,"def":105,"spa":40,"spd":70,"spe":100}},{"id":242,"n":"blissey","g":2,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":255,"atk":10,"def":10,"spa":75,"spd":135,"spe":55}},{"id":243,"n":"raikou","g":2,"t":"electric","leg":true,"myt":false,"st":"legendary","s":{"hp":90,"atk":85,"def":75,"spa":115,"spd":100,"spe":115}},{"id":244,"n":"entei","g":2,"t":"fire","leg":true,"myt":false,"st":"legendary","s":{"hp":115,"atk":115,"def":85,"spa":90,"spd":75,"spe":100}},{"id":245,"n":"suicune","g":2,"t":"water","leg":true,"myt":false,"st":"legendary","s":{"hp":100,"atk":75,"def":115,"spa":90,"spd":115,"spe":85}},{"id":246,"n":"larvitar","g":2,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":64,"def":50,"spa":45,"spd":50,"spe":41},"t2":"ground"},{"id":247,"n":"pupitar","g":2,"t":"rock","leg":false,"myt":false,"st":"mid","s":{"hp":70,"atk":84,"def":70,"spa":65,"spd":70,"spe":51},"t2":"ground"},{"id":248,"n":"tyranitar","g":2,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":134,"def":110,"spa":95,"spd":100,"spe":61},"t2":"dark"},{"id":249,"n":"lugia","g":2,"t":"psychic","leg":true,"myt":false,"st":"legendary","s":{"hp":106,"atk":90,"def":130,"spa":90,"spd":154,"spe":110},"t2":"flying"},{"id":250,"n":"ho-oh","g":2,"t":"fire","leg":true,"myt":false,"st":"legendary","s":{"hp":106,"atk":130,"def":90,"spa":110,"spd":154,"spe":90},"t2":"flying"},{"id":251,"n":"celebi","g":2,"t":"psychic","leg":false,"myt":true,"st":"legendary","s":{"hp":100,"atk":100,"def":100,"spa":100,"spd":100,"spe":100},"t2":"grass"},{"id":252,"n":"treecko","g":3,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":45,"def":35,"spa":65,"spd":55,"spe":70}},{"id":253,"n":"grovyle","g":3,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":50,"atk":65,"def":45,"spa":85,"spd":65,"spe":95}},{"id":254,"n":"sceptile","g":3,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":85,"def":65,"spa":105,"spd":85,"spe":120}},{"id":255,"n":"torchic","g":3,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":60,"def":40,"spa":70,"spd":50,"spe":45}},{"id":256,"n":"combusken","g":3,"t":"fire","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":85,"def":60,"spa":85,"spd":60,"spe":55},"t2":"fighting"},{"id":257,"n":"blaziken","g":3,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":120,"def":70,"spa":110,"spd":70,"spe":80},"t2":"fighting"},{"id":258,"n":"mudkip","g":3,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":70,"def":50,"spa":50,"spd":50,"spe":40}},{"id":259,"n":"marshtomp","g":3,"t":"water","leg":false,"myt":false,"st":"mid","s":{"hp":70,"atk":85,"def":70,"spa":60,"spd":70,"spe":50},"t2":"ground"},{"id":260,"n":"swampert","g":3,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":110,"def":90,"spa":85,"spd":90,"spe":60},"t2":"ground"},{"id":261,"n":"poochyena","g":3,"t":"dark","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":55,"def":35,"spa":30,"spd":30,"spe":35}},{"id":262,"n":"mightyena","g":3,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":90,"def":70,"spa":60,"spd":60,"spe":70}},{"id":263,"n":"zigzagoon","g":3,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":38,"atk":30,"def":41,"spa":30,"spd":41,"spe":60}},{"id":264,"n":"linoone","g":3,"t":"normal","leg":false,"myt":false,"st":"mid","s":{"hp":78,"atk":70,"def":61,"spa":50,"spd":61,"spe":100}},{"id":265,"n":"wurmple","g":3,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":45,"def":35,"spa":20,"spd":30,"spe":20}},{"id":266,"n":"silcoon","g":3,"t":"bug","leg":false,"myt":false,"st":"mid","s":{"hp":50,"atk":35,"def":55,"spa":25,"spd":25,"spe":15}},{"id":267,"n":"beautifly","g":3,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":70,"def":50,"spa":100,"spd":50,"spe":65},"t2":"flying"},{"id":268,"n":"cascoon","g":3,"t":"bug","leg":false,"myt":false,"st":"mid","s":{"hp":50,"atk":35,"def":55,"spa":25,"spd":25,"spe":15}},{"id":269,"n":"dustox","g":3,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":50,"def":70,"spa":50,"spd":90,"spe":65},"t2":"poison"},{"id":270,"n":"lotad","g":3,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":30,"def":30,"spa":40,"spd":50,"spe":30},"t2":"grass"},{"id":271,"n":"lombre","g":3,"t":"water","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":50,"def":50,"spa":60,"spd":70,"spe":50},"t2":"grass"},{"id":272,"n":"ludicolo","g":3,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":70,"def":70,"spa":90,"spd":100,"spe":70},"t2":"grass"},{"id":273,"n":"seedot","g":3,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":40,"def":50,"spa":30,"spd":30,"spe":30}},{"id":274,"n":"nuzleaf","g":3,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":70,"atk":70,"def":40,"spa":60,"spd":40,"spe":60},"t2":"dark"},{"id":275,"n":"shiftry","g":3,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":100,"def":60,"spa":90,"spd":60,"spe":80},"t2":"dark"},{"id":276,"n":"taillow","g":3,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":55,"def":30,"spa":30,"spd":30,"spe":85},"t2":"flying"},{"id":277,"n":"swellow","g":3,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":85,"def":60,"spa":75,"spd":50,"spe":125},"t2":"flying"},{"id":278,"n":"wingull","g":3,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":30,"def":30,"spa":55,"spd":30,"spe":85},"t2":"flying"},{"id":279,"n":"pelipper","g":3,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":50,"def":100,"spa":95,"spd":70,"spe":65},"t2":"flying"},{"id":280,"n":"ralts","g":3,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":28,"atk":25,"def":25,"spa":45,"spd":35,"spe":40},"t2":"fairy"},{"id":281,"n":"kirlia","g":3,"t":"psychic","leg":false,"myt":false,"st":"mid","s":{"hp":38,"atk":35,"def":35,"spa":65,"spd":55,"spe":50},"t2":"fairy"},{"id":282,"n":"gardevoir","g":3,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":68,"atk":65,"def":65,"spa":125,"spd":115,"spe":80},"t2":"fairy"},{"id":283,"n":"surskit","g":3,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":30,"def":32,"spa":50,"spd":52,"spe":65},"t2":"water"},{"id":284,"n":"masquerain","g":3,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":60,"def":62,"spa":100,"spd":82,"spe":80},"t2":"flying"},{"id":285,"n":"shroomish","g":3,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":40,"def":60,"spa":40,"spd":60,"spe":35}},{"id":286,"n":"breloom","g":3,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":130,"def":80,"spa":60,"spd":60,"spe":70},"t2":"fighting"},{"id":287,"n":"slakoth","g":3,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":60,"def":60,"spa":35,"spd":35,"spe":30}},{"id":288,"n":"vigoroth","g":3,"t":"normal","leg":false,"myt":false,"st":"mid","s":{"hp":80,"atk":80,"def":80,"spa":55,"spd":55,"spe":90}},{"id":289,"n":"slaking","g":3,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":150,"atk":160,"def":100,"spa":95,"spd":65,"spe":100}},{"id":290,"n":"nincada","g":3,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":31,"atk":45,"def":90,"spa":30,"spd":30,"spe":40},"t2":"ground"},{"id":291,"n":"ninjask","g":3,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":61,"atk":90,"def":45,"spa":50,"spd":50,"spe":160},"t2":"flying"},{"id":292,"n":"shedinja","g":3,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":1,"atk":90,"def":45,"spa":30,"spd":30,"spe":40},"t2":"ghost"},{"id":293,"n":"whismur","g":3,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":64,"atk":51,"def":23,"spa":51,"spd":23,"spe":28}},{"id":294,"n":"loudred","g":3,"t":"normal","leg":false,"myt":false,"st":"mid","s":{"hp":84,"atk":71,"def":43,"spa":71,"spd":43,"spe":48}},{"id":295,"n":"exploud","g":3,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":104,"atk":91,"def":63,"spa":91,"spd":73,"spe":68}},{"id":296,"n":"makuhita","g":3,"t":"fighting","leg":false,"myt":false,"st":"basic","s":{"hp":72,"atk":60,"def":30,"spa":20,"spd":30,"spe":25}},{"id":297,"n":"hariyama","g":3,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":144,"atk":120,"def":60,"spa":40,"spd":60,"spe":50}},{"id":298,"n":"azurill","g":3,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":20,"def":40,"spa":20,"spd":40,"spe":20},"t2":"fairy"},{"id":299,"n":"nosepass","g":3,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":45,"def":135,"spa":45,"spd":90,"spe":30}},{"id":300,"n":"skitty","g":3,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":45,"def":45,"spa":35,"spd":35,"spe":50}},{"id":301,"n":"delcatty","g":3,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":65,"def":65,"spa":55,"spd":55,"spe":90}},{"id":302,"n":"sableye","g":3,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":50,"atk":75,"def":75,"spa":65,"spd":65,"spe":50},"t2":"ghost"},{"id":303,"n":"mawile","g":3,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":50,"atk":85,"def":85,"spa":55,"spd":55,"spe":50},"t2":"fairy"},{"id":304,"n":"aron","g":3,"t":"steel","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":70,"def":100,"spa":40,"spd":40,"spe":30},"t2":"rock"},{"id":305,"n":"lairon","g":3,"t":"steel","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":90,"def":140,"spa":50,"spd":50,"spe":40},"t2":"rock"},{"id":306,"n":"aggron","g":3,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":110,"def":180,"spa":60,"spd":60,"spe":50},"t2":"rock"},{"id":307,"n":"meditite","g":3,"t":"fighting","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":40,"def":55,"spa":40,"spd":55,"spe":60},"t2":"psychic"},{"id":308,"n":"medicham","g":3,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":60,"def":75,"spa":60,"spd":75,"spe":80},"t2":"psychic"},{"id":309,"n":"electrike","g":3,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":45,"def":40,"spa":65,"spd":40,"spe":65}},{"id":310,"n":"manectric","g":3,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":75,"def":60,"spa":105,"spd":60,"spe":105}},{"id":311,"n":"plusle","g":3,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":50,"def":40,"spa":85,"spd":75,"spe":95}},{"id":312,"n":"minun","g":3,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":40,"def":50,"spa":75,"spd":85,"spe":95}},{"id":313,"n":"volbeat","g":3,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":73,"def":75,"spa":47,"spd":85,"spe":85}},{"id":314,"n":"illumise","g":3,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":47,"def":75,"spa":73,"spd":85,"spe":85}},{"id":315,"n":"roselia","g":3,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":50,"atk":60,"def":45,"spa":100,"spd":80,"spe":65},"t2":"poison"},{"id":316,"n":"gulpin","g":3,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":70,"atk":43,"def":53,"spa":43,"spd":53,"spe":40}},{"id":317,"n":"swalot","g":3,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":73,"def":83,"spa":73,"spd":83,"spe":55}},{"id":318,"n":"carvanha","g":3,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":90,"def":20,"spa":65,"spd":20,"spe":65},"t2":"dark"},{"id":319,"n":"sharpedo","g":3,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":120,"def":40,"spa":95,"spd":40,"spe":95},"t2":"dark"},{"id":320,"n":"wailmer","g":3,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":130,"atk":70,"def":35,"spa":70,"spd":35,"spe":60}},{"id":321,"n":"wailord","g":3,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":170,"atk":90,"def":45,"spa":90,"spd":45,"spe":60}},{"id":322,"n":"numel","g":3,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":60,"def":40,"spa":65,"spd":45,"spe":35},"t2":"ground"},{"id":323,"n":"camerupt","g":3,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":100,"def":70,"spa":105,"spd":75,"spe":40},"t2":"ground"},{"id":324,"n":"torkoal","g":3,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":85,"def":140,"spa":85,"spd":70,"spe":20}},{"id":325,"n":"spoink","g":3,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":25,"def":35,"spa":70,"spd":80,"spe":60}},{"id":326,"n":"grumpig","g":3,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":45,"def":65,"spa":90,"spd":110,"spe":80}},{"id":327,"n":"spinda","g":3,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":60,"def":60,"spa":60,"spd":60,"spe":60}},{"id":328,"n":"trapinch","g":3,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":100,"def":45,"spa":45,"spd":45,"spe":10}},{"id":329,"n":"vibrava","g":3,"t":"ground","leg":false,"myt":false,"st":"mid","s":{"hp":50,"atk":70,"def":50,"spa":50,"spd":50,"spe":70},"t2":"dragon"},{"id":330,"n":"flygon","g":3,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":100,"def":80,"spa":80,"spd":80,"spe":100},"t2":"dragon"},{"id":331,"n":"cacnea","g":3,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":85,"def":40,"spa":85,"spd":40,"spe":35}},{"id":332,"n":"cacturne","g":3,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":115,"def":60,"spa":115,"spd":60,"spe":55},"t2":"dark"},{"id":333,"n":"swablu","g":3,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":40,"def":60,"spa":40,"spd":75,"spe":50},"t2":"flying"},{"id":334,"n":"altaria","g":3,"t":"dragon","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":70,"def":90,"spa":70,"spd":105,"spe":80},"t2":"flying"},{"id":335,"n":"zangoose","g":3,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":73,"atk":115,"def":60,"spa":60,"spd":60,"spe":90}},{"id":336,"n":"seviper","g":3,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":73,"atk":100,"def":60,"spa":100,"spd":60,"spe":65}},{"id":337,"n":"lunatone","g":3,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":55,"def":65,"spa":95,"spd":85,"spe":70},"t2":"psychic"},{"id":338,"n":"solrock","g":3,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":95,"def":85,"spa":55,"spd":65,"spe":70},"t2":"psychic"},{"id":339,"n":"barboach","g":3,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":48,"def":43,"spa":46,"spd":41,"spe":60},"t2":"ground"},{"id":340,"n":"whiscash","g":3,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":110,"atk":78,"def":73,"spa":76,"spd":71,"spe":60},"t2":"ground"},{"id":341,"n":"corphish","g":3,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":43,"atk":80,"def":65,"spa":50,"spd":35,"spe":35}},{"id":342,"n":"crawdaunt","g":3,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":63,"atk":120,"def":85,"spa":90,"spd":55,"spe":55},"t2":"dark"},{"id":343,"n":"baltoy","g":3,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":40,"def":55,"spa":40,"spd":70,"spe":55},"t2":"psychic"},{"id":344,"n":"claydol","g":3,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":70,"def":105,"spa":70,"spd":120,"spe":75},"t2":"psychic"},{"id":345,"n":"lileep","g":3,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":66,"atk":41,"def":77,"spa":61,"spd":87,"spe":23},"t2":"grass"},{"id":346,"n":"cradily","g":3,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":86,"atk":81,"def":97,"spa":81,"spd":107,"spe":43},"t2":"grass"},{"id":347,"n":"anorith","g":3,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":95,"def":50,"spa":40,"spd":50,"spe":75},"t2":"bug"},{"id":348,"n":"armaldo","g":3,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":125,"def":100,"spa":70,"spd":80,"spe":45},"t2":"bug"},{"id":349,"n":"feebas","g":3,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":20,"atk":15,"def":20,"spa":10,"spd":55,"spe":80}},{"id":350,"n":"milotic","g":3,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":60,"def":79,"spa":100,"spd":125,"spe":81}},{"id":351,"n":"castform","g":3,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":70,"def":70,"spa":70,"spd":70,"spe":70}},{"id":352,"n":"kecleon","g":3,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":90,"def":70,"spa":60,"spd":120,"spe":40}},{"id":353,"n":"shuppet","g":3,"t":"ghost","leg":false,"myt":false,"st":"basic","s":{"hp":44,"atk":75,"def":35,"spa":63,"spd":33,"spe":45}},{"id":354,"n":"banette","g":3,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":64,"atk":115,"def":65,"spa":83,"spd":63,"spe":65}},{"id":355,"n":"duskull","g":3,"t":"ghost","leg":false,"myt":false,"st":"basic","s":{"hp":20,"atk":40,"def":90,"spa":30,"spd":90,"spe":25}},{"id":356,"n":"dusclops","g":3,"t":"ghost","leg":false,"myt":false,"st":"mid","s":{"hp":40,"atk":70,"def":130,"spa":60,"spd":130,"spe":25}},{"id":357,"n":"tropius","g":3,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":99,"atk":68,"def":83,"spa":72,"spd":87,"spe":51},"t2":"flying"},{"id":358,"n":"chimecho","g":3,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":50,"def":80,"spa":95,"spd":90,"spe":65}},{"id":359,"n":"absol","g":3,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":130,"def":60,"spa":75,"spd":60,"spe":75}},{"id":360,"n":"wynaut","g":3,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":95,"atk":23,"def":48,"spa":23,"spd":48,"spe":23}},{"id":361,"n":"snorunt","g":3,"t":"ice","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":50,"def":50,"spa":50,"spd":50,"spe":50}},{"id":362,"n":"glalie","g":3,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":80,"def":80,"spa":80,"spd":80,"spe":80}},{"id":363,"n":"spheal","g":3,"t":"ice","leg":false,"myt":false,"st":"basic","s":{"hp":70,"atk":40,"def":50,"spa":55,"spd":50,"spe":25},"t2":"water"},{"id":364,"n":"sealeo","g":3,"t":"ice","leg":false,"myt":false,"st":"mid","s":{"hp":90,"atk":60,"def":70,"spa":75,"spd":70,"spe":45},"t2":"water"},{"id":365,"n":"walrein","g":3,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":110,"atk":80,"def":90,"spa":95,"spd":90,"spe":65},"t2":"water"},{"id":366,"n":"clamperl","g":3,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":64,"def":85,"spa":74,"spd":55,"spe":32}},{"id":367,"n":"huntail","g":3,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":55,"atk":104,"def":105,"spa":94,"spd":75,"spe":52}},{"id":368,"n":"gorebyss","g":3,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":55,"atk":84,"def":105,"spa":114,"spd":75,"spe":52}},{"id":369,"n":"relicanth","g":3,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":90,"def":130,"spa":45,"spd":65,"spe":55},"t2":"rock"},{"id":370,"n":"luvdisc","g":3,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":43,"atk":30,"def":55,"spa":40,"spd":65,"spe":97}},{"id":371,"n":"bagon","g":3,"t":"dragon","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":75,"def":60,"spa":40,"spd":30,"spe":50}},{"id":372,"n":"shelgon","g":3,"t":"dragon","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":95,"def":100,"spa":60,"spd":50,"spe":50}},{"id":373,"n":"salamence","g":3,"t":"dragon","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":135,"def":80,"spa":110,"spd":80,"spe":100},"t2":"flying"},{"id":374,"n":"beldum","g":3,"t":"steel","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":55,"def":80,"spa":35,"spd":60,"spe":30},"t2":"psychic"},{"id":375,"n":"metang","g":3,"t":"steel","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":75,"def":100,"spa":55,"spd":80,"spe":50},"t2":"psychic"},{"id":376,"n":"metagross","g":3,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":135,"def":130,"spa":95,"spd":90,"spe":70},"t2":"psychic"},{"id":377,"n":"regirock","g":3,"t":"rock","leg":true,"myt":false,"st":"legendary","s":{"hp":80,"atk":100,"def":200,"spa":50,"spd":100,"spe":50}},{"id":378,"n":"regice","g":3,"t":"ice","leg":true,"myt":false,"st":"legendary","s":{"hp":80,"atk":50,"def":100,"spa":100,"spd":200,"spe":50}},{"id":379,"n":"registeel","g":3,"t":"steel","leg":true,"myt":false,"st":"legendary","s":{"hp":80,"atk":75,"def":150,"spa":75,"spd":150,"spe":50}},{"id":380,"n":"latias","g":3,"t":"dragon","leg":true,"myt":false,"st":"legendary","s":{"hp":80,"atk":80,"def":90,"spa":110,"spd":130,"spe":110},"t2":"psychic"},{"id":381,"n":"latios","g":3,"t":"dragon","leg":true,"myt":false,"st":"legendary","s":{"hp":80,"atk":90,"def":80,"spa":130,"spd":110,"spe":110},"t2":"psychic"},{"id":382,"n":"kyogre","g":3,"t":"water","leg":true,"myt":false,"st":"legendary","s":{"hp":100,"atk":100,"def":90,"spa":150,"spd":140,"spe":90}},{"id":383,"n":"groudon","g":3,"t":"ground","leg":true,"myt":false,"st":"legendary","s":{"hp":100,"atk":150,"def":140,"spa":100,"spd":90,"spe":90}},{"id":384,"n":"rayquaza","g":3,"t":"dragon","leg":true,"myt":false,"st":"legendary","s":{"hp":105,"atk":150,"def":90,"spa":150,"spd":90,"spe":95},"t2":"flying"},{"id":385,"n":"jirachi","g":3,"t":"steel","leg":false,"myt":true,"st":"legendary","s":{"hp":100,"atk":100,"def":100,"spa":100,"spd":100,"spe":100},"t2":"psychic"},{"id":386,"n":"deoxys","g":3,"t":"psychic","leg":false,"myt":true,"st":"legendary","s":{"hp":50,"atk":150,"def":50,"spa":150,"spd":50,"spe":150}},{"id":387,"n":"turtwig","g":4,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":68,"def":64,"spa":45,"spd":55,"spe":31}},{"id":388,"n":"grotle","g":4,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":75,"atk":89,"def":85,"spa":55,"spd":65,"spe":36}},{"id":389,"n":"torterra","g":4,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":109,"def":105,"spa":75,"spd":85,"spe":56},"t2":"ground"},{"id":390,"n":"chimchar","g":4,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":44,"atk":58,"def":44,"spa":58,"spd":44,"spe":61}},{"id":391,"n":"monferno","g":4,"t":"fire","leg":false,"myt":false,"st":"mid","s":{"hp":64,"atk":78,"def":52,"spa":78,"spd":52,"spe":81},"t2":"fighting"},{"id":392,"n":"infernape","g":4,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":76,"atk":104,"def":71,"spa":104,"spd":71,"spe":108},"t2":"fighting"},{"id":393,"n":"piplup","g":4,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":53,"atk":51,"def":53,"spa":61,"spd":56,"spe":40}},{"id":394,"n":"prinplup","g":4,"t":"water","leg":false,"myt":false,"st":"mid","s":{"hp":64,"atk":66,"def":68,"spa":81,"spd":76,"spe":50}},{"id":395,"n":"empoleon","g":4,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":84,"atk":86,"def":88,"spa":111,"spd":101,"spe":60},"t2":"steel"},{"id":396,"n":"starly","g":4,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":55,"def":30,"spa":30,"spd":30,"spe":60},"t2":"flying"},{"id":397,"n":"staravia","g":4,"t":"normal","leg":false,"myt":false,"st":"mid","s":{"hp":55,"atk":75,"def":50,"spa":40,"spd":40,"spe":80},"t2":"flying"},{"id":398,"n":"staraptor","g":4,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":120,"def":70,"spa":50,"spd":60,"spe":100},"t2":"flying"},{"id":399,"n":"bidoof","g":4,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":59,"atk":45,"def":40,"spa":35,"spd":40,"spe":31}},{"id":400,"n":"bibarel","g":4,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":79,"atk":85,"def":60,"spa":55,"spd":60,"spe":71},"t2":"water"},{"id":401,"n":"kricketot","g":4,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":37,"atk":25,"def":41,"spa":25,"spd":41,"spe":25}},{"id":402,"n":"kricketune","g":4,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":77,"atk":85,"def":51,"spa":55,"spd":51,"spe":65}},{"id":403,"n":"shinx","g":4,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":65,"def":34,"spa":40,"spd":34,"spe":45}},{"id":404,"n":"luxio","g":4,"t":"electric","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":85,"def":49,"spa":60,"spd":49,"spe":60}},{"id":405,"n":"luxray","g":4,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":120,"def":79,"spa":95,"spd":79,"spe":70}},{"id":406,"n":"budew","g":4,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":30,"def":35,"spa":50,"spd":70,"spe":55},"t2":"poison"},{"id":407,"n":"roserade","g":4,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":70,"def":65,"spa":125,"spd":105,"spe":90},"t2":"poison"},{"id":408,"n":"cranidos","g":4,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":67,"atk":125,"def":40,"spa":30,"spd":30,"spe":58}},{"id":409,"n":"rampardos","g":4,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":97,"atk":165,"def":60,"spa":65,"spd":50,"spe":58}},{"id":410,"n":"shieldon","g":4,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":42,"def":118,"spa":42,"spd":88,"spe":30},"t2":"steel"},{"id":411,"n":"bastiodon","g":4,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":52,"def":168,"spa":47,"spd":138,"spe":30},"t2":"steel"},{"id":412,"n":"burmy","g":4,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":29,"def":45,"spa":29,"spd":45,"spe":36}},{"id":413,"n":"wormadam","g":4,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":59,"def":85,"spa":79,"spd":105,"spe":36},"t2":"grass"},{"id":414,"n":"mothim","g":4,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":94,"def":50,"spa":94,"spd":50,"spe":66},"t2":"flying"},{"id":415,"n":"combee","g":4,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":30,"def":42,"spa":30,"spd":42,"spe":70},"t2":"flying"},{"id":416,"n":"vespiquen","g":4,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":80,"def":102,"spa":80,"spd":102,"spe":40},"t2":"flying"},{"id":417,"n":"pachirisu","g":4,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":45,"def":70,"spa":45,"spd":90,"spe":95}},{"id":418,"n":"buizel","g":4,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":65,"def":35,"spa":60,"spd":30,"spe":85}},{"id":419,"n":"floatzel","g":4,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":105,"def":55,"spa":85,"spd":50,"spe":115}},{"id":420,"n":"cherubi","g":4,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":35,"def":45,"spa":62,"spd":53,"spe":35}},{"id":421,"n":"cherrim","g":4,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":60,"def":70,"spa":87,"spd":78,"spe":85}},{"id":422,"n":"shellos","g":4,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":76,"atk":48,"def":48,"spa":57,"spd":62,"spe":34}},{"id":423,"n":"gastrodon","g":4,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":111,"atk":83,"def":68,"spa":92,"spd":82,"spe":39},"t2":"ground"},{"id":424,"n":"ambipom","g":4,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":100,"def":66,"spa":60,"spd":66,"spe":115}},{"id":425,"n":"drifloon","g":4,"t":"ghost","leg":false,"myt":false,"st":"basic","s":{"hp":90,"atk":50,"def":34,"spa":60,"spd":44,"spe":70},"t2":"flying"},{"id":426,"n":"drifblim","g":4,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":150,"atk":80,"def":44,"spa":90,"spd":54,"spe":80},"t2":"flying"},{"id":427,"n":"buneary","g":4,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":66,"def":44,"spa":44,"spd":56,"spe":85}},{"id":428,"n":"lopunny","g":4,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":76,"def":84,"spa":54,"spd":96,"spe":105}},{"id":429,"n":"mismagius","g":4,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":60,"def":60,"spa":105,"spd":105,"spe":105}},{"id":430,"n":"honchkrow","g":4,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":125,"def":52,"spa":105,"spd":52,"spe":71},"t2":"flying"},{"id":431,"n":"glameow","g":4,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":49,"atk":55,"def":42,"spa":42,"spd":37,"spe":85}},{"id":432,"n":"purugly","g":4,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":71,"atk":82,"def":64,"spa":64,"spd":59,"spe":112}},{"id":433,"n":"chingling","g":4,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":30,"def":50,"spa":65,"spd":50,"spe":45}},{"id":434,"n":"stunky","g":4,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":63,"atk":63,"def":47,"spa":41,"spd":41,"spe":74},"t2":"dark"},{"id":435,"n":"skuntank","g":4,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":103,"atk":93,"def":67,"spa":71,"spd":61,"spe":84},"t2":"dark"},{"id":436,"n":"bronzor","g":4,"t":"steel","leg":false,"myt":false,"st":"basic","s":{"hp":57,"atk":24,"def":86,"spa":24,"spd":86,"spe":23},"t2":"psychic"},{"id":437,"n":"bronzong","g":4,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":67,"atk":89,"def":116,"spa":79,"spd":116,"spe":33},"t2":"psychic"},{"id":438,"n":"bonsly","g":4,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":80,"def":95,"spa":10,"spd":45,"spe":10}},{"id":439,"n":"mime-jr","g":4,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":20,"atk":25,"def":45,"spa":70,"spd":90,"spe":60},"t2":"fairy"},{"id":440,"n":"happiny","g":4,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":100,"atk":5,"def":5,"spa":15,"spd":65,"spe":30}},{"id":441,"n":"chatot","g":4,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":76,"atk":65,"def":45,"spa":92,"spd":42,"spe":91},"t2":"flying"},{"id":442,"n":"spiritomb","g":4,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":50,"atk":92,"def":108,"spa":92,"spd":108,"spe":35},"t2":"dark"},{"id":443,"n":"gible","g":4,"t":"dragon","leg":false,"myt":false,"st":"basic","s":{"hp":58,"atk":70,"def":45,"spa":40,"spd":45,"spe":42},"t2":"ground"},{"id":444,"n":"gabite","g":4,"t":"dragon","leg":false,"myt":false,"st":"mid","s":{"hp":68,"atk":90,"def":65,"spa":50,"spd":55,"spe":82},"t2":"ground"},{"id":445,"n":"garchomp","g":4,"t":"dragon","leg":false,"myt":false,"st":"final","s":{"hp":108,"atk":130,"def":95,"spa":80,"spd":85,"spe":102},"t2":"ground"},{"id":446,"n":"munchlax","g":4,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":135,"atk":85,"def":40,"spa":40,"spd":85,"spe":5}},{"id":447,"n":"riolu","g":4,"t":"fighting","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":70,"def":40,"spa":35,"spd":40,"spe":60}},{"id":448,"n":"lucario","g":4,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":110,"def":70,"spa":115,"spd":70,"spe":90},"t2":"steel"},{"id":449,"n":"hippopotas","g":4,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":68,"atk":72,"def":78,"spa":38,"spd":42,"spe":32}},{"id":450,"n":"hippowdon","g":4,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":108,"atk":112,"def":118,"spa":68,"spd":72,"spe":47}},{"id":451,"n":"skorupi","g":4,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":50,"def":90,"spa":30,"spd":55,"spe":65},"t2":"bug"},{"id":452,"n":"drapion","g":4,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":90,"def":110,"spa":60,"spd":75,"spe":95},"t2":"dark"},{"id":453,"n":"croagunk","g":4,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":48,"atk":61,"def":40,"spa":61,"spd":40,"spe":50},"t2":"fighting"},{"id":454,"n":"toxicroak","g":4,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":83,"atk":106,"def":65,"spa":86,"spd":65,"spe":85},"t2":"fighting"},{"id":455,"n":"carnivine","g":4,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":74,"atk":100,"def":72,"spa":90,"spd":72,"spe":46}},{"id":456,"n":"finneon","g":4,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":49,"atk":49,"def":56,"spa":49,"spd":61,"spe":66}},{"id":457,"n":"lumineon","g":4,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":69,"atk":69,"def":76,"spa":69,"spd":86,"spe":91}},{"id":458,"n":"mantyke","g":4,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":20,"def":50,"spa":60,"spd":120,"spe":50},"t2":"flying"},{"id":459,"n":"snover","g":4,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":62,"def":50,"spa":62,"spd":60,"spe":40},"t2":"ice"},{"id":460,"n":"abomasnow","g":4,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":92,"def":75,"spa":92,"spd":85,"spe":60},"t2":"ice"},{"id":461,"n":"weavile","g":4,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":120,"def":65,"spa":45,"spd":85,"spe":125},"t2":"ice"},{"id":462,"n":"magnezone","g":4,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":70,"def":115,"spa":130,"spd":90,"spe":60},"t2":"steel"},{"id":463,"n":"lickilicky","g":4,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":110,"atk":85,"def":95,"spa":80,"spd":95,"spe":50}},{"id":464,"n":"rhyperior","g":4,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":115,"atk":140,"def":130,"spa":55,"spd":55,"spe":40},"t2":"rock"},{"id":465,"n":"tangrowth","g":4,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":100,"def":125,"spa":110,"spd":50,"spe":50}},{"id":466,"n":"electivire","g":4,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":123,"def":67,"spa":95,"spd":85,"spe":95}},{"id":467,"n":"magmortar","g":4,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":95,"def":67,"spa":125,"spd":95,"spe":83}},{"id":468,"n":"togekiss","g":4,"t":"fairy","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":50,"def":95,"spa":120,"spd":115,"spe":80},"t2":"flying"},{"id":469,"n":"yanmega","g":4,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":86,"atk":76,"def":86,"spa":116,"spd":56,"spe":95},"t2":"flying"},{"id":470,"n":"leafeon","g":4,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":110,"def":130,"spa":60,"spd":65,"spe":95}},{"id":471,"n":"glaceon","g":4,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":60,"def":110,"spa":130,"spd":95,"spe":65}},{"id":472,"n":"gliscor","g":4,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":95,"def":125,"spa":45,"spd":75,"spe":95},"t2":"flying"},{"id":473,"n":"mamoswine","g":4,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":110,"atk":130,"def":80,"spa":70,"spd":60,"spe":80},"t2":"ground"},{"id":474,"n":"porygon-z","g":4,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":80,"def":70,"spa":135,"spd":75,"spe":90}},{"id":475,"n":"gallade","g":4,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":68,"atk":125,"def":65,"spa":65,"spd":115,"spe":80},"t2":"fighting"},{"id":476,"n":"probopass","g":4,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":55,"def":145,"spa":75,"spd":150,"spe":40},"t2":"steel"},{"id":477,"n":"dusknoir","g":4,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":45,"atk":100,"def":135,"spa":65,"spd":135,"spe":45}},{"id":478,"n":"froslass","g":4,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":80,"def":70,"spa":80,"spd":70,"spe":110},"t2":"ghost"},{"id":479,"n":"rotom","g":4,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":50,"atk":50,"def":77,"spa":95,"spd":77,"spe":91},"t2":"ghost"},{"id":480,"n":"uxie","g":4,"t":"psychic","leg":true,"myt":false,"st":"legendary","s":{"hp":75,"atk":75,"def":130,"spa":75,"spd":130,"spe":95}},{"id":481,"n":"mesprit","g":4,"t":"psychic","leg":true,"myt":false,"st":"legendary","s":{"hp":80,"atk":105,"def":105,"spa":105,"spd":105,"spe":80}},{"id":482,"n":"azelf","g":4,"t":"psychic","leg":true,"myt":false,"st":"legendary","s":{"hp":75,"atk":125,"def":70,"spa":125,"spd":70,"spe":115}},{"id":483,"n":"dialga","g":4,"t":"steel","leg":true,"myt":false,"st":"legendary","s":{"hp":100,"atk":120,"def":120,"spa":150,"spd":100,"spe":90},"t2":"dragon"},{"id":484,"n":"palkia","g":4,"t":"water","leg":true,"myt":false,"st":"legendary","s":{"hp":90,"atk":120,"def":100,"spa":150,"spd":120,"spe":100},"t2":"dragon"},{"id":485,"n":"heatran","g":4,"t":"fire","leg":true,"myt":false,"st":"legendary","s":{"hp":91,"atk":90,"def":106,"spa":130,"spd":106,"spe":77},"t2":"steel"},{"id":486,"n":"regigigas","g":4,"t":"normal","leg":true,"myt":false,"st":"legendary","s":{"hp":110,"atk":160,"def":110,"spa":80,"spd":110,"spe":100}},{"id":487,"n":"giratina","g":4,"t":"ghost","leg":true,"myt":false,"st":"legendary","s":{"hp":150,"atk":100,"def":120,"spa":100,"spd":120,"spe":90},"t2":"dragon"},{"id":488,"n":"cresselia","g":4,"t":"psychic","leg":true,"myt":false,"st":"legendary","s":{"hp":120,"atk":70,"def":110,"spa":75,"spd":120,"spe":85}},{"id":489,"n":"phione","g":4,"t":"water","leg":false,"myt":true,"st":"legendary","s":{"hp":80,"atk":80,"def":80,"spa":80,"spd":80,"spe":80}},{"id":490,"n":"manaphy","g":4,"t":"water","leg":false,"myt":true,"st":"legendary","s":{"hp":100,"atk":100,"def":100,"spa":100,"spd":100,"spe":100}},{"id":491,"n":"darkrai","g":4,"t":"dark","leg":false,"myt":true,"st":"legendary","s":{"hp":70,"atk":90,"def":90,"spa":135,"spd":90,"spe":125}},{"id":492,"n":"shaymin","g":4,"t":"grass","leg":false,"myt":true,"st":"legendary","s":{"hp":100,"atk":100,"def":100,"spa":100,"spd":100,"spe":100}},{"id":493,"n":"arceus","g":4,"t":"normal","leg":false,"myt":true,"st":"legendary","s":{"hp":120,"atk":120,"def":120,"spa":120,"spd":120,"spe":120}},{"id":494,"n":"victini","g":5,"t":"psychic","leg":false,"myt":true,"st":"legendary","s":{"hp":100,"atk":100,"def":100,"spa":100,"spd":100,"spe":100},"t2":"fire"},{"id":495,"n":"snivy","g":5,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":45,"def":55,"spa":45,"spd":55,"spe":63}},{"id":496,"n":"servine","g":5,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":60,"def":75,"spa":60,"spd":75,"spe":83}},{"id":497,"n":"serperior","g":5,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":75,"def":95,"spa":75,"spd":95,"spe":113}},{"id":498,"n":"tepig","g":5,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":65,"atk":63,"def":45,"spa":45,"spd":45,"spe":45}},{"id":499,"n":"pignite","g":5,"t":"fire","leg":false,"myt":false,"st":"mid","s":{"hp":90,"atk":93,"def":55,"spa":70,"spd":55,"spe":55},"t2":"fighting"},{"id":500,"n":"emboar","g":5,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":110,"atk":123,"def":65,"spa":100,"spd":65,"spe":65},"t2":"fighting"},{"id":501,"n":"oshawott","g":5,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":55,"def":45,"spa":63,"spd":45,"spe":45}},{"id":502,"n":"dewott","g":5,"t":"water","leg":false,"myt":false,"st":"mid","s":{"hp":75,"atk":75,"def":60,"spa":83,"spd":60,"spe":60}},{"id":503,"n":"samurott","g":5,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":100,"def":85,"spa":108,"spd":70,"spe":70}},{"id":504,"n":"patrat","g":5,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":55,"def":39,"spa":35,"spd":39,"spe":42}},{"id":505,"n":"watchog","g":5,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":85,"def":69,"spa":60,"spd":69,"spe":77}},{"id":506,"n":"lillipup","g":5,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":60,"def":45,"spa":25,"spd":45,"spe":55}},{"id":507,"n":"herdier","g":5,"t":"normal","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":80,"def":65,"spa":35,"spd":65,"spe":60}},{"id":508,"n":"stoutland","g":5,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":110,"def":90,"spa":45,"spd":90,"spe":80}},{"id":509,"n":"purrloin","g":5,"t":"dark","leg":false,"myt":false,"st":"basic","s":{"hp":41,"atk":50,"def":37,"spa":50,"spd":37,"spe":66}},{"id":510,"n":"liepard","g":5,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":64,"atk":88,"def":50,"spa":88,"spd":50,"spe":106}},{"id":511,"n":"pansage","g":5,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":53,"def":48,"spa":53,"spd":48,"spe":64}},{"id":512,"n":"simisage","g":5,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":98,"def":63,"spa":98,"spd":63,"spe":101}},{"id":513,"n":"pansear","g":5,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":53,"def":48,"spa":53,"spd":48,"spe":64}},{"id":514,"n":"simisear","g":5,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":98,"def":63,"spa":98,"spd":63,"spe":101}},{"id":515,"n":"panpour","g":5,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":53,"def":48,"spa":53,"spd":48,"spe":64}},{"id":516,"n":"simipour","g":5,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":98,"def":63,"spa":98,"spd":63,"spe":101}},{"id":517,"n":"munna","g":5,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":76,"atk":25,"def":45,"spa":67,"spd":55,"spe":24}},{"id":518,"n":"musharna","g":5,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":116,"atk":55,"def":85,"spa":107,"spd":95,"spe":29}},{"id":519,"n":"pidove","g":5,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":55,"def":50,"spa":36,"spd":30,"spe":43},"t2":"flying"},{"id":520,"n":"tranquill","g":5,"t":"normal","leg":false,"myt":false,"st":"mid","s":{"hp":62,"atk":77,"def":62,"spa":50,"spd":42,"spe":65},"t2":"flying"},{"id":521,"n":"unfezant","g":5,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":115,"def":80,"spa":65,"spd":55,"spe":93},"t2":"flying"},{"id":522,"n":"blitzle","g":5,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":60,"def":32,"spa":50,"spd":32,"spe":76}},{"id":523,"n":"zebstrika","g":5,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":100,"def":63,"spa":80,"spd":63,"spe":116}},{"id":524,"n":"roggenrola","g":5,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":75,"def":85,"spa":25,"spd":25,"spe":15}},{"id":525,"n":"boldore","g":5,"t":"rock","leg":false,"myt":false,"st":"mid","s":{"hp":70,"atk":105,"def":105,"spa":50,"spd":40,"spe":20}},{"id":526,"n":"gigalith","g":5,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":135,"def":130,"spa":60,"spd":80,"spe":25}},{"id":527,"n":"woobat","g":5,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":65,"atk":45,"def":43,"spa":55,"spd":43,"spe":72},"t2":"flying"},{"id":528,"n":"swoobat","g":5,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":67,"atk":57,"def":55,"spa":77,"spd":55,"spe":114},"t2":"flying"},{"id":529,"n":"drilbur","g":5,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":85,"def":40,"spa":30,"spd":45,"spe":68}},{"id":530,"n":"excadrill","g":5,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":110,"atk":135,"def":60,"spa":50,"spd":65,"spe":88},"t2":"steel"},{"id":531,"n":"audino","g":5,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":103,"atk":60,"def":86,"spa":60,"spd":86,"spe":50}},{"id":532,"n":"timburr","g":5,"t":"fighting","leg":false,"myt":false,"st":"basic","s":{"hp":75,"atk":80,"def":55,"spa":25,"spd":35,"spe":35}},{"id":533,"n":"gurdurr","g":5,"t":"fighting","leg":false,"myt":false,"st":"mid","s":{"hp":85,"atk":105,"def":85,"spa":40,"spd":50,"spe":40}},{"id":534,"n":"conkeldurr","g":5,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":105,"atk":140,"def":95,"spa":55,"spd":65,"spe":45}},{"id":535,"n":"tympole","g":5,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":50,"def":40,"spa":50,"spd":40,"spe":64}},{"id":536,"n":"palpitoad","g":5,"t":"water","leg":false,"myt":false,"st":"mid","s":{"hp":75,"atk":65,"def":55,"spa":65,"spd":55,"spe":69},"t2":"ground"},{"id":537,"n":"seismitoad","g":5,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":105,"atk":95,"def":75,"spa":85,"spd":75,"spe":74},"t2":"ground"},{"id":538,"n":"throh","g":5,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":120,"atk":100,"def":85,"spa":30,"spd":85,"spe":45}},{"id":539,"n":"sawk","g":5,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":125,"def":75,"spa":30,"spd":75,"spe":85}},{"id":540,"n":"sewaddle","g":5,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":53,"def":70,"spa":40,"spd":60,"spe":42},"t2":"grass"},{"id":541,"n":"swadloon","g":5,"t":"bug","leg":false,"myt":false,"st":"mid","s":{"hp":55,"atk":63,"def":90,"spa":50,"spd":80,"spe":42},"t2":"grass"},{"id":542,"n":"leavanny","g":5,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":103,"def":80,"spa":70,"spd":80,"spe":92},"t2":"grass"},{"id":543,"n":"venipede","g":5,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":45,"def":59,"spa":30,"spd":39,"spe":57},"t2":"poison"},{"id":544,"n":"whirlipede","g":5,"t":"bug","leg":false,"myt":false,"st":"mid","s":{"hp":40,"atk":55,"def":99,"spa":40,"spd":79,"spe":47},"t2":"poison"},{"id":545,"n":"scolipede","g":5,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":100,"def":89,"spa":55,"spd":69,"spe":112},"t2":"poison"},{"id":546,"n":"cottonee","g":5,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":27,"def":60,"spa":37,"spd":50,"spe":66},"t2":"fairy"},{"id":547,"n":"whimsicott","g":5,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":67,"def":85,"spa":77,"spd":75,"spe":116},"t2":"fairy"},{"id":548,"n":"petilil","g":5,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":35,"def":50,"spa":70,"spd":50,"spe":30}},{"id":549,"n":"lilligant","g":5,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":60,"def":75,"spa":110,"spd":75,"spe":90}},{"id":550,"n":"basculin","g":5,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":70,"atk":92,"def":65,"spa":80,"spd":55,"spe":98}},{"id":551,"n":"sandile","g":5,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":72,"def":35,"spa":35,"spd":35,"spe":65},"t2":"dark"},{"id":552,"n":"krokorok","g":5,"t":"ground","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":82,"def":45,"spa":45,"spd":45,"spe":74},"t2":"dark"},{"id":553,"n":"krookodile","g":5,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":117,"def":80,"spa":65,"spd":70,"spe":92},"t2":"dark"},{"id":554,"n":"darumaka","g":5,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":70,"atk":90,"def":45,"spa":15,"spd":45,"spe":50}},{"id":555,"n":"darmanitan","g":5,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":105,"atk":140,"def":55,"spa":30,"spd":55,"spe":95}},{"id":556,"n":"maractus","g":5,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":86,"def":67,"spa":106,"spd":67,"spe":60}},{"id":557,"n":"dwebble","g":5,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":65,"def":85,"spa":35,"spd":35,"spe":55},"t2":"rock"},{"id":558,"n":"crustle","g":5,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":105,"def":125,"spa":65,"spd":75,"spe":45},"t2":"rock"},{"id":559,"n":"scraggy","g":5,"t":"dark","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":75,"def":70,"spa":35,"spd":70,"spe":48},"t2":"fighting"},{"id":560,"n":"scrafty","g":5,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":90,"def":115,"spa":45,"spd":115,"spe":58},"t2":"fighting"},{"id":561,"n":"sigilyph","g":5,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":72,"atk":58,"def":80,"spa":103,"spd":80,"spe":97},"t2":"flying"},{"id":562,"n":"yamask","g":5,"t":"ghost","leg":false,"myt":false,"st":"basic","s":{"hp":38,"atk":30,"def":85,"spa":55,"spd":65,"spe":30}},{"id":563,"n":"cofagrigus","g":5,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":58,"atk":50,"def":145,"spa":95,"spd":105,"spe":30}},{"id":564,"n":"tirtouga","g":5,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":54,"atk":78,"def":103,"spa":53,"spd":45,"spe":22},"t2":"rock"},{"id":565,"n":"carracosta","g":5,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":74,"atk":108,"def":133,"spa":83,"spd":65,"spe":32},"t2":"rock"},{"id":566,"n":"archen","g":5,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":112,"def":45,"spa":74,"spd":45,"spe":70},"t2":"flying"},{"id":567,"n":"archeops","g":5,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":140,"def":65,"spa":112,"spd":65,"spe":110},"t2":"flying"},{"id":568,"n":"trubbish","g":5,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":50,"def":62,"spa":40,"spd":62,"spe":65}},{"id":569,"n":"garbodor","g":5,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":95,"def":82,"spa":60,"spd":82,"spe":75}},{"id":570,"n":"zorua","g":5,"t":"dark","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":65,"def":40,"spa":80,"spd":40,"spe":65}},{"id":571,"n":"zoroark","g":5,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":105,"def":60,"spa":120,"spd":60,"spe":105}},{"id":572,"n":"minccino","g":5,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":50,"def":40,"spa":40,"spd":40,"spe":75}},{"id":573,"n":"cinccino","g":5,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":95,"def":60,"spa":65,"spd":60,"spe":115}},{"id":574,"n":"gothita","g":5,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":30,"def":50,"spa":55,"spd":65,"spe":45}},{"id":575,"n":"gothorita","g":5,"t":"psychic","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":45,"def":70,"spa":75,"spd":85,"spe":55}},{"id":576,"n":"gothitelle","g":5,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":55,"def":95,"spa":95,"spd":110,"spe":65}},{"id":577,"n":"solosis","g":5,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":30,"def":40,"spa":105,"spd":50,"spe":20}},{"id":578,"n":"duosion","g":5,"t":"psychic","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":40,"def":50,"spa":125,"spd":60,"spe":30}},{"id":579,"n":"reuniclus","g":5,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":110,"atk":65,"def":75,"spa":125,"spd":85,"spe":30}},{"id":580,"n":"ducklett","g":5,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":62,"atk":44,"def":50,"spa":44,"spd":50,"spe":55},"t2":"flying"},{"id":581,"n":"swanna","g":5,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":87,"def":63,"spa":87,"spd":63,"spe":98},"t2":"flying"},{"id":582,"n":"vanillite","g":5,"t":"ice","leg":false,"myt":false,"st":"basic","s":{"hp":36,"atk":50,"def":50,"spa":65,"spd":60,"spe":44}},{"id":583,"n":"vanillish","g":5,"t":"ice","leg":false,"myt":false,"st":"mid","s":{"hp":51,"atk":65,"def":65,"spa":80,"spd":75,"spe":59}},{"id":584,"n":"vanilluxe","g":5,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":71,"atk":95,"def":85,"spa":110,"spd":95,"spe":79}},{"id":585,"n":"deerling","g":5,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":60,"def":50,"spa":40,"spd":50,"spe":75},"t2":"grass"},{"id":586,"n":"sawsbuck","g":5,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":100,"def":70,"spa":60,"spd":70,"spe":95},"t2":"grass"},{"id":587,"n":"emolga","g":5,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":55,"atk":75,"def":60,"spa":75,"spd":60,"spe":103},"t2":"flying"},{"id":588,"n":"karrablast","g":5,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":75,"def":45,"spa":40,"spd":45,"spe":60}},{"id":589,"n":"escavalier","g":5,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":135,"def":105,"spa":60,"spd":105,"spe":20},"t2":"steel"},{"id":590,"n":"foongus","g":5,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":69,"atk":55,"def":45,"spa":55,"spd":55,"spe":15},"t2":"poison"},{"id":591,"n":"amoonguss","g":5,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":114,"atk":85,"def":70,"spa":85,"spd":80,"spe":30},"t2":"poison"},{"id":592,"n":"frillish","g":5,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":40,"def":50,"spa":65,"spd":85,"spe":40},"t2":"ghost"},{"id":593,"n":"jellicent","g":5,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":60,"def":70,"spa":85,"spd":105,"spe":60},"t2":"ghost"},{"id":594,"n":"alomomola","g":5,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":165,"atk":75,"def":80,"spa":40,"spd":45,"spe":65}},{"id":595,"n":"joltik","g":5,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":47,"def":50,"spa":57,"spd":50,"spe":65},"t2":"electric"},{"id":596,"n":"galvantula","g":5,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":77,"def":60,"spa":97,"spd":60,"spe":108},"t2":"electric"},{"id":597,"n":"ferroseed","g":5,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":44,"atk":50,"def":91,"spa":24,"spd":86,"spe":10},"t2":"steel"},{"id":598,"n":"ferrothorn","g":5,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":74,"atk":94,"def":131,"spa":54,"spd":116,"spe":20},"t2":"steel"},{"id":599,"n":"klink","g":5,"t":"steel","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":55,"def":70,"spa":45,"spd":60,"spe":30}},{"id":600,"n":"klang","g":5,"t":"steel","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":80,"def":95,"spa":70,"spd":85,"spe":50}},{"id":601,"n":"klinklang","g":5,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":100,"def":115,"spa":70,"spd":85,"spe":90}},{"id":602,"n":"tynamo","g":5,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":55,"def":40,"spa":45,"spd":40,"spe":60}},{"id":603,"n":"eelektrik","g":5,"t":"electric","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":85,"def":70,"spa":75,"spd":70,"spe":40}},{"id":604,"n":"eelektross","g":5,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":115,"def":80,"spa":105,"spd":80,"spe":50}},{"id":605,"n":"elgyem","g":5,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":55,"def":55,"spa":85,"spd":55,"spe":30}},{"id":606,"n":"beheeyem","g":5,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":75,"def":75,"spa":125,"spd":95,"spe":40}},{"id":607,"n":"litwick","g":5,"t":"ghost","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":30,"def":55,"spa":65,"spd":55,"spe":20},"t2":"fire"},{"id":608,"n":"lampent","g":5,"t":"ghost","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":40,"def":60,"spa":95,"spd":60,"spe":55},"t2":"fire"},{"id":609,"n":"chandelure","g":5,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":55,"def":90,"spa":145,"spd":90,"spe":80},"t2":"fire"},{"id":610,"n":"axew","g":5,"t":"dragon","leg":false,"myt":false,"st":"basic","s":{"hp":46,"atk":87,"def":60,"spa":30,"spd":40,"spe":57}},{"id":611,"n":"fraxure","g":5,"t":"dragon","leg":false,"myt":false,"st":"mid","s":{"hp":66,"atk":117,"def":70,"spa":40,"spd":50,"spe":67}},{"id":612,"n":"haxorus","g":5,"t":"dragon","leg":false,"myt":false,"st":"final","s":{"hp":76,"atk":147,"def":90,"spa":60,"spd":70,"spe":97}},{"id":613,"n":"cubchoo","g":5,"t":"ice","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":70,"def":40,"spa":60,"spd":40,"spe":40}},{"id":614,"n":"beartic","g":5,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":130,"def":80,"spa":70,"spd":80,"spe":50}},{"id":615,"n":"cryogonal","g":5,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":50,"def":50,"spa":95,"spd":135,"spe":105}},{"id":616,"n":"shelmet","g":5,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":40,"def":85,"spa":40,"spd":65,"spe":25}},{"id":617,"n":"accelgor","g":5,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":70,"def":40,"spa":100,"spd":60,"spe":145}},{"id":618,"n":"stunfisk","g":5,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":109,"atk":66,"def":84,"spa":81,"spd":99,"spe":32},"t2":"electric"},{"id":619,"n":"mienfoo","g":5,"t":"fighting","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":85,"def":50,"spa":55,"spd":50,"spe":65}},{"id":620,"n":"mienshao","g":5,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":125,"def":60,"spa":95,"spd":60,"spe":105}},{"id":621,"n":"druddigon","g":5,"t":"dragon","leg":false,"myt":false,"st":"final","s":{"hp":77,"atk":120,"def":90,"spa":60,"spd":90,"spe":48}},{"id":622,"n":"golett","g":5,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":59,"atk":74,"def":50,"spa":35,"spd":50,"spe":35},"t2":"ghost"},{"id":623,"n":"golurk","g":5,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":89,"atk":124,"def":80,"spa":55,"spd":80,"spe":55},"t2":"ghost"},{"id":624,"n":"pawniard","g":5,"t":"dark","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":85,"def":70,"spa":40,"spd":40,"spe":60},"t2":"steel"},{"id":625,"n":"bisharp","g":5,"t":"dark","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":125,"def":100,"spa":60,"spd":70,"spe":70},"t2":"steel"},{"id":626,"n":"bouffalant","g":5,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":110,"def":95,"spa":40,"spd":95,"spe":55}},{"id":627,"n":"rufflet","g":5,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":70,"atk":83,"def":50,"spa":37,"spd":50,"spe":60},"t2":"flying"},{"id":628,"n":"braviary","g":5,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":123,"def":75,"spa":57,"spd":75,"spe":80},"t2":"flying"},{"id":629,"n":"vullaby","g":5,"t":"dark","leg":false,"myt":false,"st":"basic","s":{"hp":70,"atk":55,"def":75,"spa":45,"spd":65,"spe":60},"t2":"flying"},{"id":630,"n":"mandibuzz","g":5,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":110,"atk":65,"def":105,"spa":55,"spd":95,"spe":80},"t2":"flying"},{"id":631,"n":"heatmor","g":5,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":97,"def":66,"spa":105,"spd":66,"spe":65}},{"id":632,"n":"durant","g":5,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":58,"atk":109,"def":112,"spa":48,"spd":48,"spe":109},"t2":"steel"},{"id":633,"n":"deino","g":5,"t":"dark","leg":false,"myt":false,"st":"basic","s":{"hp":52,"atk":65,"def":50,"spa":45,"spd":50,"spe":38},"t2":"dragon"},{"id":634,"n":"zweilous","g":5,"t":"dark","leg":false,"myt":false,"st":"mid","s":{"hp":72,"atk":85,"def":70,"spa":65,"spd":70,"spe":58},"t2":"dragon"},{"id":635,"n":"hydreigon","g":5,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":92,"atk":105,"def":90,"spa":125,"spd":90,"spe":98},"t2":"dragon"},{"id":636,"n":"larvesta","g":5,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":85,"def":55,"spa":50,"spd":55,"spe":60},"t2":"fire"},{"id":637,"n":"volcarona","g":5,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":60,"def":65,"spa":135,"spd":105,"spe":100},"t2":"fire"},{"id":638,"n":"cobalion","g":5,"t":"steel","leg":true,"myt":false,"st":"legendary","s":{"hp":91,"atk":90,"def":129,"spa":90,"spd":72,"spe":108},"t2":"fighting"},{"id":639,"n":"terrakion","g":5,"t":"rock","leg":true,"myt":false,"st":"legendary","s":{"hp":91,"atk":129,"def":90,"spa":72,"spd":90,"spe":108},"t2":"fighting"},{"id":640,"n":"virizion","g":5,"t":"grass","leg":true,"myt":false,"st":"legendary","s":{"hp":91,"atk":90,"def":72,"spa":90,"spd":129,"spe":108},"t2":"fighting"},{"id":641,"n":"tornadus","g":5,"t":"flying","leg":true,"myt":false,"st":"legendary","s":{"hp":79,"atk":115,"def":70,"spa":125,"spd":80,"spe":111}},{"id":642,"n":"thundurus","g":5,"t":"electric","leg":true,"myt":false,"st":"legendary","s":{"hp":79,"atk":115,"def":70,"spa":125,"spd":80,"spe":111},"t2":"flying"},{"id":643,"n":"reshiram","g":5,"t":"dragon","leg":true,"myt":false,"st":"legendary","s":{"hp":100,"atk":120,"def":100,"spa":150,"spd":120,"spe":90},"t2":"fire"},{"id":644,"n":"zekrom","g":5,"t":"dragon","leg":true,"myt":false,"st":"legendary","s":{"hp":100,"atk":150,"def":120,"spa":120,"spd":100,"spe":90},"t2":"electric"},{"id":645,"n":"landorus","g":5,"t":"ground","leg":true,"myt":false,"st":"legendary","s":{"hp":89,"atk":125,"def":90,"spa":115,"spd":80,"spe":101},"t2":"flying"},{"id":646,"n":"kyurem","g":5,"t":"dragon","leg":true,"myt":false,"st":"legendary","s":{"hp":125,"atk":130,"def":90,"spa":130,"spd":90,"spe":95},"t2":"ice"},{"id":647,"n":"keldeo","g":5,"t":"water","leg":false,"myt":true,"st":"legendary","s":{"hp":91,"atk":72,"def":90,"spa":129,"spd":90,"spe":108},"t2":"fighting"},{"id":648,"n":"meloetta","g":5,"t":"normal","leg":false,"myt":true,"st":"legendary","s":{"hp":100,"atk":77,"def":77,"spa":128,"spd":128,"spe":90},"t2":"psychic"},{"id":649,"n":"genesect","g":5,"t":"bug","leg":false,"myt":true,"st":"legendary","s":{"hp":71,"atk":120,"def":95,"spa":120,"spd":95,"spe":99},"t2":"steel"},{"id":650,"n":"chespin","g":6,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":56,"atk":61,"def":65,"spa":48,"spd":45,"spe":38}},{"id":651,"n":"quilladin","g":6,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":61,"atk":78,"def":95,"spa":56,"spd":58,"spe":57}},{"id":652,"n":"chesnaught","g":6,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":88,"atk":107,"def":122,"spa":74,"spd":75,"spe":64},"t2":"fighting"},{"id":653,"n":"fennekin","g":6,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":45,"def":40,"spa":62,"spd":60,"spe":60}},{"id":654,"n":"braixen","g":6,"t":"fire","leg":false,"myt":false,"st":"mid","s":{"hp":59,"atk":59,"def":58,"spa":90,"spd":70,"spe":73}},{"id":655,"n":"delphox","g":6,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":69,"def":72,"spa":114,"spd":100,"spe":104},"t2":"psychic"},{"id":656,"n":"froakie","g":6,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":41,"atk":56,"def":40,"spa":62,"spd":44,"spe":71}},{"id":657,"n":"frogadier","g":6,"t":"water","leg":false,"myt":false,"st":"mid","s":{"hp":54,"atk":63,"def":52,"spa":83,"spd":56,"spe":97}},{"id":658,"n":"greninja","g":6,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":72,"atk":95,"def":67,"spa":103,"spd":71,"spe":122},"t2":"dark"},{"id":659,"n":"bunnelby","g":6,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":38,"atk":36,"def":38,"spa":32,"spd":36,"spe":57}},{"id":660,"n":"diggersby","g":6,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":56,"def":77,"spa":50,"spd":77,"spe":78},"t2":"ground"},{"id":661,"n":"fletchling","g":6,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":50,"def":43,"spa":40,"spd":38,"spe":62},"t2":"flying"},{"id":662,"n":"fletchinder","g":6,"t":"fire","leg":false,"myt":false,"st":"mid","s":{"hp":62,"atk":73,"def":55,"spa":56,"spd":52,"spe":84},"t2":"flying"},{"id":663,"n":"talonflame","g":6,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":78,"atk":81,"def":71,"spa":74,"spd":69,"spe":126},"t2":"flying"},{"id":664,"n":"scatterbug","g":6,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":38,"atk":35,"def":40,"spa":27,"spd":25,"spe":35}},{"id":665,"n":"spewpa","g":6,"t":"bug","leg":false,"myt":false,"st":"mid","s":{"hp":45,"atk":22,"def":60,"spa":27,"spd":30,"spe":29}},{"id":666,"n":"vivillon","g":6,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":52,"def":50,"spa":90,"spd":50,"spe":89},"t2":"flying"},{"id":667,"n":"litleo","g":6,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":62,"atk":50,"def":58,"spa":73,"spd":54,"spe":72},"t2":"normal"},{"id":668,"n":"pyroar","g":6,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":86,"atk":68,"def":72,"spa":109,"spd":66,"spe":106},"t2":"normal"},{"id":669,"n":"flabebe","g":6,"t":"fairy","leg":false,"myt":false,"st":"basic","s":{"hp":44,"atk":38,"def":39,"spa":61,"spd":79,"spe":42}},{"id":670,"n":"floette","g":6,"t":"fairy","leg":false,"myt":false,"st":"mid","s":{"hp":54,"atk":45,"def":47,"spa":75,"spd":98,"spe":52}},{"id":671,"n":"florges","g":6,"t":"fairy","leg":false,"myt":false,"st":"final","s":{"hp":78,"atk":65,"def":68,"spa":112,"spd":154,"spe":75}},{"id":672,"n":"skiddo","g":6,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":66,"atk":65,"def":48,"spa":62,"spd":57,"spe":52}},{"id":673,"n":"gogoat","g":6,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":123,"atk":100,"def":62,"spa":97,"spd":81,"spe":68}},{"id":674,"n":"pancham","g":6,"t":"fighting","leg":false,"myt":false,"st":"basic","s":{"hp":67,"atk":82,"def":62,"spa":46,"spd":48,"spe":43}},{"id":675,"n":"pangoro","g":6,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":124,"def":78,"spa":69,"spd":71,"spe":58},"t2":"dark"},{"id":676,"n":"furfrou","g":6,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":80,"def":60,"spa":65,"spd":90,"spe":102}},{"id":677,"n":"espurr","g":6,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":62,"atk":48,"def":54,"spa":63,"spd":60,"spe":68}},{"id":678,"n":"meowstic","g":6,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":74,"atk":48,"def":76,"spa":83,"spd":81,"spe":104}},{"id":679,"n":"honedge","g":6,"t":"steel","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":80,"def":100,"spa":35,"spd":37,"spe":28},"t2":"ghost"},{"id":680,"n":"doublade","g":6,"t":"steel","leg":false,"myt":false,"st":"mid","s":{"hp":59,"atk":110,"def":150,"spa":45,"spd":49,"spe":35},"t2":"ghost"},{"id":681,"n":"aegislash","g":6,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":50,"def":140,"spa":50,"spd":140,"spe":60},"t2":"ghost"},{"id":682,"n":"spritzee","g":6,"t":"fairy","leg":false,"myt":false,"st":"basic","s":{"hp":78,"atk":52,"def":60,"spa":63,"spd":65,"spe":23}},{"id":683,"n":"aromatisse","g":6,"t":"fairy","leg":false,"myt":false,"st":"final","s":{"hp":101,"atk":72,"def":72,"spa":99,"spd":89,"spe":29}},{"id":684,"n":"swirlix","g":6,"t":"fairy","leg":false,"myt":false,"st":"basic","s":{"hp":62,"atk":48,"def":66,"spa":59,"spd":57,"spe":49}},{"id":685,"n":"slurpuff","g":6,"t":"fairy","leg":false,"myt":false,"st":"final","s":{"hp":82,"atk":80,"def":86,"spa":85,"spd":75,"spe":72}},{"id":686,"n":"inkay","g":6,"t":"dark","leg":false,"myt":false,"st":"basic","s":{"hp":53,"atk":54,"def":53,"spa":37,"spd":46,"spe":45},"t2":"psychic"},{"id":687,"n":"malamar","g":6,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":86,"atk":92,"def":88,"spa":68,"spd":75,"spe":73},"t2":"psychic"},{"id":688,"n":"binacle","g":6,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":42,"atk":52,"def":67,"spa":39,"spd":56,"spe":50},"t2":"water"},{"id":689,"n":"barbaracle","g":6,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":72,"atk":105,"def":115,"spa":54,"spd":86,"spe":68},"t2":"water"},{"id":690,"n":"skrelp","g":6,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":60,"def":60,"spa":60,"spd":60,"spe":30},"t2":"water"},{"id":691,"n":"dragalge","g":6,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":75,"def":90,"spa":97,"spd":123,"spe":44},"t2":"dragon"},{"id":692,"n":"clauncher","g":6,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":53,"def":62,"spa":58,"spd":63,"spe":44}},{"id":693,"n":"clawitzer","g":6,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":71,"atk":73,"def":88,"spa":120,"spd":89,"spe":59}},{"id":694,"n":"helioptile","g":6,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":44,"atk":38,"def":33,"spa":61,"spd":43,"spe":70},"t2":"normal"},{"id":695,"n":"heliolisk","g":6,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":62,"atk":55,"def":52,"spa":109,"spd":94,"spe":109},"t2":"normal"},{"id":696,"n":"tyrunt","g":6,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":58,"atk":89,"def":77,"spa":45,"spd":45,"spe":48},"t2":"dragon"},{"id":697,"n":"tyrantrum","g":6,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":82,"atk":121,"def":119,"spa":69,"spd":59,"spe":71},"t2":"dragon"},{"id":698,"n":"amaura","g":6,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":77,"atk":59,"def":50,"spa":67,"spd":63,"spe":46},"t2":"ice"},{"id":699,"n":"aurorus","g":6,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":123,"atk":77,"def":72,"spa":99,"spd":92,"spe":58},"t2":"ice"},{"id":700,"n":"sylveon","g":6,"t":"fairy","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":65,"def":65,"spa":110,"spd":130,"spe":60}},{"id":701,"n":"hawlucha","g":6,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":78,"atk":92,"def":75,"spa":74,"spd":63,"spe":118},"t2":"flying"},{"id":702,"n":"dedenne","g":6,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":67,"atk":58,"def":57,"spa":81,"spd":67,"spe":101},"t2":"fairy"},{"id":703,"n":"carbink","g":6,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":50,"atk":50,"def":150,"spa":50,"spd":150,"spe":50},"t2":"fairy"},{"id":704,"n":"goomy","g":6,"t":"dragon","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":50,"def":35,"spa":55,"spd":75,"spe":40}},{"id":705,"n":"sliggoo","g":6,"t":"dragon","leg":false,"myt":false,"st":"mid","s":{"hp":68,"atk":75,"def":53,"spa":83,"spd":113,"spe":60}},{"id":706,"n":"goodra","g":6,"t":"dragon","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":100,"def":70,"spa":110,"spd":150,"spe":80}},{"id":707,"n":"klefki","g":6,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":57,"atk":80,"def":91,"spa":80,"spd":87,"spe":75},"t2":"fairy"},{"id":708,"n":"phantump","g":6,"t":"ghost","leg":false,"myt":false,"st":"basic","s":{"hp":43,"atk":70,"def":48,"spa":50,"spd":60,"spe":38},"t2":"grass"},{"id":709,"n":"trevenant","g":6,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":110,"def":76,"spa":65,"spd":82,"spe":56},"t2":"grass"},{"id":710,"n":"pumpkaboo","g":6,"t":"ghost","leg":false,"myt":false,"st":"basic","s":{"hp":49,"atk":66,"def":70,"spa":44,"spd":55,"spe":51},"t2":"grass"},{"id":711,"n":"gourgeist","g":6,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":90,"def":122,"spa":58,"spd":75,"spe":84},"t2":"grass"},{"id":712,"n":"bergmite","g":6,"t":"ice","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":69,"def":85,"spa":32,"spd":35,"spe":28}},{"id":713,"n":"avalugg","g":6,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":117,"def":184,"spa":44,"spd":46,"spe":28}},{"id":714,"n":"noibat","g":6,"t":"flying","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":30,"def":35,"spa":45,"spd":40,"spe":55},"t2":"dragon"},{"id":715,"n":"noivern","g":6,"t":"flying","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":70,"def":80,"spa":97,"spd":80,"spe":123},"t2":"dragon"},{"id":716,"n":"xerneas","g":6,"t":"fairy","leg":true,"myt":false,"st":"legendary","s":{"hp":126,"atk":131,"def":95,"spa":131,"spd":98,"spe":99}},{"id":717,"n":"yveltal","g":6,"t":"dark","leg":true,"myt":false,"st":"legendary","s":{"hp":126,"atk":131,"def":95,"spa":131,"spd":98,"spe":99},"t2":"flying"},{"id":718,"n":"zygarde","g":6,"t":"dragon","leg":true,"myt":false,"st":"legendary","s":{"hp":108,"atk":100,"def":121,"spa":81,"spd":95,"spe":95},"t2":"ground"},{"id":719,"n":"diancie","g":6,"t":"rock","leg":false,"myt":true,"st":"legendary","s":{"hp":50,"atk":100,"def":150,"spa":100,"spd":150,"spe":50},"t2":"fairy"},{"id":720,"n":"hoopa","g":6,"t":"psychic","leg":false,"myt":true,"st":"legendary","s":{"hp":80,"atk":110,"def":60,"spa":150,"spd":130,"spe":70},"t2":"ghost"},{"id":721,"n":"volcanion","g":6,"t":"fire","leg":false,"myt":true,"st":"legendary","s":{"hp":80,"atk":110,"def":120,"spa":130,"spd":90,"spe":70},"t2":"water"},{"id":722,"n":"rowlet","g":7,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":68,"atk":55,"def":55,"spa":50,"spd":50,"spe":42},"t2":"flying"},{"id":723,"n":"dartrix","g":7,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":78,"atk":75,"def":75,"spa":70,"spd":70,"spe":52},"t2":"flying"},{"id":724,"n":"decidueye","g":7,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":78,"atk":107,"def":75,"spa":100,"spd":100,"spe":70},"t2":"ghost"},{"id":725,"n":"litten","g":7,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":65,"def":40,"spa":60,"spd":40,"spe":70}},{"id":726,"n":"torracat","g":7,"t":"fire","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":85,"def":50,"spa":80,"spd":50,"spe":90}},{"id":727,"n":"incineroar","g":7,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":115,"def":90,"spa":80,"spd":90,"spe":60},"t2":"dark"},{"id":728,"n":"popplio","g":7,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":54,"def":54,"spa":66,"spd":56,"spe":40}},{"id":729,"n":"brionne","g":7,"t":"water","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":69,"def":69,"spa":91,"spd":81,"spe":50}},{"id":730,"n":"primarina","g":7,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":74,"def":74,"spa":126,"spd":116,"spe":60},"t2":"fairy"},{"id":731,"n":"pikipek","g":7,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":75,"def":30,"spa":30,"spd":30,"spe":65},"t2":"flying"},{"id":732,"n":"trumbeak","g":7,"t":"normal","leg":false,"myt":false,"st":"mid","s":{"hp":55,"atk":85,"def":50,"spa":40,"spd":50,"spe":75},"t2":"flying"},{"id":733,"n":"toucannon","g":7,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":120,"def":75,"spa":75,"spd":75,"spe":60},"t2":"flying"},{"id":734,"n":"yungoos","g":7,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":48,"atk":70,"def":30,"spa":30,"spd":30,"spe":45}},{"id":735,"n":"gumshoos","g":7,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":88,"atk":110,"def":60,"spa":55,"spd":60,"spe":45}},{"id":736,"n":"grubbin","g":7,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":47,"atk":62,"def":45,"spa":55,"spd":45,"spe":46}},{"id":737,"n":"charjabug","g":7,"t":"bug","leg":false,"myt":false,"st":"mid","s":{"hp":57,"atk":82,"def":95,"spa":55,"spd":75,"spe":36},"t2":"electric"},{"id":738,"n":"vikavolt","g":7,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":77,"atk":70,"def":90,"spa":145,"spd":75,"spe":43},"t2":"electric"},{"id":739,"n":"crabrawler","g":7,"t":"fighting","leg":false,"myt":false,"st":"basic","s":{"hp":47,"atk":82,"def":57,"spa":42,"spd":47,"spe":63}},{"id":740,"n":"crabominable","g":7,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":97,"atk":132,"def":77,"spa":62,"spd":67,"spe":43},"t2":"ice"},{"id":741,"n":"oricorio","g":7,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":70,"def":70,"spa":98,"spd":70,"spe":93},"t2":"flying"},{"id":742,"n":"cutiefly","g":7,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":45,"def":40,"spa":55,"spd":40,"spe":84},"t2":"fairy"},{"id":743,"n":"ribombee","g":7,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":55,"def":60,"spa":95,"spd":70,"spe":124},"t2":"fairy"},{"id":744,"n":"rockruff","g":7,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":65,"def":40,"spa":30,"spd":40,"spe":60}},{"id":745,"n":"lycanroc","g":7,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":115,"def":65,"spa":55,"spd":65,"spe":112}},{"id":746,"n":"wishiwashi","g":7,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":45,"atk":20,"def":20,"spa":25,"spd":25,"spe":40}},{"id":747,"n":"mareanie","g":7,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":53,"def":62,"spa":43,"spd":52,"spe":45},"t2":"water"},{"id":748,"n":"toxapex","g":7,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":50,"atk":63,"def":152,"spa":53,"spd":142,"spe":35},"t2":"water"},{"id":749,"n":"mudbray","g":7,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":70,"atk":100,"def":70,"spa":45,"spd":55,"spe":45}},{"id":750,"n":"mudsdale","g":7,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":125,"def":100,"spa":55,"spd":85,"spe":35}},{"id":751,"n":"dewpider","g":7,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":38,"atk":40,"def":52,"spa":40,"spd":72,"spe":27},"t2":"bug"},{"id":752,"n":"araquanid","g":7,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":68,"atk":70,"def":92,"spa":50,"spd":132,"spe":42},"t2":"bug"},{"id":753,"n":"fomantis","g":7,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":55,"def":35,"spa":50,"spd":35,"spe":35}},{"id":754,"n":"lurantis","g":7,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":105,"def":90,"spa":80,"spd":90,"spe":45}},{"id":755,"n":"morelull","g":7,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":35,"def":55,"spa":65,"spd":75,"spe":15},"t2":"fairy"},{"id":756,"n":"shiinotic","g":7,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":45,"def":80,"spa":90,"spd":100,"spe":30},"t2":"fairy"},{"id":757,"n":"salandit","g":7,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":48,"atk":44,"def":40,"spa":71,"spd":40,"spe":77},"t2":"fire"},{"id":758,"n":"salazzle","g":7,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":68,"atk":64,"def":60,"spa":111,"spd":60,"spe":117},"t2":"fire"},{"id":759,"n":"stufful","g":7,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":70,"atk":75,"def":50,"spa":45,"spd":50,"spe":50},"t2":"fighting"},{"id":760,"n":"bewear","g":7,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":120,"atk":125,"def":80,"spa":55,"spd":60,"spe":60},"t2":"fighting"},{"id":761,"n":"bounsweet","g":7,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":42,"atk":30,"def":38,"spa":30,"spd":38,"spe":32}},{"id":762,"n":"steenee","g":7,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":52,"atk":40,"def":48,"spa":40,"spd":48,"spe":62}},{"id":763,"n":"tsareena","g":7,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":72,"atk":120,"def":98,"spa":50,"spd":98,"spe":72}},{"id":764,"n":"comfey","g":7,"t":"fairy","leg":false,"myt":false,"st":"final","s":{"hp":51,"atk":52,"def":90,"spa":82,"spd":110,"spe":100}},{"id":765,"n":"oranguru","g":7,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":60,"def":80,"spa":90,"spd":110,"spe":60},"t2":"psychic"},{"id":766,"n":"passimian","g":7,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":120,"def":90,"spa":40,"spd":60,"spe":80}},{"id":767,"n":"wimpod","g":7,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":25,"atk":35,"def":40,"spa":20,"spd":30,"spe":80},"t2":"water"},{"id":768,"n":"golisopod","g":7,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":125,"def":140,"spa":60,"spd":90,"spe":40},"t2":"water"},{"id":769,"n":"sandygast","g":7,"t":"ghost","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":55,"def":80,"spa":70,"spd":45,"spe":15},"t2":"ground"},{"id":770,"n":"palossand","g":7,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":75,"def":110,"spa":100,"spd":75,"spe":35},"t2":"ground"},{"id":771,"n":"pyukumuku","g":7,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":55,"atk":60,"def":130,"spa":30,"spd":130,"spe":5}},{"id":772,"n":"type-null","g":7,"t":"normal","leg":true,"myt":false,"st":"legendary","s":{"hp":95,"atk":95,"def":95,"spa":95,"spd":95,"spe":59}},{"id":773,"n":"silvally","g":7,"t":"normal","leg":true,"myt":false,"st":"legendary","s":{"hp":95,"atk":95,"def":95,"spa":95,"spd":95,"spe":95}},{"id":774,"n":"minior","g":7,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":60,"def":100,"spa":60,"spd":100,"spe":60},"t2":"flying"},{"id":775,"n":"komala","g":7,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":115,"def":65,"spa":75,"spd":95,"spe":65}},{"id":776,"n":"turtonator","g":7,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":78,"def":135,"spa":91,"spd":85,"spe":36},"t2":"dragon"},{"id":777,"n":"togedemaru","g":7,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":98,"def":63,"spa":40,"spd":73,"spe":96},"t2":"steel"},{"id":778,"n":"mimikyu","g":7,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":55,"atk":90,"def":80,"spa":50,"spd":105,"spe":96},"t2":"fairy"},{"id":779,"n":"bruxish","g":7,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":68,"atk":105,"def":70,"spa":70,"spd":70,"spe":92},"t2":"psychic"},{"id":780,"n":"drampa","g":7,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":78,"atk":60,"def":85,"spa":135,"spd":91,"spe":36},"t2":"dragon"},{"id":781,"n":"dhelmise","g":7,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":131,"def":100,"spa":86,"spd":90,"spe":40},"t2":"grass"},{"id":782,"n":"jangmo-o","g":7,"t":"dragon","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":55,"def":65,"spa":45,"spd":45,"spe":45}},{"id":783,"n":"hakamo-o","g":7,"t":"dragon","leg":false,"myt":false,"st":"mid","s":{"hp":55,"atk":75,"def":90,"spa":65,"spd":70,"spe":65},"t2":"fighting"},{"id":784,"n":"kommo-o","g":7,"t":"dragon","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":110,"def":125,"spa":100,"spd":105,"spe":85},"t2":"fighting"},{"id":785,"n":"tapu-koko","g":7,"t":"electric","leg":true,"myt":false,"st":"legendary","s":{"hp":70,"atk":115,"def":85,"spa":95,"spd":75,"spe":130},"t2":"fairy"},{"id":786,"n":"tapu-lele","g":7,"t":"psychic","leg":true,"myt":false,"st":"legendary","s":{"hp":70,"atk":85,"def":75,"spa":130,"spd":115,"spe":95},"t2":"fairy"},{"id":787,"n":"tapu-bulu","g":7,"t":"grass","leg":true,"myt":false,"st":"legendary","s":{"hp":70,"atk":130,"def":115,"spa":85,"spd":95,"spe":75},"t2":"fairy"},{"id":788,"n":"tapu-fini","g":7,"t":"water","leg":true,"myt":false,"st":"legendary","s":{"hp":70,"atk":75,"def":115,"spa":95,"spd":130,"spe":85},"t2":"fairy"},{"id":789,"n":"cosmog","g":7,"t":"psychic","leg":true,"myt":false,"st":"legendary","s":{"hp":43,"atk":29,"def":31,"spa":29,"spd":31,"spe":37}},{"id":790,"n":"cosmoem","g":7,"t":"psychic","leg":true,"myt":false,"st":"legendary","s":{"hp":43,"atk":29,"def":131,"spa":29,"spd":131,"spe":37}},{"id":791,"n":"solgaleo","g":7,"t":"psychic","leg":true,"myt":false,"st":"legendary","s":{"hp":137,"atk":137,"def":107,"spa":113,"spd":89,"spe":97},"t2":"steel"},{"id":792,"n":"lunala","g":7,"t":"psychic","leg":true,"myt":false,"st":"legendary","s":{"hp":137,"atk":113,"def":89,"spa":137,"spd":107,"spe":97},"t2":"ghost"},{"id":793,"n":"nihilego","g":7,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":109,"atk":53,"def":47,"spa":127,"spd":131,"spe":103},"t2":"poison"},{"id":794,"n":"buzzwole","g":7,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":107,"atk":139,"def":139,"spa":53,"spd":53,"spe":79},"t2":"fighting"},{"id":795,"n":"pheromosa","g":7,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":71,"atk":137,"def":37,"spa":137,"spd":37,"spe":151},"t2":"fighting"},{"id":796,"n":"xurkitree","g":7,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":83,"atk":89,"def":71,"spa":173,"spd":71,"spe":83}},{"id":797,"n":"celesteela","g":7,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":97,"atk":101,"def":103,"spa":107,"spd":101,"spe":61},"t2":"flying"},{"id":798,"n":"kartana","g":7,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":59,"atk":181,"def":131,"spa":59,"spd":31,"spe":109},"t2":"steel"},{"id":799,"n":"guzzlord","g":7,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":223,"atk":101,"def":53,"spa":97,"spd":53,"spe":43},"t2":"dragon"},{"id":800,"n":"necrozma","g":7,"t":"psychic","leg":true,"myt":false,"st":"legendary","s":{"hp":97,"atk":107,"def":101,"spa":127,"spd":89,"spe":79}},{"id":801,"n":"magearna","g":7,"t":"steel","leg":false,"myt":true,"st":"legendary","s":{"hp":80,"atk":95,"def":115,"spa":130,"spd":115,"spe":65},"t2":"fairy"},{"id":802,"n":"marshadow","g":7,"t":"fighting","leg":false,"myt":true,"st":"legendary","s":{"hp":90,"atk":125,"def":80,"spa":90,"spd":90,"spe":125},"t2":"ghost"},{"id":803,"n":"poipole","g":7,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":67,"atk":73,"def":67,"spa":73,"spd":67,"spe":73}},{"id":804,"n":"naganadel","g":7,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":73,"atk":73,"def":73,"spa":127,"spd":73,"spe":121},"t2":"dragon"},{"id":805,"n":"stakataka","g":7,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":61,"atk":131,"def":211,"spa":53,"spd":101,"spe":13},"t2":"steel"},{"id":806,"n":"blacephalon","g":7,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":53,"atk":127,"def":53,"spa":151,"spd":79,"spe":107},"t2":"ghost"},{"id":807,"n":"zeraora","g":7,"t":"electric","leg":false,"myt":true,"st":"legendary","s":{"hp":88,"atk":112,"def":75,"spa":102,"spd":80,"spe":143}},{"id":808,"n":"meltan","g":7,"t":"steel","leg":false,"myt":true,"st":"legendary","s":{"hp":46,"atk":65,"def":65,"spa":55,"spd":35,"spe":34}},{"id":809,"n":"melmetal","g":7,"t":"steel","leg":false,"myt":true,"st":"legendary","s":{"hp":135,"atk":143,"def":143,"spa":80,"spd":65,"spe":34}},{"id":810,"n":"grookey","g":8,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":65,"def":50,"spa":40,"spd":40,"spe":65}},{"id":811,"n":"thwackey","g":8,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":70,"atk":85,"def":70,"spa":55,"spd":60,"spe":80}},{"id":812,"n":"rillaboom","g":8,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":125,"def":90,"spa":60,"spd":70,"spe":85}},{"id":813,"n":"scorbunny","g":8,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":71,"def":40,"spa":40,"spd":40,"spe":69}},{"id":814,"n":"raboot","g":8,"t":"fire","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":86,"def":60,"spa":55,"spd":60,"spe":94}},{"id":815,"n":"cinderace","g":8,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":116,"def":75,"spa":65,"spd":75,"spe":119}},{"id":816,"n":"sobble","g":8,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":40,"def":40,"spa":70,"spd":40,"spe":70}},{"id":817,"n":"drizzile","g":8,"t":"water","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":60,"def":55,"spa":95,"spd":55,"spe":90}},{"id":818,"n":"inteleon","g":8,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":85,"def":65,"spa":125,"spd":65,"spe":120}},{"id":819,"n":"skwovet","g":8,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":70,"atk":55,"def":55,"spa":35,"spd":35,"spe":25}},{"id":820,"n":"greedent","g":8,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":120,"atk":95,"def":95,"spa":55,"spd":75,"spe":20}},{"id":821,"n":"rookidee","g":8,"t":"flying","leg":false,"myt":false,"st":"basic","s":{"hp":38,"atk":47,"def":35,"spa":33,"spd":35,"spe":57}},{"id":822,"n":"corvisquire","g":8,"t":"flying","leg":false,"myt":false,"st":"mid","s":{"hp":68,"atk":67,"def":55,"spa":43,"spd":55,"spe":77}},{"id":823,"n":"corviknight","g":8,"t":"flying","leg":false,"myt":false,"st":"final","s":{"hp":98,"atk":87,"def":105,"spa":53,"spd":85,"spe":67},"t2":"steel"},{"id":824,"n":"blipbug","g":8,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":25,"atk":20,"def":20,"spa":25,"spd":45,"spe":45}},{"id":825,"n":"dottler","g":8,"t":"bug","leg":false,"myt":false,"st":"mid","s":{"hp":50,"atk":35,"def":80,"spa":50,"spd":90,"spe":30},"t2":"psychic"},{"id":826,"n":"orbeetle","g":8,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":45,"def":110,"spa":80,"spd":120,"spe":90},"t2":"psychic"},{"id":827,"n":"nickit","g":8,"t":"dark","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":28,"def":28,"spa":47,"spd":52,"spe":50}},{"id":828,"n":"thievul","g":8,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":58,"def":58,"spa":87,"spd":92,"spe":90}},{"id":829,"n":"gossifleur","g":8,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":40,"def":60,"spa":40,"spd":60,"spe":10}},{"id":830,"n":"eldegoss","g":8,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":50,"def":90,"spa":80,"spd":120,"spe":60}},{"id":831,"n":"wooloo","g":8,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":42,"atk":40,"def":55,"spa":40,"spd":45,"spe":48}},{"id":832,"n":"dubwool","g":8,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":72,"atk":80,"def":100,"spa":60,"spd":90,"spe":88}},{"id":833,"n":"chewtle","g":8,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":64,"def":50,"spa":38,"spd":38,"spe":44}},{"id":834,"n":"drednaw","g":8,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":115,"def":90,"spa":48,"spd":68,"spe":74},"t2":"rock"},{"id":835,"n":"yamper","g":8,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":59,"atk":45,"def":50,"spa":40,"spd":50,"spe":26}},{"id":836,"n":"boltund","g":8,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":69,"atk":90,"def":60,"spa":90,"spd":60,"spe":121}},{"id":837,"n":"rolycoly","g":8,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":40,"def":50,"spa":40,"spd":50,"spe":30}},{"id":838,"n":"carkol","g":8,"t":"rock","leg":false,"myt":false,"st":"mid","s":{"hp":80,"atk":60,"def":90,"spa":60,"spd":70,"spe":50},"t2":"fire"},{"id":839,"n":"coalossal","g":8,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":110,"atk":80,"def":120,"spa":80,"spd":90,"spe":30},"t2":"fire"},{"id":840,"n":"applin","g":8,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":40,"def":80,"spa":40,"spd":40,"spe":20},"t2":"dragon"},{"id":841,"n":"flapple","g":8,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":110,"def":80,"spa":95,"spd":60,"spe":70},"t2":"dragon"},{"id":842,"n":"appletun","g":8,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":110,"atk":85,"def":80,"spa":100,"spd":80,"spe":30},"t2":"dragon"},{"id":843,"n":"silicobra","g":8,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":52,"atk":57,"def":75,"spa":35,"spd":50,"spe":46}},{"id":844,"n":"sandaconda","g":8,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":72,"atk":107,"def":125,"spa":65,"spd":70,"spe":71}},{"id":845,"n":"cramorant","g":8,"t":"flying","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":85,"def":55,"spa":85,"spd":95,"spe":85},"t2":"water"},{"id":846,"n":"arrokuda","g":8,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":41,"atk":63,"def":40,"spa":40,"spd":30,"spe":66}},{"id":847,"n":"barraskewda","g":8,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":61,"atk":123,"def":60,"spa":60,"spd":50,"spe":136}},{"id":848,"n":"toxel","g":8,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":38,"def":35,"spa":54,"spd":35,"spe":40},"t2":"poison"},{"id":849,"n":"toxtricity","g":8,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":98,"def":70,"spa":114,"spd":70,"spe":75},"t2":"poison"},{"id":850,"n":"sizzlipede","g":8,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":65,"def":45,"spa":50,"spd":50,"spe":45},"t2":"bug"},{"id":851,"n":"centiskorch","g":8,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":115,"def":65,"spa":90,"spd":90,"spe":65},"t2":"bug"},{"id":852,"n":"clobbopus","g":8,"t":"fighting","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":68,"def":60,"spa":50,"spd":50,"spe":32}},{"id":853,"n":"grapploct","g":8,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":118,"def":90,"spa":70,"spd":80,"spe":42}},{"id":854,"n":"sinistea","g":8,"t":"ghost","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":45,"def":45,"spa":74,"spd":54,"spe":50}},{"id":855,"n":"polteageist","g":8,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":65,"def":65,"spa":134,"spd":114,"spe":70}},{"id":856,"n":"hatenna","g":8,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":42,"atk":30,"def":45,"spa":56,"spd":53,"spe":39}},{"id":857,"n":"hattrem","g":8,"t":"psychic","leg":false,"myt":false,"st":"mid","s":{"hp":57,"atk":40,"def":65,"spa":86,"spd":73,"spe":49}},{"id":858,"n":"hatterene","g":8,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":57,"atk":90,"def":95,"spa":136,"spd":103,"spe":29},"t2":"fairy"},{"id":859,"n":"impidimp","g":8,"t":"dark","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":45,"def":30,"spa":55,"spd":40,"spe":50},"t2":"fairy"},{"id":860,"n":"morgrem","g":8,"t":"dark","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":60,"def":45,"spa":75,"spd":55,"spe":70},"t2":"fairy"},{"id":861,"n":"grimmsnarl","g":8,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":120,"def":65,"spa":95,"spd":75,"spe":60},"t2":"fairy"},{"id":862,"n":"obstagoon","g":8,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":93,"atk":90,"def":101,"spa":60,"spd":81,"spe":95},"t2":"normal"},{"id":863,"n":"perrserker","g":8,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":110,"def":100,"spa":50,"spd":60,"spe":50}},{"id":864,"n":"cursola","g":8,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":95,"def":50,"spa":145,"spd":130,"spe":30}},{"id":865,"n":"sirfetchd","g":8,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":62,"atk":135,"def":95,"spa":68,"spd":82,"spe":65}},{"id":866,"n":"mr-rime","g":8,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":85,"def":75,"spa":110,"spd":100,"spe":70},"t2":"psychic"},{"id":867,"n":"runerigus","g":8,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":58,"atk":95,"def":145,"spa":50,"spd":105,"spe":30},"t2":"ghost"},{"id":868,"n":"milcery","g":8,"t":"fairy","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":40,"def":40,"spa":50,"spd":61,"spe":34}},{"id":869,"n":"alcremie","g":8,"t":"fairy","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":60,"def":75,"spa":110,"spd":121,"spe":64}},{"id":870,"n":"falinks","g":8,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":100,"def":100,"spa":70,"spd":60,"spe":75}},{"id":871,"n":"pincurchin","g":8,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":48,"atk":101,"def":95,"spa":91,"spd":85,"spe":15}},{"id":872,"n":"snom","g":8,"t":"ice","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":25,"def":35,"spa":45,"spd":30,"spe":20},"t2":"bug"},{"id":873,"n":"frosmoth","g":8,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":65,"def":60,"spa":125,"spd":90,"spe":65},"t2":"bug"},{"id":874,"n":"stonjourner","g":8,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":125,"def":135,"spa":20,"spd":20,"spe":70}},{"id":875,"n":"eiscue","g":8,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":80,"def":110,"spa":65,"spd":90,"spe":50}},{"id":876,"n":"indeedee","g":8,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":65,"def":55,"spa":105,"spd":95,"spe":95},"t2":"normal"},{"id":877,"n":"morpeko","g":8,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":58,"atk":95,"def":58,"spa":70,"spd":58,"spe":97},"t2":"dark"},{"id":878,"n":"cufant","g":8,"t":"steel","leg":false,"myt":false,"st":"basic","s":{"hp":72,"atk":80,"def":49,"spa":40,"spd":49,"spe":40}},{"id":879,"n":"copperajah","g":8,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":122,"atk":130,"def":69,"spa":80,"spd":69,"spe":30}},{"id":880,"n":"dracozolt","g":8,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":100,"def":90,"spa":80,"spd":70,"spe":75},"t2":"dragon"},{"id":881,"n":"arctozolt","g":8,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":100,"def":90,"spa":90,"spd":80,"spe":55},"t2":"ice"},{"id":882,"n":"dracovish","g":8,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":90,"def":100,"spa":70,"spd":80,"spe":75},"t2":"dragon"},{"id":883,"n":"arctovish","g":8,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":90,"def":100,"spa":80,"spd":90,"spe":55},"t2":"ice"},{"id":884,"n":"duraludon","g":8,"t":"steel","leg":false,"myt":false,"st":"basic","s":{"hp":70,"atk":95,"def":115,"spa":120,"spd":50,"spe":85},"t2":"dragon"},{"id":885,"n":"dreepy","g":8,"t":"dragon","leg":false,"myt":false,"st":"basic","s":{"hp":28,"atk":60,"def":30,"spa":40,"spd":30,"spe":82},"t2":"ghost"},{"id":886,"n":"drakloak","g":8,"t":"dragon","leg":false,"myt":false,"st":"mid","s":{"hp":68,"atk":80,"def":50,"spa":60,"spd":50,"spe":102},"t2":"ghost"},{"id":887,"n":"dragapult","g":8,"t":"dragon","leg":false,"myt":false,"st":"final","s":{"hp":88,"atk":120,"def":75,"spa":100,"spd":75,"spe":142},"t2":"ghost"},{"id":888,"n":"zacian","g":8,"t":"fairy","leg":true,"myt":false,"st":"legendary","s":{"hp":92,"atk":120,"def":115,"spa":80,"spd":115,"spe":138}},{"id":889,"n":"zamazenta","g":8,"t":"fighting","leg":true,"myt":false,"st":"legendary","s":{"hp":92,"atk":120,"def":115,"spa":80,"spd":115,"spe":138}},{"id":890,"n":"eternatus","g":8,"t":"poison","leg":true,"myt":false,"st":"legendary","s":{"hp":140,"atk":85,"def":95,"spa":145,"spd":95,"spe":130},"t2":"dragon"},{"id":891,"n":"kubfu","g":8,"t":"fighting","leg":true,"myt":false,"st":"legendary","s":{"hp":60,"atk":90,"def":60,"spa":53,"spd":50,"spe":72}},{"id":892,"n":"urshifu","g":8,"t":"fighting","leg":true,"myt":false,"st":"legendary","s":{"hp":100,"atk":130,"def":100,"spa":63,"spd":60,"spe":97},"t2":"dark"},{"id":893,"n":"zarude","g":8,"t":"dark","leg":false,"myt":true,"st":"legendary","s":{"hp":105,"atk":120,"def":105,"spa":70,"spd":95,"spe":105},"t2":"grass"},{"id":894,"n":"regieleki","g":8,"t":"electric","leg":true,"myt":false,"st":"legendary","s":{"hp":80,"atk":100,"def":50,"spa":100,"spd":50,"spe":200}},{"id":895,"n":"regidrago","g":8,"t":"dragon","leg":true,"myt":false,"st":"legendary","s":{"hp":200,"atk":100,"def":50,"spa":100,"spd":50,"spe":80}},{"id":896,"n":"glastrier","g":8,"t":"ice","leg":true,"myt":false,"st":"legendary","s":{"hp":100,"atk":145,"def":130,"spa":65,"spd":110,"spe":30}},{"id":897,"n":"spectrier","g":8,"t":"ghost","leg":true,"myt":false,"st":"legendary","s":{"hp":100,"atk":65,"def":60,"spa":145,"spd":80,"spe":130}},{"id":898,"n":"calyrex","g":8,"t":"psychic","leg":true,"myt":false,"st":"legendary","s":{"hp":100,"atk":80,"def":80,"spa":80,"spd":80,"spe":80},"t2":"grass"},{"id":899,"n":"wyrdeer","g":8,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":103,"atk":105,"def":72,"spa":105,"spd":75,"spe":65},"t2":"psychic"},{"id":900,"n":"kleavor","g":8,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":135,"def":95,"spa":45,"spd":70,"spe":85},"t2":"rock"},{"id":901,"n":"ursaluna","g":8,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":130,"atk":140,"def":105,"spa":45,"spd":80,"spe":50},"t2":"normal"},{"id":902,"n":"basculegion","g":8,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":120,"atk":112,"def":65,"spa":80,"spd":75,"spe":78},"t2":"ghost"},{"id":903,"n":"sneasler","g":8,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":130,"def":60,"spa":40,"spd":80,"spe":120},"t2":"poison"},{"id":904,"n":"overqwil","g":8,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":115,"def":95,"spa":65,"spd":65,"spe":85},"t2":"poison"},{"id":905,"n":"enamorus","g":8,"t":"fairy","leg":true,"myt":false,"st":"legendary","s":{"hp":74,"atk":115,"def":70,"spa":135,"spd":80,"spe":106},"t2":"flying"},{"id":906,"n":"sprigatito","g":9,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":61,"def":54,"spa":45,"spd":45,"spe":65}},{"id":907,"n":"floragato","g":9,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":61,"atk":80,"def":63,"spa":60,"spd":63,"spe":83}},{"id":908,"n":"meowscarada","g":9,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":76,"atk":110,"def":70,"spa":81,"spd":70,"spe":123},"t2":"dark"},{"id":909,"n":"fuecoco","g":9,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":67,"atk":45,"def":59,"spa":63,"spd":40,"spe":36}},{"id":910,"n":"crocalor","g":9,"t":"fire","leg":false,"myt":false,"st":"mid","s":{"hp":81,"atk":55,"def":78,"spa":90,"spd":58,"spe":49}},{"id":911,"n":"skeledirge","g":9,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":104,"atk":75,"def":100,"spa":110,"spd":75,"spe":66},"t2":"ghost"},{"id":912,"n":"quaxly","g":9,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":65,"def":45,"spa":50,"spd":45,"spe":50}},{"id":913,"n":"quaxwell","g":9,"t":"water","leg":false,"myt":false,"st":"mid","s":{"hp":70,"atk":85,"def":65,"spa":65,"spd":60,"spe":65}},{"id":914,"n":"quaquaval","g":9,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":120,"def":80,"spa":85,"spd":75,"spe":85},"t2":"fighting"},{"id":915,"n":"lechonk","g":9,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":54,"atk":45,"def":40,"spa":35,"spd":45,"spe":35}},{"id":916,"n":"oinkologne","g":9,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":110,"atk":100,"def":75,"spa":59,"spd":80,"spe":65}},{"id":917,"n":"tarountula","g":9,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":35,"atk":41,"def":45,"spa":29,"spd":40,"spe":20}},{"id":918,"n":"spidops","g":9,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":60,"atk":79,"def":92,"spa":52,"spd":86,"spe":35}},{"id":919,"n":"nymble","g":9,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":33,"atk":46,"def":40,"spa":21,"spd":25,"spe":45}},{"id":920,"n":"lokix","g":9,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":71,"atk":102,"def":78,"spa":52,"spd":55,"spe":92},"t2":"dark"},{"id":921,"n":"pawmi","g":9,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":50,"def":20,"spa":40,"spd":25,"spe":60}},{"id":922,"n":"pawmo","g":9,"t":"electric","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":75,"def":40,"spa":50,"spd":40,"spe":85},"t2":"fighting"},{"id":923,"n":"pawmot","g":9,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":115,"def":70,"spa":70,"spd":60,"spe":105},"t2":"fighting"},{"id":924,"n":"tandemaus","g":9,"t":"normal","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":50,"def":45,"spa":40,"spd":45,"spe":75}},{"id":925,"n":"maushold","g":9,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":74,"atk":75,"def":70,"spa":65,"spd":75,"spe":111}},{"id":926,"n":"fidough","g":9,"t":"fairy","leg":false,"myt":false,"st":"basic","s":{"hp":37,"atk":55,"def":70,"spa":30,"spd":55,"spe":65}},{"id":927,"n":"dachsbun","g":9,"t":"fairy","leg":false,"myt":false,"st":"final","s":{"hp":57,"atk":80,"def":115,"spa":50,"spd":80,"spe":95}},{"id":928,"n":"smoliv","g":9,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":41,"atk":35,"def":45,"spa":58,"spd":51,"spe":30},"t2":"normal"},{"id":929,"n":"dolliv","g":9,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":52,"atk":53,"def":60,"spa":78,"spd":78,"spe":33},"t2":"normal"},{"id":930,"n":"arboliva","g":9,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":78,"atk":69,"def":90,"spa":125,"spd":109,"spe":39},"t2":"normal"},{"id":931,"n":"squawkabilly","g":9,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":82,"atk":96,"def":51,"spa":45,"spd":51,"spe":92},"t2":"flying"},{"id":932,"n":"nacli","g":9,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":55,"atk":55,"def":75,"spa":35,"spd":35,"spe":25}},{"id":933,"n":"naclstack","g":9,"t":"rock","leg":false,"myt":false,"st":"mid","s":{"hp":60,"atk":60,"def":100,"spa":35,"spd":65,"spe":35}},{"id":934,"n":"garganacl","g":9,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":100,"def":130,"spa":45,"spd":90,"spe":35}},{"id":935,"n":"charcadet","g":9,"t":"fire","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":50,"def":40,"spa":50,"spd":40,"spe":35}},{"id":936,"n":"armarouge","g":9,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":60,"def":100,"spa":125,"spd":80,"spe":75},"t2":"psychic"},{"id":937,"n":"ceruledge","g":9,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":125,"def":80,"spa":60,"spd":100,"spe":85},"t2":"ghost"},{"id":938,"n":"tadbulb","g":9,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":61,"atk":31,"def":41,"spa":59,"spd":35,"spe":45}},{"id":939,"n":"bellibolt","g":9,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":109,"atk":64,"def":91,"spa":103,"spd":83,"spe":45}},{"id":940,"n":"wattrel","g":9,"t":"electric","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":40,"def":35,"spa":55,"spd":40,"spe":70},"t2":"flying"},{"id":941,"n":"kilowattrel","g":9,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":70,"def":60,"spa":105,"spd":60,"spe":125},"t2":"flying"},{"id":942,"n":"maschiff","g":9,"t":"dark","leg":false,"myt":false,"st":"basic","s":{"hp":60,"atk":78,"def":60,"spa":40,"spd":51,"spe":51}},{"id":943,"n":"mabosstiff","g":9,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":120,"def":90,"spa":60,"spd":70,"spe":85}},{"id":944,"n":"shroodle","g":9,"t":"poison","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":65,"def":35,"spa":40,"spd":35,"spe":75},"t2":"normal"},{"id":945,"n":"grafaiai","g":9,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":63,"atk":95,"def":65,"spa":80,"spd":72,"spe":110},"t2":"normal"},{"id":946,"n":"bramblin","g":9,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":65,"def":30,"spa":45,"spd":35,"spe":60},"t2":"ghost"},{"id":947,"n":"brambleghast","g":9,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":55,"atk":115,"def":70,"spa":80,"spd":70,"spe":90},"t2":"ghost"},{"id":948,"n":"toedscool","g":9,"t":"ground","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":40,"def":35,"spa":50,"spd":100,"spe":70},"t2":"grass"},{"id":949,"n":"toedscruel","g":9,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":70,"def":65,"spa":80,"spd":120,"spe":100},"t2":"grass"},{"id":950,"n":"klawf","g":9,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":100,"def":115,"spa":35,"spd":55,"spe":75}},{"id":951,"n":"capsakid","g":9,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":62,"def":40,"spa":62,"spd":40,"spe":50}},{"id":952,"n":"scovillain","g":9,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":65,"atk":108,"def":65,"spa":108,"spd":65,"spe":75},"t2":"fire"},{"id":953,"n":"rellor","g":9,"t":"bug","leg":false,"myt":false,"st":"basic","s":{"hp":41,"atk":50,"def":60,"spa":31,"spd":58,"spe":30}},{"id":954,"n":"rabsca","g":9,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":75,"atk":50,"def":85,"spa":115,"spd":100,"spe":45},"t2":"psychic"},{"id":955,"n":"flittle","g":9,"t":"psychic","leg":false,"myt":false,"st":"basic","s":{"hp":30,"atk":35,"def":30,"spa":55,"spd":30,"spe":75}},{"id":956,"n":"espathra","g":9,"t":"psychic","leg":false,"myt":false,"st":"final","s":{"hp":95,"atk":60,"def":60,"spa":101,"spd":60,"spe":105}},{"id":957,"n":"tinkatink","g":9,"t":"fairy","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":45,"def":45,"spa":35,"spd":64,"spe":58},"t2":"steel"},{"id":958,"n":"tinkatuff","g":9,"t":"fairy","leg":false,"myt":false,"st":"mid","s":{"hp":65,"atk":55,"def":55,"spa":45,"spd":82,"spe":78},"t2":"steel"},{"id":959,"n":"tinkaton","g":9,"t":"fairy","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":75,"def":77,"spa":70,"spd":105,"spe":94},"t2":"steel"},{"id":960,"n":"wiglett","g":9,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":10,"atk":55,"def":25,"spa":35,"spd":25,"spe":95}},{"id":961,"n":"wugtrio","g":9,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":35,"atk":100,"def":50,"spa":50,"spd":70,"spe":120}},{"id":962,"n":"bombirdier","g":9,"t":"flying","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":103,"def":85,"spa":60,"spd":85,"spe":82},"t2":"dark"},{"id":963,"n":"finizen","g":9,"t":"water","leg":false,"myt":false,"st":"basic","s":{"hp":70,"atk":45,"def":40,"spa":45,"spd":40,"spe":75}},{"id":964,"n":"palafin","g":9,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":70,"def":72,"spa":53,"spd":62,"spe":100}},{"id":965,"n":"varoom","g":9,"t":"steel","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":70,"def":63,"spa":30,"spd":45,"spe":47},"t2":"poison"},{"id":966,"n":"revavroom","g":9,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":119,"def":90,"spa":54,"spd":67,"spe":90},"t2":"poison"},{"id":967,"n":"cyclizar","g":9,"t":"dragon","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":95,"def":65,"spa":85,"spd":65,"spe":121},"t2":"normal"},{"id":968,"n":"orthworm","g":9,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":70,"atk":85,"def":145,"spa":60,"spd":55,"spe":65}},{"id":969,"n":"glimmet","g":9,"t":"rock","leg":false,"myt":false,"st":"basic","s":{"hp":48,"atk":35,"def":42,"spa":105,"spd":60,"spe":60},"t2":"poison"},{"id":970,"n":"glimmora","g":9,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":83,"atk":55,"def":90,"spa":130,"spd":81,"spe":86},"t2":"poison"},{"id":971,"n":"greavard","g":9,"t":"ghost","leg":false,"myt":false,"st":"basic","s":{"hp":50,"atk":61,"def":60,"spa":30,"spd":55,"spe":34}},{"id":972,"n":"houndstone","g":9,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":72,"atk":101,"def":100,"spa":50,"spd":97,"spe":68}},{"id":973,"n":"flamigo","g":9,"t":"flying","leg":false,"myt":false,"st":"final","s":{"hp":82,"atk":115,"def":74,"spa":75,"spd":64,"spe":90},"t2":"fighting"},{"id":974,"n":"cetoddle","g":9,"t":"ice","leg":false,"myt":false,"st":"basic","s":{"hp":108,"atk":68,"def":45,"spa":30,"spd":40,"spe":43}},{"id":975,"n":"cetitan","g":9,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":170,"atk":113,"def":65,"spa":45,"spd":55,"spe":73}},{"id":976,"n":"veluza","g":9,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":102,"def":73,"spa":78,"spd":65,"spe":70},"t2":"psychic"},{"id":977,"n":"dondozo","g":9,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":150,"atk":100,"def":115,"spa":65,"spd":65,"spe":35}},{"id":978,"n":"tatsugiri","g":9,"t":"dragon","leg":false,"myt":false,"st":"final","s":{"hp":68,"atk":50,"def":60,"spa":120,"spd":95,"spe":82},"t2":"water"},{"id":979,"n":"annihilape","g":9,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":110,"atk":115,"def":80,"spa":50,"spd":90,"spe":90},"t2":"ghost"},{"id":980,"n":"clodsire","g":9,"t":"poison","leg":false,"myt":false,"st":"final","s":{"hp":130,"atk":75,"def":60,"spa":45,"spd":100,"spe":20},"t2":"ground"},{"id":981,"n":"farigiraf","g":9,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":120,"atk":90,"def":70,"spa":110,"spd":70,"spe":60},"t2":"psychic"},{"id":982,"n":"dudunsparce","g":9,"t":"normal","leg":false,"myt":false,"st":"final","s":{"hp":125,"atk":100,"def":80,"spa":85,"spd":75,"spe":55}},{"id":983,"n":"kingambit","g":9,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":135,"def":120,"spa":60,"spd":85,"spe":50},"t2":"steel"},{"id":984,"n":"great-tusk","g":9,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":115,"atk":131,"def":131,"spa":53,"spd":53,"spe":87},"t2":"fighting"},{"id":985,"n":"scream-tail","g":9,"t":"fairy","leg":false,"myt":false,"st":"final","s":{"hp":115,"atk":65,"def":99,"spa":65,"spd":115,"spe":111},"t2":"psychic"},{"id":986,"n":"brute-bonnet","g":9,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":111,"atk":127,"def":99,"spa":79,"spd":99,"spe":55},"t2":"dark"},{"id":987,"n":"flutter-mane","g":9,"t":"ghost","leg":false,"myt":false,"st":"final","s":{"hp":55,"atk":55,"def":55,"spa":135,"spd":135,"spe":135},"t2":"fairy"},{"id":988,"n":"slither-wing","g":9,"t":"bug","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":135,"def":79,"spa":85,"spd":105,"spe":81},"t2":"fighting"},{"id":989,"n":"sandy-shocks","g":9,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":85,"atk":81,"def":97,"spa":121,"spd":85,"spe":101},"t2":"ground"},{"id":990,"n":"iron-treads","g":9,"t":"ground","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":112,"def":120,"spa":72,"spd":70,"spe":106},"t2":"steel"},{"id":991,"n":"iron-bundle","g":9,"t":"ice","leg":false,"myt":false,"st":"final","s":{"hp":56,"atk":80,"def":114,"spa":124,"spd":60,"spe":136},"t2":"water"},{"id":992,"n":"iron-hands","g":9,"t":"fighting","leg":false,"myt":false,"st":"final","s":{"hp":154,"atk":140,"def":108,"spa":50,"spd":68,"spe":50},"t2":"electric"},{"id":993,"n":"iron-jugulis","g":9,"t":"dark","leg":false,"myt":false,"st":"final","s":{"hp":94,"atk":80,"def":86,"spa":122,"spd":80,"spe":108},"t2":"flying"},{"id":994,"n":"iron-moth","g":9,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":80,"atk":70,"def":60,"spa":140,"spd":110,"spe":110},"t2":"poison"},{"id":995,"n":"iron-thorns","g":9,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":100,"atk":134,"def":110,"spa":70,"spd":84,"spe":72},"t2":"electric"},{"id":996,"n":"frigibax","g":9,"t":"dragon","leg":false,"myt":false,"st":"basic","s":{"hp":65,"atk":75,"def":45,"spa":35,"spd":45,"spe":55},"t2":"ice"},{"id":997,"n":"arctibax","g":9,"t":"dragon","leg":false,"myt":false,"st":"mid","s":{"hp":90,"atk":95,"def":66,"spa":45,"spd":65,"spe":62},"t2":"ice"},{"id":998,"n":"baxcalibur","g":9,"t":"dragon","leg":false,"myt":false,"st":"final","s":{"hp":115,"atk":145,"def":92,"spa":75,"spd":86,"spe":87},"t2":"ice"},{"id":999,"n":"gimmighoul","g":9,"t":"ghost","leg":false,"myt":false,"st":"basic","s":{"hp":45,"atk":30,"def":70,"spa":75,"spd":70,"spe":10}},{"id":1000,"n":"gholdengo","g":9,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":87,"atk":60,"def":95,"spa":133,"spd":91,"spe":84},"t2":"ghost"},{"id":1001,"n":"wo-chien","g":9,"t":"dark","leg":true,"myt":false,"st":"legendary","s":{"hp":85,"atk":85,"def":100,"spa":95,"spd":135,"spe":70},"t2":"grass"},{"id":1002,"n":"chien-pao","g":9,"t":"dark","leg":true,"myt":false,"st":"legendary","s":{"hp":80,"atk":120,"def":80,"spa":90,"spd":65,"spe":135},"t2":"ice"},{"id":1003,"n":"ting-lu","g":9,"t":"dark","leg":true,"myt":false,"st":"legendary","s":{"hp":155,"atk":110,"def":125,"spa":55,"spd":80,"spe":45},"t2":"ground"},{"id":1004,"n":"chi-yu","g":9,"t":"dark","leg":true,"myt":false,"st":"legendary","s":{"hp":55,"atk":80,"def":80,"spa":135,"spd":120,"spe":100},"t2":"fire"},{"id":1005,"n":"roaring-moon","g":9,"t":"dragon","leg":false,"myt":false,"st":"final","s":{"hp":105,"atk":139,"def":71,"spa":55,"spd":101,"spe":119},"t2":"dark"},{"id":1006,"n":"iron-valiant","g":9,"t":"fairy","leg":false,"myt":false,"st":"final","s":{"hp":74,"atk":130,"def":90,"spa":120,"spd":60,"spe":116},"t2":"fighting"},{"id":1007,"n":"koraidon","g":9,"t":"fighting","leg":true,"myt":false,"st":"legendary","s":{"hp":100,"atk":135,"def":115,"spa":85,"spd":100,"spe":135},"t2":"dragon"},{"id":1008,"n":"miraidon","g":9,"t":"electric","leg":true,"myt":false,"st":"legendary","s":{"hp":100,"atk":85,"def":100,"spa":135,"spd":115,"spe":135},"t2":"dragon"},{"id":1009,"n":"walking-wake","g":9,"t":"water","leg":false,"myt":false,"st":"final","s":{"hp":99,"atk":83,"def":91,"spa":125,"spd":83,"spe":109},"t2":"dragon"},{"id":1010,"n":"iron-leaves","g":9,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":130,"def":88,"spa":70,"spd":108,"spe":104},"t2":"psychic"},{"id":1011,"n":"dipplin","g":9,"t":"grass","leg":false,"myt":false,"st":"mid","s":{"hp":80,"atk":80,"def":110,"spa":95,"spd":80,"spe":40},"t2":"dragon"},{"id":1012,"n":"poltchageist","g":9,"t":"grass","leg":false,"myt":false,"st":"basic","s":{"hp":40,"atk":45,"def":45,"spa":74,"spd":54,"spe":50},"t2":"ghost"},{"id":1013,"n":"sinistcha","g":9,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":71,"atk":60,"def":106,"spa":121,"spd":80,"spe":70},"t2":"ghost"},{"id":1014,"n":"okidogi","g":9,"t":"poison","leg":true,"myt":false,"st":"legendary","s":{"hp":88,"atk":128,"def":115,"spa":58,"spd":86,"spe":80},"t2":"fighting"},{"id":1015,"n":"munkidori","g":9,"t":"poison","leg":true,"myt":false,"st":"legendary","s":{"hp":88,"atk":75,"def":66,"spa":130,"spd":90,"spe":106},"t2":"psychic"},{"id":1016,"n":"fezandipiti","g":9,"t":"poison","leg":true,"myt":false,"st":"legendary","s":{"hp":88,"atk":91,"def":82,"spa":70,"spd":125,"spe":99},"t2":"fairy"},{"id":1017,"n":"ogerpon","g":9,"t":"grass","leg":true,"myt":false,"st":"legendary","s":{"hp":80,"atk":120,"def":84,"spa":60,"spd":96,"spe":110}},{"id":1018,"n":"archaludon","g":9,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":105,"def":130,"spa":125,"spd":65,"spe":85},"t2":"dragon"},{"id":1019,"n":"hydrapple","g":9,"t":"grass","leg":false,"myt":false,"st":"final","s":{"hp":106,"atk":80,"def":110,"spa":120,"spd":80,"spe":44},"t2":"dragon"},{"id":1020,"n":"gouging-fire","g":9,"t":"fire","leg":false,"myt":false,"st":"final","s":{"hp":105,"atk":115,"def":121,"spa":65,"spd":93,"spe":91},"t2":"dragon"},{"id":1021,"n":"raging-bolt","g":9,"t":"electric","leg":false,"myt":false,"st":"final","s":{"hp":125,"atk":73,"def":91,"spa":137,"spd":89,"spe":75},"t2":"dragon"},{"id":1022,"n":"iron-boulder","g":9,"t":"rock","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":120,"def":80,"spa":68,"spd":108,"spe":124},"t2":"psychic"},{"id":1023,"n":"iron-crown","g":9,"t":"steel","leg":false,"myt":false,"st":"final","s":{"hp":90,"atk":72,"def":100,"spa":122,"spd":108,"spe":98},"t2":"psychic"},{"id":1024,"n":"terapagos","g":9,"t":"normal","leg":true,"myt":false,"st":"legendary","s":{"hp":90,"atk":65,"def":85,"spa":65,"spd":85,"spe":60}},{"id":1025,"n":"pecharunt","g":9,"t":"poison","leg":false,"myt":true,"st":"legendary","s":{"hp":88,"atk":88,"def":160,"spa":88,"spd":88,"spe":88},"t2":"ghost"}];
+
+  const TYPES = [
+    ["Normal", "#A8A878"], ["Fire", "#F08030"], ["Water", "#6890F0"],
+    ["Electric", "#F8D030"], ["Grass", "#78C850"], ["Ice", "#98D8D8"],
+    ["Fighting", "#C03028"], ["Poison", "#A040A0"], ["Ground", "#E0C068"],
+    ["Flying", "#A890F0"], ["Psychic", "#F85888"], ["Bug", "#A8B820"],
+    ["Rock", "#B8A038"], ["Ghost", "#705898"], ["Dragon", "#7038F8"],
+    ["Dark", "#705848"], ["Steel", "#B8B8D0"], ["Fairy", "#EE99AC"]
+  ];
+
+  const TYPE_COLOR = {};
+  TYPES.forEach(([name, color]) => { TYPE_COLOR[name.toLowerCase()] = color; });
+
+  const REGIONS = [
+    ["Kanto", "Gen I", 1], ["Johto", "Gen II", 2], ["Hoenn", "Gen III", 3],
+    ["Sinnoh", "Gen IV", 4], ["Unova", "Gen V", 5], ["Kalos", "Gen VI", 6],
+    ["Alola", "Gen VII", 7], ["Galar", "Gen VIII", 8], ["Paldea", "Gen IX", 9]
+  ];
+
+  const TOTAL = TYPES.length * REGIONS.length;
+  const TEAM_SIZE = 6;
+
+  /* ============================================================
+     TUNABLE BALANCE CONSTANTS — everything below is meant to be
+     easy to adjust while testing difficulty.
+
+     The season no longer simulates individual battles. Each stage is a single
+     probability roll: your Team Rating vs. that stage's Difficulty. This keeps
+     the "draft a team, see if it can clear the board" goal front and center,
+     without a combat model that has to be tuned on five interacting knobs.
+     ============================================================ */
+
+  // Every Pokémon gets a power SCORE from SCORE_MIN to SCORE_MAX, based on
+  // where its total base stats fall relative to the weakest/strongest species.
+  const SCORE_MIN = 1;
+  const SCORE_MAX = 300;
+
+  // Team Rating is simply the sum of your 6 Pokémon's power scores.
+
+  // REFERENCE_RATING is the Team Rating exactly equal to the Champion's difficulty —
+  // the hardest stage. A team at or above this rating clears the whole board; below
+  // it, they'll fall short somewhere. Raise this to make the season easier for a given
+  // team; lower it to make it harder.
+  const REFERENCE_RATING = 1400;
+
+  // Each stage's difficulty is this fraction of REFERENCE_RATING. 13 entries: 8 Gym
+  // Leaders, 4 Elite Four, 1 Champion. Raise/lower these to retune the difficulty curve.
+  const STAGE_TARGET_FRACTIONS = [
+    0.30, 0.40, 0.48, 0.55, 0.62, 0.69, 0.75, 0.81,   // Gym Leaders 1-8
+    0.85, 0.89, 0.93, 0.96,                            // Elite Four I-IV
+    1.00                                                // Champion
+  ];
+  const STAGE_LABELS = [
+    'Gym Leader 1', 'Gym Leader 2', 'Gym Leader 3', 'Gym Leader 4',
+    'Gym Leader 5', 'Gym Leader 6', 'Gym Leader 7', 'Gym Leader 8',
+    'Elite Four I', 'Elite Four II', 'Elite Four III', 'Elite Four IV',
+    'Champion'
+  ];
+  const STAGE_TIERS = ['gym','gym','gym','gym','gym','gym','gym','gym','elite','elite','elite','elite','champion'];
+
+  /* ============================================================ */
+
+  const SEASON_LENGTH = STAGE_LABELS.length;
+
+  // ---------- Power scores (1-300, based on stat total AND how balanced the spread is) ----------
+  // Two Pokemon can share the exact same total base stats (BST) while having very
+  // different spreads — e.g. several 600-BST legendaries split that budget completely
+  // differently. Summing the SQUARE ROOT of each stat (instead of the raw stat) gives
+  // diminishing returns to stacking one stat very high, so a balanced spread scores a
+  // little higher than an equally-totaled but spiky one, and ties like that get broken
+  // in a principled way instead of being arbitrary.
+
+  function bstOf(p) {
+    return p.s.hp + p.s.atk + p.s.def + p.s.spa + p.s.spd + p.s.spe;
+  }
+
+  function balanceMetric(p) {
+    const s = p.s;
+    return Math.sqrt(s.hp) + Math.sqrt(s.atk) + Math.sqrt(s.def) + Math.sqrt(s.spa) + Math.sqrt(s.spd) + Math.sqrt(s.spe);
+  }
+
+  POKEDEX.forEach(p => { p.bst = bstOf(p); p.balance = balanceMetric(p); });
+  const BAL_MIN = Math.min(...POKEDEX.map(p => p.balance));
+  const BAL_MAX = Math.max(...POKEDEX.map(p => p.balance));
+
+  function scoreFromBalance(balance) {
+    return Math.round(SCORE_MIN + ((balance - BAL_MIN) / (BAL_MAX - BAL_MIN)) * (SCORE_MAX - SCORE_MIN));
+  }
+  POKEDEX.forEach(p => { p.score = scoreFromBalance(p.balance); });
+
+  // ---------- Role-slot draft engine ----------
+  // Each of the 6 team slots draws from a different, appropriately-sized pool:
+  // Legendary/Mythical spins a REGION only (type dropped — too few legendaries
+  // per type+region to be workable). Starter, Intermediate, and Final Evolution
+  // all spin a TYPE only (region dropped for all three). The two Bench slots
+  // spin TYPE + REGION exactly like the original draft.
+  const SLOTS = [
+    { key: 'basic', label: 'Starter Evolution', dims: ['type'],
+      match: p => !(p.leg || p.myt) && p.st === 'basic' },
+    { key: 'mid', label: 'Intermediate Evolution', dims: ['type'],
+      match: p => !(p.leg || p.myt) && p.st === 'mid' },
+    { key: 'final', label: 'Final Evolution', dims: ['type'],
+      match: p => !(p.leg || p.myt) && p.st === 'final' },
+    { key: 'legendary', label: 'Legendary / Mythical', dims: ['gen'],
+      match: p => p.leg || p.myt },
+    { key: 'bench1', label: 'Bench', dims: ['type', 'gen'], match: p => true },
+    { key: 'bench2', label: 'Bench', dims: ['type', 'gen'], match: p => true }
+  ];
+
+  let slotIndex = 0;
+  let slotDeck = [];       // the current slot's own shuffled deck of draws
+  let benchDeck = null;    // bench1 and bench2 share one 162-combo deck (2 draws, no repeat)
+  let spinHistory = [];
+  let team = [];
+  let draftedIds = new Set();
+  let currentDraw = null;
+  let currentEligible = [];
+  let selectedId = null;
+  let filterName = '';
+  let filterGen = 'all';
+  let sortKey = 'name';
+  let rerollsRemaining = 1; // one manual reroll allowed across the whole draft
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function buildTypeGenDeck() {
+    const pairs = [];
+    for (const t of TYPES) {
+      for (const r of REGIONS) {
+        pairs.push({ type: t[0], color: t[1], region: r[0], gen: r[1], genId: r[2] });
+      }
+    }
+    return shuffle(pairs);
+  }
+
+  function buildGenOnlyDeck() {
+    return shuffle(REGIONS.map(r => ({ type: null, color: 'var(--ink)', region: r[0], gen: r[1], genId: r[2] })));
+  }
+
+  function buildTypeOnlyDeck() {
+    return shuffle(TYPES.map(t => ({ type: t[0], color: t[1], region: null, gen: null, genId: null })));
+  }
+
+  function buildDeckForSlot(slot) {
+    if (slot.key === 'bench1' || slot.key === 'bench2') {
+      if (!benchDeck) benchDeck = buildTypeGenDeck();
+      return benchDeck;
+    }
+    if (slot.dims.length === 2) return buildTypeGenDeck();
+    if (slot.dims[0] === 'gen') return buildGenOnlyDeck();
+    return buildTypeOnlyDeck();
+  }
+
+  function formatName(raw) {
+    return raw.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
+  function spriteUrl(id) {
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+  }
+
+  function findEligible(slot, draw) {
+    const typeKey = draw.type ? draw.type.toLowerCase() : null;
+    return POKEDEX
+      .filter(p => slot.match(p) && !draftedIds.has(p.id))
+      .filter(p => draw.genId == null || p.g === draw.genId)
+      .filter(p => typeKey == null || p.t === typeKey || p.t2 === typeKey)
+      .sort((a, b) => a.id - b.id);
+  }
+
+  const spinBtn = document.getElementById('spinBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const stageEl = document.getElementById('stage');
+  const slotHeading = document.getElementById('slotHeading');
+  const typeSlotBox = document.getElementById('typeSlotBox');
+  const regionSlotBox = document.getElementById('regionSlotBox');
+  const typeValue = document.getElementById('typeValue');
+  const regionValue = document.getElementById('regionValue');
+  const regionSub = document.getElementById('regionSub');
+  const tally = document.getElementById('tally');
+  const teamList = document.getElementById('teamList');
+  const teamAvg = document.getElementById('teamAvg');
+  const statusNote = document.getElementById('statusNote');
+  const candidatesBlock = document.getElementById('candidatesBlock');
+  const candidateList = document.getElementById('candidateList');
+  const candidateCount = document.getElementById('candidateCount');
+  const filterNameInput = document.getElementById('filterName');
+  const filterGenSelect = document.getElementById('filterGen');
+  const sortKeySelect = document.getElementById('sortKey');
+  const draftBtn = document.getElementById('draftBtn');
+  const rerollBtn = document.getElementById('rerollBtn');
+
+  const seasonSection = document.getElementById('seasonSection');
+  const seasonResults = document.getElementById('seasonResults');
+  const recordBanner = document.getElementById('recordBanner');
+  const recordValue = document.getElementById('recordValue');
+  const recordVerdict = document.getElementById('recordVerdict');
+  const matchList = document.getElementById('matchList');
+
+
+  function renderTally() {
+    tally.textContent = `Slot ${Math.min(slotIndex + 1, SLOTS.length)} of ${SLOTS.length} \u00b7 ${team.length} drafted`;
+  }
+
+
+  function renderTeam() {
+    if (team.length === 0) {
+      teamList.innerHTML = '<li class="list-empty">No Pok\u00e9mon drafted yet.</li>';
+      teamAvg.textContent = '';
+    } else {
+      teamList.innerHTML = team.map(p => {
+        const tagParts = [`slot: ${p.slotLabel}`];
+        if (p.type) tagParts.push(`drafted as ${p.type}`);
+        if (p.region) tagParts.push(`for ${p.region} (${p.gen})`);
+        return `
+        <li class="team-card">
+          <img src="${spriteUrl(p.id)}" alt="" onerror="this.style.display='none'">
+          <div class="team-card-main">
+            <div class="team-card-name" style="color: ${TYPE_COLOR[p.battleType.toLowerCase()] || 'var(--ink)'};">${p.name}</div>
+            <div class="team-card-tag">${p.color ? `<span class="swatch" style="background:${p.color}"></span>` : ''}${tagParts.join(' \u00b7 ')}</div>
+            <div class="stat-row">
+              <span class="stat">HP <b>${p.stats.hp}</b></span>
+              <span class="stat">ATK <b>${p.stats.atk}</b></span>
+              <span class="stat">DEF <b>${p.stats.def}</b></span>
+              <span class="stat">SP.ATK <b>${p.stats.spa}</b></span>
+              <span class="stat">SP.DEF <b>${p.stats.spd}</b></span>
+              <span class="stat">SPD <b>${p.stats.spe}</b></span>
+            </div>
+          </div>
+        </li>
+      `;
+      }).join('');
+
+      if (team.length === TEAM_SIZE) {
+        const rating = computeTeamRating();
+        teamAvg.textContent = `Combined score: ${rating.combined} / ${SCORE_MAX * TEAM_SIZE} \u00b7 Team Rating: ${rating.effective} (Champion difficulty is ${Math.round(REFERENCE_RATING)})`;
+      } else {
+        teamAvg.textContent = '';
+      }
+    }
+
+    seasonSection.style.display = (team.length === TEAM_SIZE) ? 'block' : 'none';
+  }
+
+  function realTypeLabel(p) {
+    const t1 = p.t.charAt(0).toUpperCase() + p.t.slice(1);
+    if (!p.t2) return t1;
+    const t2 = p.t2.charAt(0).toUpperCase() + p.t2.slice(1);
+    return `${t1} / ${t2}`;
+  }
+
+  function populateGenFilter() {
+    const gens = Array.from(new Set(currentEligible.map(p => p.g))).sort((a, b) => a - b);
+    filterGenSelect.innerHTML = '<option value="all">All Generations</option>' +
+      gens.map(g => `<option value="${g}">Gen ${g}</option>`).join('');
+    filterGenSelect.value = 'all';
+  }
+
+  function getFilteredSorted() {
+    const nameQuery = filterName.trim().toLowerCase();
+    let list = currentEligible.filter(p => {
+      if (nameQuery && !formatName(p.n).toLowerCase().includes(nameQuery)) return false;
+      if (filterGen !== 'all' && String(p.g) !== filterGen) return false;
+      return true;
+    });
+    if (sortKey === 'name') {
+      list.sort((a, b) => formatName(a.n).localeCompare(formatName(b.n)));
+    } else {
+      const statKey = { hp: 'hp', atk: 'atk', def: 'def', spa: 'spa', spd: 'spd', spe: 'spe' }[sortKey];
+      list.sort((a, b) => b.s[statKey] - a.s[statKey]);
+    }
+    return list;
+  }
+
+  function renderCandidateList() {
+    const list = getFilteredSorted();
+    candidateCount.textContent = `${list.length} of ${currentEligible.length} shown`;
+
+    if (!list.some(p => p.id === selectedId)) {
+      selectedId = list.length > 0 ? list[0].id : null;
+    }
+
+    if (list.length === 0) {
+      candidateList.innerHTML = '<div class="list-empty-inline">No Pokémon match these filters.</div>';
+    } else {
+      candidateList.innerHTML = list.map(p => `
+        <div class="candidate-row ${p.id === selectedId ? 'selected' : ''}" data-id="${p.id}">
+          <img src="${spriteUrl(p.id)}" alt="" onerror="this.style.display='none'">
+          <div class="candidate-row-main">
+            <div class="candidate-row-name" style="color: ${TYPE_COLOR[p.t] || 'var(--ink)'};">
+              ${formatName(p.n)}
+              <span class="candidate-row-gen">Gen ${p.g} \u00b7 ${realTypeLabel(p)}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat">HP <b>${p.s.hp}</b></span>
+              <span class="stat">ATK <b>${p.s.atk}</b></span>
+              <span class="stat">DEF <b>${p.s.def}</b></span>
+              <span class="stat">SP.ATK <b>${p.s.spa}</b></span>
+              <span class="stat">SP.DEF <b>${p.s.spd}</b></span>
+              <span class="stat">SPD <b>${p.s.spe}</b></span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      candidateList.querySelectorAll('.candidate-row').forEach(row => {
+        row.addEventListener('click', () => {
+          selectedId = parseInt(row.dataset.id, 10);
+          renderCandidateList();
+        });
+      });
+    }
+
+    draftBtn.disabled = selectedId === null;
+  }
+
+  function updateSlotUI(slot) {
+    slotHeading.textContent = `Now drafting: ${slot.label} (slot ${slotIndex + 1} of ${SLOTS.length})`;
+    typeSlotBox.style.display = slot.dims.includes('type') ? '' : 'none';
+    regionSlotBox.style.display = slot.dims.includes('gen') ? '' : 'none';
+    stageEl.style.borderColor = (slot.key === 'legendary') ? 'var(--gold)' : 'var(--ink)';
+  }
+
+  let isRolling = false;
+
+  function spin() {
+    if (slotIndex >= SLOTS.length || isRolling) return;
+    const slot = SLOTS[slotIndex];
+
+    candidatesBlock.style.display = 'none';
+    statusNote.textContent = '';
+    updateSlotUI(slot);
+    spinBtn.disabled = true;
+
+    if (slotDeck.length === 0) slotDeck = buildDeckForSlot(slot);
+
+    let eligible = [];
+    let draw = null;
+
+    while (slotDeck.length > 0) {
+      draw = slotDeck.pop();
+      draw.slotLabel = slot.label;
+      spinHistory.push(draw);
+
+      eligible = findEligible(slot, draw);
+
+      if (eligible.length > 0) {
+        draw.outcome = 'pending';
+        break;
+      } else {
+        draw.outcome = 'auto-rerolled';
+      }
+    }
+
+    renderTally();
+
+    if (eligible.length === 0) {
+      currentDraw = null;
+      statusNote.textContent = `No remaining options for ${slot.label} \u2014 this slot's pool is exhausted.`;
+      return;
+    }
+
+    playRollAnimation(slot, draw, eligible);
+  }
+
+  // Purely cosmetic: rapidly cycles the Type/Region boxes through random-looking
+  // values for a moment before landing on the real (already-determined) result,
+  // for a slot-machine feel. The actual draw and eligibility were already decided
+  // above — this never affects the outcome, just how it's revealed.
+  function playRollAnimation(slot, draw, eligible) {
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      finalizeSpinReveal(slot, draw, eligible);
+      return;
+    }
+
+    isRolling = true;
+    const showType = slot.dims.includes('type');
+    const showGen = slot.dims.includes('gen');
+
+    typeValue.classList.add('rolling');
+    regionValue.classList.add('rolling');
+
+    const totalDuration = 700;
+    const frameMs = 55;
+    let elapsed = 0;
+
+    const timer = setInterval(() => {
+      elapsed += frameMs;
+      if (showType) {
+        const rt = TYPES[Math.floor(Math.random() * TYPES.length)];
+        typeValue.textContent = rt[0];
+        typeValue.style.color = rt[1];
+      }
+      if (showGen) {
+        const rg = REGIONS[Math.floor(Math.random() * REGIONS.length)];
+        regionValue.textContent = rg[0];
+        regionSub.textContent = rg[1];
+      }
+      if (elapsed >= totalDuration) {
+        clearInterval(timer);
+        typeValue.classList.remove('rolling');
+        regionValue.classList.remove('rolling');
+        isRolling = false;
+        finalizeSpinReveal(slot, draw, eligible);
+      }
+    }, frameMs);
+  }
+
+  function finalizeSpinReveal(slot, draw, eligible) {
+    currentDraw = draw;
+    currentEligible = eligible;
+    selectedId = null;
+    filterName = '';
+    filterGen = 'all';
+    filterNameInput.value = '';
+
+    typeValue.textContent = draw.type || '\u2014';
+    typeValue.style.color = draw.color || 'var(--ink)';
+    regionValue.textContent = draw.region || '\u2014';
+    regionSub.textContent = draw.gen || '';
+    stageEl.style.borderColor = (draw.color && draw.color !== 'var(--ink)') ? draw.color
+      : (slot.key === 'legendary') ? 'var(--gold)' : 'var(--ink)';
+
+    candidatesBlock.style.display = 'block';
+    populateGenFilter();
+    renderCandidateList();
+    updateRerollButton();
+  }
+
+  function updateRerollButton() {
+    if (rerollsRemaining <= 0) {
+      rerollBtn.textContent = 'No rerolls remaining';
+      rerollBtn.disabled = true;
+    } else {
+      rerollBtn.textContent = 'Reroll this spin';
+      rerollBtn.disabled = false;
+    }
+  }
+
+  function manualReroll() {
+    if (rerollsRemaining <= 0 || !currentDraw) return;
+
+    currentDraw.outcome = 'manually-rerolled';
+    rerollsRemaining--;
+
+    currentDraw = null;
+    currentEligible = [];
+    selectedId = null;
+    candidatesBlock.style.display = 'none';
+
+    spin();
+  }
+
+  function draftCurrent() {
+    const p = currentEligible.find(x => x.id === selectedId);
+    if (!p || !currentDraw) return;
+
+    draftedIds.add(p.id);
+
+    team.push({
+      id: p.id,
+      name: formatName(p.n),
+      slotLabel: SLOTS[slotIndex].label,
+      type: currentDraw.type,
+      battleType: p.t,
+      color: currentDraw.color,
+      region: currentDraw.region,
+      gen: currentDraw.gen,
+      stats: p.s,
+      score: p.score
+    });
+
+    currentDraw.outcome = 'drafted';
+    currentDraw.drafted = formatName(p.n);
+    currentDraw = null;
+    currentEligible = [];
+    selectedId = null;
+
+    candidatesBlock.style.display = 'none';
+    statusNote.textContent = '';
+
+    slotIndex++;
+    slotDeck = [];
+
+    renderTally();
+    renderTeam();
+
+    if (slotIndex >= SLOTS.length) {
+      statusNote.textContent = `Team complete (${TEAM_SIZE}/${TEAM_SIZE})! Calculating your season...`;
+      spinBtn.disabled = true;
+      runSeason();
+    } else {
+      spin(); // automatically roll the next slot's spin
+    }
+  }
+
+  function resetAll() {
+    slotIndex = 0;
+    slotDeck = [];
+    benchDeck = null;
+    spinHistory = [];
+    team = [];
+    draftedIds = new Set();
+    currentDraw = null;
+    currentEligible = [];
+    selectedId = null;
+    filterName = '';
+    filterGen = 'all';
+    rerollsRemaining = 1;
+    updateRerollButton();
+    updateSlotUI(SLOTS[0]);
+
+    typeValue.textContent = '\u2014';
+    typeValue.style.color = 'var(--ink)';
+    regionValue.textContent = '\u2014';
+    regionSub.innerHTML = '&nbsp;';
+    stageEl.style.borderColor = 'var(--ink)';
+    statusNote.textContent = '';
+    candidatesBlock.style.display = 'none';
+    spinBtn.disabled = false;
+
+    seasonResults.style.display = 'none';
+
+    renderTally();
+    renderTeam();
+  }
+
+
+  // ---------- Team Rating & season engine ----------
+  // No individual battles are simulated, and no randomness is involved. Each of the
+  // 13 stages has a fixed Difficulty; you clear it whenever your Team Rating meets
+  // or exceeds that number. Same team, same result every time.
+
+  function computeTeamRating() {
+    const combined = team.reduce((s, p) => s + p.score, 0);
+    return { combined, effective: combined };
+  }
+
+  function runSeason() {
+    const rating = computeTeamRating();
+    const results = [];
+    let wins = 0;
+
+    for (let s = 0; s < STAGE_LABELS.length; s++) {
+      const difficulty = Math.round(STAGE_TARGET_FRACTIONS[s] * REFERENCE_RATING);
+      const won = rating.effective >= difficulty;
+      if (won) wins++;
+      results.push({ label: STAGE_LABELS[s], tier: STAGE_TIERS[s], difficulty, won });
+    }
+
+    renderSeason(results, wins, rating);
+  }
+
+  function renderSeason(results, wins, rating) {
+    seasonResults.style.display = 'block';
+
+    const losses = results.length - wins;
+    recordValue.textContent = `${wins}–${losses}`;
+
+    const perfect = wins === SEASON_LENGTH;
+    recordBanner.classList.toggle('perfect', perfect);
+    recordVerdict.textContent = perfect
+      ? `Perfect ${SEASON_LENGTH}-stage season — Champion defeated!`
+      : `${wins} of ${SEASON_LENGTH} stages won`;
+
+    matchList.innerHTML = results.map((r) => {
+      const margin = rating.effective - r.difficulty;
+      const marginText = margin >= 0 ? `+${margin} margin` : `${margin} margin`;
+      return `
+      <li class="match-item">
+        <details>
+          <summary>
+            <span class="match-badge ${r.won ? 'win' : 'loss'}">${r.won ? 'WIN' : 'LOSS'}</span>
+            <span class="match-stage">${r.label}</span>
+            <span class="match-opp">difficulty ${r.difficulty} vs. your rating ${rating.effective}</span>
+            <span class="match-score">${marginText}</span>
+          </summary>
+          <div class="match-log">
+            <div class="match-log-line">Your Team Rating (<b>${rating.effective}</b>) vs. this stage's Difficulty (<b>${r.difficulty}</b>) — you clear a stage whenever your rating is equal or higher. Result: <b>${r.won ? 'WIN' : 'LOSS'}</b>.</div>
+          </div>
+        </details>
+      </li>
+    `;
+    }).join('');
+
+    matchList.innerHTML += `
+      <li class="match-item">
+        <details open>
+          <summary>
+            <span class="match-badge" style="background:var(--ink);">RATING</span>
+            <span class="match-opp">How your Team Rating was calculated</span>
+          </summary>
+          <div class="match-log">
+            <div class="match-log-line">Combined power score: <b>${rating.combined}</b></div>
+            <div class="match-log-line">Team Rating: <b>${rating.effective}</b></div>
+          </div>
+        </details>
+      </li>
+    `;
+  }
+
+  spinBtn.addEventListener('click', spin);
+  resetBtn.addEventListener('click', resetAll);
+  filterNameInput.addEventListener('input', () => { filterName = filterNameInput.value; renderCandidateList(); });
+  filterGenSelect.addEventListener('change', () => { filterGen = filterGenSelect.value; renderCandidateList(); });
+  sortKeySelect.addEventListener('change', () => { sortKey = sortKeySelect.value; renderCandidateList(); });
+  draftBtn.addEventListener('click', draftCurrent);
+  rerollBtn.addEventListener('click', manualReroll);
+
+  const themeToggle = document.getElementById('themeToggle');
+  let darkMode = false;
+  function applyTheme() {
+    document.body.classList.toggle('dark-mode', darkMode);
+    themeToggle.innerHTML = darkMode ? '&#9728;&#65039; Light Mode' : '&#127769; Dark Mode';
+  }
+  themeToggle.addEventListener('click', () => { darkMode = !darkMode; applyTheme(); });
+  applyTheme();
+
+  resetAll();
+</script>
+</body>
+</html>

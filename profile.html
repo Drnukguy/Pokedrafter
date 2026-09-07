@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pokédrafter</title>
+<title>Profile — Pokédrafter</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
 
@@ -77,14 +77,6 @@
     flex: none;
   }
 
-  .hero-tagline {
-    font-size: 0.95rem;
-    opacity: 0.7;
-    margin: 14px 0 0;
-    max-width: 56ch;
-    line-height: 1.5;
-  }
-
   .nav-btn {
     font-family: 'Chakra Petch', sans-serif;
     font-size: 0.85rem;
@@ -97,68 +89,46 @@
   }
   .nav-btn:hover { opacity: 0.85; }
 
-  .card-grid {
-    display: grid;
-    grid-template-columns: 1fr;
+  .site-nav {
+    display: flex;
     gap: 18px;
+    margin-top: 14px;
   }
 
-  @media (min-width: 700px) {
-    .card-grid { grid-template-columns: repeat(3, 1fr); }
-  }
-
-  .card {
-    display: block;
-    text-decoration: none;
-    color: var(--ink);
-    background: var(--panel);
-    border: 2px solid var(--ink);
-    border-radius: 4px;
-    padding: 26px 22px;
-    transition: transform 0.1s ease, border-color 0.15s ease;
-  }
-
-  .card:hover {
-    border-color: var(--gold);
-    transform: translateY(-2px);
-  }
-
-  .card-eyebrow {
+  .site-nav a {
     font-family: 'Chakra Petch', sans-serif;
-    font-size: 0.72rem;
+    font-size: 0.82rem;
     font-weight: 600;
-    opacity: 0.5;
-    margin-bottom: 8px;
+    color: var(--ink);
+    text-decoration: none;
+    opacity: 0.6;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 2px;
   }
 
-  .card h2 {
+  .site-nav a:hover { opacity: 1; }
+  .site-nav a.current { opacity: 1; border-bottom-color: var(--gold); }
+
+  .empty-state {
+    background: var(--panel);
+    border: 2px dashed var(--line);
+    border-radius: 4px;
+    padding: 48px 24px;
+    text-align: center;
+  }
+
+  .empty-state h2 {
     font-family: 'Chakra Petch', sans-serif;
-    font-weight: 700;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     margin: 0 0 10px;
   }
 
-  .card p {
-    font-size: 0.88rem;
-    opacity: 0.75;
+  .empty-state p {
+    font-size: 0.9rem;
+    opacity: 0.7;
+    max-width: 46ch;
+    margin: 0 auto;
     line-height: 1.5;
-    margin: 0;
-  }
-
-  .card.primary {
-    background: var(--ink);
-    color: var(--paper);
-    border-color: var(--ink);
-  }
-  .card.primary .card-eyebrow { opacity: 0.6; color: var(--gold); }
-  .card.primary p { opacity: 0.75; }
-  .card.primary:hover { border-color: var(--gold); }
-
-  .data-note {
-    margin-top: 40px;
-    font-size: 0.72rem;
-    opacity: 0.4;
-    text-align: center;
   }
 </style>
 </head>
@@ -173,30 +143,18 @@
       </div>
       <button class="nav-btn" id="themeToggle">&#127769; Dark Mode</button>
     </div>
-    <p class="hero-tagline">A fantasy-draft game built around Pokémon type and generation spins. Draft a team of six across five roles, then find out if it's strong enough to clear all 13 stages of the season.</p>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="game.html">Play</a>
+      <a href="leaderboard.html">Leaderboard</a>
+      <a href="profile.html" class="current">Profile</a>
+    </nav>
   </header>
 
-  <div class="card-grid">
-    <a href="game.html" class="card primary">
-      <div class="card-eyebrow">Start here</div>
-      <h2>Play</h2>
-      <p>Spin for type and region, draft one Pokémon per role, and simulate your season against 8 Gym Leaders, the Elite Four, and the Champion.</p>
-    </a>
-
-    <a href="leaderboard.html" class="card">
-      <div class="card-eyebrow">Rankings</div>
-      <h2>Leaderboard</h2>
-      <p>See the best team ratings and season records other players have achieved.</p>
-    </a>
-
-    <a href="profile.html" class="card">
-      <div class="card-eyebrow">Your history</div>
-      <h2>Profile</h2>
-      <p>Track your own past drafts, records, and personal best runs.</p>
-    </a>
+  <div class="empty-state">
+    <h2>Profiles are coming soon</h2>
+    <p>Saving your draft history and past records across visits needs accounts and a backend — neither exists yet. For now, each season you play only lasts for your current visit.</p>
   </div>
-
-  <div class="data-note">Pokédrafter is an independent fan project and is not affiliated with Nintendo, Game Freak, or The Pokémon Company.</div>
 
 </div>
 
