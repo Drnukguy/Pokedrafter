@@ -9,10 +9,10 @@
     "not_found_handling": "404-page"
   },
   "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "pokedrafter",
-      "database_id": "d8f1077a-416f-4d61-ae01-b809b8e783b7"
-    }
-  ]
+  {
+    "binding": "DB",
+    "database_name": "pokedrafter",
+    "database_id": "d8f1077a-416f-4d61-ae01-b809b8e783b7"
+  }
+]
 }
