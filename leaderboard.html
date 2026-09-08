@@ -15,7 +15,7 @@
     --gold: #b3801f;
   }
 
-  body.dark-mode {
+  html.dark-mode {
     --ink: #ede8dd;
     --paper: #15141a;
     --panel: #1e1d26;
@@ -153,7 +153,6 @@
 
   <div class="empty-state">
     <h2>Leaderboard is coming soon</h2>
-    <p>Ranking real player records needs a shared backend to store results across everyone who plays — that part isn't built yet. Play a season on the Play page in the meantime.</p>
   </div>
 
 </div>
@@ -163,7 +162,7 @@
   let darkMode = false;
   try { darkMode = localStorage.getItem('pokedrafter-theme') === 'dark'; } catch (e) {}
   function applyTheme() {
-    document.body.classList.toggle('dark-mode', darkMode);
+    document.documentElement.classList.toggle('dark-mode', darkMode);
     themeToggle.innerHTML = darkMode ? '&#9728;&#65039; Light Mode' : '&#127769; Dark Mode';
     try { localStorage.setItem('pokedrafter-theme', darkMode ? 'dark' : 'light'); } catch (e) {}
   }
