@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "pokedrafter",
+  "compatibility_date": "2026-09-08",
+  "main": "./src/index.js",
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "REPLACE_WITH_YOUR_DATABASE_NAME",
+      "database_id": "REPLACE_WITH_YOUR_DATABASE_ID"
+    }
+  ]
+}
