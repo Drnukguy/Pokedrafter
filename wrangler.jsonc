@@ -11,8 +11,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "REPLACE_WITH_YOUR_DATABASE_NAME",
-      "database_id": "REPLACE_WITH_YOUR_DATABASE_ID"
+      "database_name": pokedrafter,
+      "database_id": d8f1077a-416f-4d61-ae01-b809b8e783b7
     }
   ]
 }
