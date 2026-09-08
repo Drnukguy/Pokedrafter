@@ -49,20 +49,26 @@ POKEDEX.forEach(p => {
 
 const POKEDEX_BY_ID = new Map(POKEDEX.map(p => [p.id, p]));
 
-// Order and role of the 6 real draft slots, in the order the client always fills them.
-const SLOT_KEYS = ['basic', 'mid', 'final', 'legendary', 'bench', 'bench'];
+// Paradox Pokemon (Scarlet/Violet base game) are not flagged Legendary in the real
+// game data, but their stats are Legendary-tier - so for drafting purposes they're
+// pulled out of the general pool and treated as Legendary instead. Must match the
+// same list in game.html exactly, or legitimate results will get rejected here.
+const PARADOX_IDS = [984, 985, 986, 987, 988, 989, 990, 991, 992, 993, 994, 995, 1005, 1006];
+
+// 5 open rounds (any fully-evolved, non-Legendary, non-Paradox Pokemon) followed by
+// 1 dedicated Legendary round (real Legendary/Mythical flags, plus the Paradox mons).
+const SLOT_KEYS = ['open', 'open', 'open', 'open', 'open', 'legendary'];
 const SLOT_DISPLAY_LABELS = [
-  'Starter Evolution', 'Intermediate Evolution', 'Final Evolution',
-  'Legendary / Mythical', 'Bench', 'Bench'
+  'Draft Round 1', 'Draft Round 2', 'Draft Round 3', 'Draft Round 4', 'Draft Round 5',
+  'Legendary / Mythical'
 ];
 
 function slotMatches(slotKey, p) {
-  if (slotKey === 'legendary') return !!(p.leg || p.myt);
-  if (slotKey === 'bench') return true;
-  return !(p.leg || p.myt) && p.st === slotKey;
+  if (slotKey === 'legendary') return !!(p.leg || p.myt) || PARADOX_IDS.includes(p.id);
+  return !(p.leg || p.myt) && p.st === 'final' && !PARADOX_IDS.includes(p.id);
 }
 
-const REFERENCE_RATING = 1400;
+const REFERENCE_RATING = 1540;
 const STAGE_TARGET_FRACTIONS = [
   0.30, 0.40, 0.48, 0.55, 0.62, 0.69, 0.75, 0.81,
   0.85, 0.89, 0.93, 0.96,
