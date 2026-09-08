@@ -811,7 +811,6 @@
         <button class="nav-btn" id="themeToggle">&#127769; Dark Mode</button>
       </div>
     </div>
-        <p class="hero-tagline">Gotta Draft Em' All!</p>
     <nav class="site-nav">
       <a href="index.html">Home</a>
       <a href="game.html" class="current">Play</a>
@@ -947,7 +946,7 @@
   // the hardest stage. A team at or above this rating clears the whole board; below
   // it, they'll fall short somewhere. Raise this to make the season easier for a given
   // team; lower it to make it harder.
-  const REFERENCE_RATING = 1400;
+  const REFERENCE_RATING = 1540;
 
   // Each stage's difficulty is this fraction of REFERENCE_RATING. 13 entries: 8 Gym
   // Leaders, 4 Elite Four, 1 Champion. Raise/lower these to retune the difficulty curve.
@@ -1018,27 +1017,33 @@
   });
 
   // ---------- Role-slot draft engine ----------
-  // Each of the 6 team slots draws from a different, appropriately-sized pool:
-  // Legendary/Mythical spins a REGION only (type dropped — too few legendaries
-  // per type+region to be workable). Starter, Intermediate, and Final Evolution
-  // all spin a TYPE only (region dropped for all three). The two Bench slots
-  // spin TYPE + REGION exactly like the original draft.
+  // Paradox Pokemon (Scarlet/Violet base game) are not flagged Legendary in the
+  // real game data, but their stats are Legendary-tier - so for drafting purposes
+  // they're pulled out of the general pool and treated as Legendary instead.
+  const PARADOX_IDS = [984, 985, 986, 987, 988, 989, 990, 991, 992, 993, 994, 995, 1005, 1006];
+
+  function isOpenPoolMon(p) {
+    return !(p.leg || p.myt) && p.st === 'final' && !PARADOX_IDS.includes(p.id);
+  }
+  function isLegendaryPoolMon(p) {
+    return (p.leg || p.myt) || PARADOX_IDS.includes(p.id);
+  }
+
+  // 5 open rounds (spin a type, draft anything fully-evolved that matches - no
+  // assigned role, no bench) plus 1 dedicated Legendary round (region-only spin,
+  // unchanged from before) at the end.
   const SLOTS = [
-    { key: 'basic', label: 'Starter Evolution', dims: ['type'],
-      match: p => !(p.leg || p.myt) && p.st === 'basic' },
-    { key: 'mid', label: 'Intermediate Evolution', dims: ['type'],
-      match: p => !(p.leg || p.myt) && p.st === 'mid' },
-    { key: 'final', label: 'Final Evolution', dims: ['type'],
-      match: p => !(p.leg || p.myt) && p.st === 'final' },
-    { key: 'legendary', label: 'Legendary / Mythical', dims: ['gen'],
-      match: p => p.leg || p.myt },
-    { key: 'bench1', label: 'Bench', dims: ['type', 'gen'], match: p => true },
-    { key: 'bench2', label: 'Bench', dims: ['type', 'gen'], match: p => true }
+    { key: 'open', label: 'Draft Round 1', dims: ['type'], match: isOpenPoolMon },
+    { key: 'open', label: 'Draft Round 2', dims: ['type'], match: isOpenPoolMon },
+    { key: 'open', label: 'Draft Round 3', dims: ['type'], match: isOpenPoolMon },
+    { key: 'open', label: 'Draft Round 4', dims: ['type'], match: isOpenPoolMon },
+    { key: 'open', label: 'Draft Round 5', dims: ['type'], match: isOpenPoolMon },
+    { key: 'legendary', label: 'Legendary / Mythical', dims: ['gen'], match: isLegendaryPoolMon }
   ];
 
   let slotIndex = 0;
   let slotDeck = [];       // the current slot's own shuffled deck of draws
-  let benchDeck = null;    // bench1 and bench2 share one 162-combo deck (2 draws, no repeat)
+  let openDeck = null;     // the 5 open rounds share one 18-type deck (no repeat type across them)
   let spinHistory = [];
   let team = [];
   let draftedIds = new Set();
@@ -1077,13 +1082,11 @@
   }
 
   function buildDeckForSlot(slot) {
-    if (slot.key === 'bench1' || slot.key === 'bench2') {
-      if (!benchDeck) benchDeck = buildTypeGenDeck();
-      return benchDeck;
+    if (slot.key === 'open') {
+      if (!openDeck) openDeck = buildTypeOnlyDeck();
+      return openDeck;
     }
-    if (slot.dims.length === 2) return buildTypeGenDeck();
-    if (slot.dims[0] === 'gen') return buildGenOnlyDeck();
-    return buildTypeOnlyDeck();
+    return buildGenOnlyDeck();
   }
 
   function formatName(raw) {
@@ -1456,7 +1459,7 @@
   function resetAll() {
     slotIndex = 0;
     slotDeck = [];
-    benchDeck = null;
+    openDeck = null;
     spinHistory = [];
     team = [];
     draftedIds = new Set();
