@@ -140,7 +140,10 @@
       <div class="hero-brand">
   <img src="pokedrafter-logo.svg" alt="Pokédrafter" style="height:65px;">
 </div>
-      <button class="nav-btn" id="themeToggle">&#127769; Dark Mode</button>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span id="authStatus" style="font-size:0.8rem;"></span>
+        <button class="nav-btn" id="themeToggle">&#127769; Dark Mode</button>
+      </div>
     </div>
     <nav class="site-nav">
       <a href="index.html">Home</a>
@@ -167,6 +170,25 @@
   }
   themeToggle.addEventListener('click', () => { darkMode = !darkMode; applyTheme(); });
   applyTheme();
+
+  async function loadAuthStatus() {
+    const authStatus = document.getElementById('authStatus');
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      if (data.loggedIn) {
+        window.pokedrafterUser = data.user;
+        authStatus.innerHTML = data.user.name + ' &middot; <a href="/api/auth/logout?redirect=' + encodeURIComponent(location.pathname) + '" style="color:inherit;">Sign out</a>';
+      } else {
+        window.pokedrafterUser = null;
+        authStatus.innerHTML = '<a href="/api/auth/login" style="color:inherit; text-decoration:underline;">Sign in with Google</a>';
+      }
+    } catch (e) {
+      window.pokedrafterUser = null;
+      authStatus.innerHTML = '';
+    }
+  }
+  loadAuthStatus();
 </script>
 </body>
 </html>

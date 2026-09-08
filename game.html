@@ -806,7 +806,10 @@
       <div class="hero-brand">
   <img src="pokedrafter-logo.svg" alt="Pokédrafter" style="height:65px;">
 </div>
-      <button class="nav-btn" id="themeToggle">&#127769; Dark Mode</button>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span id="authStatus" style="font-size:0.8rem;"></span>
+        <button class="nav-btn" id="themeToggle">&#127769; Dark Mode</button>
+      </div>
     </div>
     <nav class="site-nav">
       <a href="index.html">Home</a>
@@ -887,7 +890,8 @@
       <div class="synopsis-verdict" id="synopsisVerdict"></div>
       <div class="synopsis-score" id="synopsisScore"></div>
       <div class="synopsis-team" id="synopsisTeam"></div>
-      <button class="draft-btn" id="synopsisNewGameBtn" style="margin-top:26px;">Start New Game</button>
+      <div class="status-note" id="synopsisSaveStatus" style="margin-top:16px;"></div>
+      <button class="draft-btn" id="synopsisNewGameBtn" style="margin-top:14px;">Start New Game</button>
     </div>
   </section>
 
@@ -1128,6 +1132,7 @@
   const synopsisVerdict = document.getElementById('synopsisVerdict');
   const synopsisScore = document.getElementById('synopsisScore');
   const synopsisTeam = document.getElementById('synopsisTeam');
+  const synopsisSaveStatus = document.getElementById('synopsisSaveStatus');
   const synopsisNewGameBtn = document.getElementById('synopsisNewGameBtn');
 
 
@@ -1542,6 +1547,43 @@
 
     synopsisCard.classList.toggle('perfect', perfect);
     if (perfect) launchConfetti(synopsisCard);
+
+    submitResultIfSignedIn();
+  }
+
+  async function submitResultIfSignedIn() {
+    synopsisSaveStatus.textContent = 'Checking sign-in status...';
+
+    let authData;
+    try {
+      const meRes = await fetch('/api/auth/me');
+      authData = await meRes.json();
+    } catch (e) {
+      synopsisSaveStatus.textContent = 'Could not reach the server to save this result.';
+      return;
+    }
+
+    if (!authData.loggedIn) {
+      synopsisSaveStatus.innerHTML = '<a href="/api/auth/login" style="color:inherit; text-decoration:underline;">Sign in with Google</a> to save this result to the leaderboard.';
+      return;
+    }
+
+    synopsisSaveStatus.textContent = 'Saving your result...';
+    try {
+      const submitRes = await fetch('/api/results/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team: team.map(p => ({ id: p.id })) })
+      });
+      const submitData = await submitRes.json();
+      if (submitRes.ok && submitData.ok) {
+        synopsisSaveStatus.textContent = 'Result saved to your profile and the leaderboard.';
+      } else {
+        synopsisSaveStatus.textContent = 'Could not save this result: ' + (submitData.error || 'unknown error');
+      }
+    } catch (e) {
+      synopsisSaveStatus.textContent = 'Could not reach the server to save this result.';
+    }
   }
 
   function launchConfetti(container) {
@@ -1582,6 +1624,25 @@
   }
   themeToggle.addEventListener('click', () => { darkMode = !darkMode; applyTheme(); });
   applyTheme();
+
+  async function loadAuthStatus() {
+    const authStatus = document.getElementById('authStatus');
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      if (data.loggedIn) {
+        window.pokedrafterUser = data.user;
+        authStatus.innerHTML = data.user.name + ' &middot; <a href="/api/auth/logout?redirect=' + encodeURIComponent(location.pathname) + '" style="color:inherit;">Sign out</a>';
+      } else {
+        window.pokedrafterUser = null;
+        authStatus.innerHTML = '<a href="/api/auth/login" style="color:inherit; text-decoration:underline;">Sign in with Google</a>';
+      }
+    } catch (e) {
+      window.pokedrafterUser = null;
+      authStatus.innerHTML = '';
+    }
+  }
+  loadAuthStatus();
 
   resetAll();
 </script>
