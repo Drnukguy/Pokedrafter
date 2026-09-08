@@ -17,7 +17,7 @@
     --gold: #b3801f;
   }
 
-  body.dark-mode {
+  html.dark-mode {
     --ink: #ede8dd;
     --paper: #15141a;
     --panel: #1e1d26;
@@ -204,7 +204,7 @@
   let darkMode = false;
   try { darkMode = localStorage.getItem('pokedrafter-theme') === 'dark'; } catch (e) {}
   function applyTheme() {
-    document.body.classList.toggle('dark-mode', darkMode);
+    document.documentElement.classList.toggle('dark-mode', darkMode);
     themeToggle.innerHTML = darkMode ? '&#9728;&#65039; Light Mode' : '&#127769; Dark Mode';
     try { localStorage.setItem('pokedrafter-theme', darkMode ? 'dark' : 'light'); } catch (e) {}
   }
