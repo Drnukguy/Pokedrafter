@@ -9,7 +9,7 @@
     "not_found_handling": "404-page"
   },
 "vars": {
-  "GOOGLE_CLIENT_ID": "your-actual-client-id-here"
+  "GOOGLE_CLIENT_ID": "56169021326-uoudi0leg0suurj56c9sd5en3gvqr6si.apps.googleusercontent.com"
 },
   "d1_databases": [
     {
