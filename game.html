@@ -946,7 +946,7 @@
   // the hardest stage. A team at or above this rating clears the whole board; below
   // it, they'll fall short somewhere. Raise this to make the season easier for a given
   // team; lower it to make it harder.
-  const REFERENCE_RATING = 1540;
+  const REFERENCE_RATING = 1526;
 
   // Each stage's difficulty is this fraction of REFERENCE_RATING. 13 entries: 8 Gym
   // Leaders, 4 Elite Four, 1 Champion. Raise/lower these to retune the difficulty curve.
@@ -1020,7 +1020,7 @@
   // Paradox Pokemon (Scarlet/Violet base game) are not flagged Legendary in the
   // real game data, but their stats are Legendary-tier - so for drafting purposes
   // they're pulled out of the general pool and treated as Legendary instead.
-  const PARADOX_IDS = [984, 985, 986, 987, 988, 989, 990, 991, 992, 993, 994, 995, 1005, 1006];
+  const PARADOX_IDS = [984, 985, 986, 987, 988, 989, 990, 991, 992, 993, 994, 995, 1005, 1006, 1009, 1010, 1020, 1021, 1022, 1023];
 
   function isOpenPoolMon(p) {
     return !(p.leg || p.myt) && p.st === 'final' && !PARADOX_IDS.includes(p.id);
