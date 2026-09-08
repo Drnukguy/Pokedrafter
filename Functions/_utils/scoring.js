@@ -53,7 +53,7 @@ const POKEDEX_BY_ID = new Map(POKEDEX.map(p => [p.id, p]));
 // game data, but their stats are Legendary-tier - so for drafting purposes they're
 // pulled out of the general pool and treated as Legendary instead. Must match the
 // same list in game.html exactly, or legitimate results will get rejected here.
-const PARADOX_IDS = [984, 985, 986, 987, 988, 989, 990, 991, 992, 993, 994, 995, 1005, 1006];
+const PARADOX_IDS = [984, 985, 986, 987, 988, 989, 990, 991, 992, 993, 994, 995, 1005, 1006, 1009, 1010, 1020, 1021, 1022, 1023];
 
 // 5 open rounds (any fully-evolved, non-Legendary, non-Paradox Pokemon) followed by
 // 1 dedicated Legendary round (real Legendary/Mythical flags, plus the Paradox mons).
@@ -68,7 +68,7 @@ function slotMatches(slotKey, p) {
   return !(p.leg || p.myt) && p.st === 'final' && !PARADOX_IDS.includes(p.id);
 }
 
-const REFERENCE_RATING = 1540;
+const REFERENCE_RATING = 1526;
 const STAGE_TARGET_FRACTIONS = [
   0.30, 0.40, 0.48, 0.55, 0.62, 0.69, 0.75, 0.81,
   0.85, 0.89, 0.93, 0.96,
