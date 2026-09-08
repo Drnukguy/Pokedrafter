@@ -173,23 +173,26 @@
       </div>
       <button class="nav-btn" id="themeToggle">&#127769; Dark Mode</button>
     </div>
-    <p class="hero-tagline">Gotta draft em' all!</p>
+    <p class="hero-tagline">A fantasy-draft game built around Pokémon type and generation spins. Draft a team of six across five roles, then find out if it's strong enough to clear all 13 stages of the season.</p>
   </header>
 
   <div class="card-grid">
     <a href="game.html" class="card primary">
       <div class="card-eyebrow">Start here</div>
       <h2>Play</h2>
+      <p>Spin for type and region, draft one Pokémon per role, and simulate your season against 8 Gym Leaders, the Elite Four, and the Champion.</p>
     </a>
 
     <a href="leaderboard.html" class="card">
       <div class="card-eyebrow">Rankings</div>
       <h2>Leaderboard</h2>
+      <p>See the best team ratings and season records other players have achieved.</p>
     </a>
 
     <a href="profile.html" class="card">
       <div class="card-eyebrow">Your history</div>
       <h2>Profile</h2>
+      <p>Track your own past drafts, records, and personal best runs.</p>
     </a>
   </div>
 
@@ -200,9 +203,11 @@
 <script>
   const themeToggle = document.getElementById('themeToggle');
   let darkMode = false;
+  try { darkMode = localStorage.getItem('pokedrafter-theme') === 'dark'; } catch (e) {}
   function applyTheme() {
     document.body.classList.toggle('dark-mode', darkMode);
     themeToggle.innerHTML = darkMode ? '&#9728;&#65039; Light Mode' : '&#127769; Dark Mode';
+    try { localStorage.setItem('pokedrafter-theme', darkMode ? 'dark' : 'light'); } catch (e) {}
   }
   themeToggle.addEventListener('click', () => { darkMode = !darkMode; applyTheme(); });
   applyTheme();

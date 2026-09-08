@@ -348,6 +348,34 @@
     opacity: 0.55;
   }
 
+  .candidate-detail {
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    background: var(--panel);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .candidate-detail img { width: 56px; height: 56px; image-rendering: pixelated; flex: none; }
+
+  .candidate-detail-main { flex: 1; min-width: 0; }
+
+  .candidate-detail-name {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 2px;
+  }
+
+  .candidate-detail-sub {
+    font-size: 0.75rem;
+    opacity: 0.55;
+    margin-bottom: 8px;
+  }
+
   .list-empty-inline {
     padding: 20px 4px;
     text-align: center;
@@ -503,6 +531,101 @@
     font-size: 0.72rem;
     opacity: 0.4;
     text-align: center;
+  }
+
+  .synopsis {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0 40px;
+  }
+
+  .synopsis-card {
+    position: relative;
+    overflow: hidden;
+    max-width: 560px;
+    width: 100%;
+    text-align: center;
+    background: var(--panel);
+    border: 2px solid var(--ink);
+    border-radius: 6px;
+    padding: 40px 28px;
+  }
+
+  .synopsis-card.perfect {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 1px var(--gold), 0 0 32px 0 color-mix(in srgb, var(--gold) 35%, transparent);
+  }
+
+  .synopsis-rank {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 4rem;
+    line-height: 1;
+  }
+
+  .synopsis-record {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 1.6rem;
+    margin-top: 6px;
+  }
+
+  .synopsis-verdict {
+    font-size: 0.95rem;
+    opacity: 0.75;
+    margin-top: 8px;
+  }
+
+  .synopsis-score {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.85rem;
+    opacity: 0.6;
+    margin-top: 4px;
+  }
+
+  .synopsis-team {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 28px;
+  }
+
+  .synopsis-mon {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 12px 6px;
+  }
+
+  .synopsis-mon img { width: 48px; height: 48px; image-rendering: pixelated; }
+
+  .synopsis-mon-name {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-top: 4px;
+  }
+
+  .synopsis-mon-slot {
+    font-size: 0.66rem;
+    opacity: 0.55;
+    margin-top: 2px;
+  }
+
+  .confetti-piece {
+    position: absolute;
+    top: -10px;
+    width: 8px;
+    height: 8px;
+    opacity: 0.9;
+    animation-name: confettiFall;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+    pointer-events: none;
+  }
+
+  @keyframes confettiFall {
+    to { transform: translateY(480px) rotate(360deg); opacity: 0; }
   }
 
   /* Battle / season styling */
@@ -669,7 +792,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .stage, .spin-btn, .candidate-thumb, .slot-value.rolling { transition: none; animation: none; }
+    .stage, .spin-btn, .candidate-thumb, .slot-value.rolling, .confetti-piece { transition: none; animation: none; }
   }
 </style>
 </head>
@@ -690,7 +813,7 @@
       <a href="leaderboard.html">Leaderboard</a>
       <a href="profile.html">Profile</a>
     </nav>
-    <p class="hero-tagline">Draft one Pokémon per role, then see if your team is strong enough to clear all 13 stages.</p>
+    <p class="hero-tagline">Draft one Pokémon per role — Starter, Intermediate, Final, Legendary, and two Bench slots — then see if your team is strong enough to clear all 13 stages.</p>
     <div class="tally" id="tally">Slot 1 of 6 · 0 drafted</div>
   </header>
 
@@ -711,7 +834,7 @@
         </div>
 
         <button class="spin-btn" id="spinBtn">Spin</button>
-        <button class="reset-link" id="resetBtn">New Game</button>
+        <button class="reset-link" id="resetBtn">start a new game</button>
         <div class="status-note" id="statusNote"></div>
 
         <div class="candidates" id="candidatesBlock" style="display:none;">
@@ -725,6 +848,8 @@
             <select id="filterGen" class="filter-select"></select>
             <select id="sortKey" class="filter-select">
               <option value="name">Name (A-Z)</option>
+              <option value="dexnum">Pok\u00e9dex #</option>
+              <option value="gen">Generation</option>
               <option value="hp">Highest HP</option>
               <option value="atk">Highest Attack</option>
               <option value="def">Highest Defense</option>
@@ -733,6 +858,8 @@
               <option value="spe">Highest Speed</option>
             </select>
           </div>
+
+          <div class="candidate-detail" id="candidateDetail"></div>
 
           <div class="candidate-list" id="candidateList"></div>
 
@@ -750,24 +877,19 @@
         </ul>
         <div class="team-avg" id="teamAvg"></div>
       </div>
-
-      <div class="panel-block" id="seasonSection" style="display:none;">
-        <div class="panel-head">Season</div>
-
-        <div id="seasonResults" style="display:none;">
-          <div class="record-banner" id="recordBanner">
-            <div>
-              <div class="record-label">Season record</div>
-              <div class="record-value" id="recordValue">0–0</div>
-            </div>
-            <div class="record-verdict" id="recordVerdict"></div>
-          </div>
-          <ul class="match-list" id="matchList"></ul>
-          <div class="status-note" style="margin-top:14px;">This season is complete. Start a new game above to draft a new roster.</div>
-        </div>
-      </div>
     </aside>
   </div>
+
+  <section class="synopsis" id="synopsisScreen" style="display:none;">
+    <div class="synopsis-card" id="synopsisCard">
+      <div class="synopsis-rank" id="synopsisRank">S</div>
+      <div class="synopsis-record" id="synopsisRecord">0–0</div>
+      <div class="synopsis-verdict" id="synopsisVerdict"></div>
+      <div class="synopsis-score" id="synopsisScore"></div>
+      <div class="synopsis-team" id="synopsisTeam"></div>
+      <button class="draft-btn" id="synopsisNewGameBtn" style="margin-top:26px;">Start New Game</button>
+    </div>
+  </section>
 
   <div class="data-note">Data bundled locally — no external requests at runtime.</div>
 
@@ -862,10 +984,33 @@
   const BAL_MIN = Math.min(...POKEDEX.map(p => p.balance));
   const BAL_MAX = Math.max(...POKEDEX.map(p => p.balance));
 
+  // Small popularity bonus based on the real, official 2020 "Pokemon of the Year"
+  // global vote (The Pokemon Company + Google, 6.6M votes) — not an editorial guess.
+  // Bonus is scaled roughly to actual vote share and also applied to each Pokemon's
+  // earlier evolution stages (e.g. Charmander/Charmeleon share Charizard's bonus).
+  // Where a pre-evolution feeds into more than one bonused Pokemon (Eevee), it gets
+  // the higher of the two bonuses rather than both added together.
+  const POPULARITY_BONUS = {
+    greninja: 15, frogadier: 15, froakie: 15,
+    lucario: 13, riolu: 13,
+    mimikyu: 11,
+    charizard: 10, charmeleon: 10, charmander: 10,
+    umbreon: 8, eevee: 8,
+    sylveon: 7,
+    garchomp: 6, gabite: 6, gible: 6,
+    rayquaza: 5,
+    gardevoir: 4, kirlia: 4, ralts: 4,
+    gengar: 3, haunter: 3, gastly: 3
+  };
+
   function scoreFromBalance(balance) {
     return Math.round(SCORE_MIN + ((balance - BAL_MIN) / (BAL_MAX - BAL_MIN)) * (SCORE_MAX - SCORE_MIN));
   }
-  POKEDEX.forEach(p => { p.score = scoreFromBalance(p.balance); });
+  POKEDEX.forEach(p => {
+    const base = scoreFromBalance(p.balance);
+    const bonus = POPULARITY_BONUS[p.n] || 0;
+    p.score = Math.min(SCORE_MAX, base + bonus);
+  });
 
   // ---------- Role-slot draft engine ----------
   // Each of the 6 team slots draws from a different, appropriately-sized pool:
@@ -968,6 +1113,7 @@
   const statusNote = document.getElementById('statusNote');
   const candidatesBlock = document.getElementById('candidatesBlock');
   const candidateList = document.getElementById('candidateList');
+  const candidateDetail = document.getElementById('candidateDetail');
   const candidateCount = document.getElementById('candidateCount');
   const filterNameInput = document.getElementById('filterName');
   const filterGenSelect = document.getElementById('filterGen');
@@ -975,12 +1121,14 @@
   const draftBtn = document.getElementById('draftBtn');
   const rerollBtn = document.getElementById('rerollBtn');
 
-  const seasonSection = document.getElementById('seasonSection');
-  const seasonResults = document.getElementById('seasonResults');
-  const recordBanner = document.getElementById('recordBanner');
-  const recordValue = document.getElementById('recordValue');
-  const recordVerdict = document.getElementById('recordVerdict');
-  const matchList = document.getElementById('matchList');
+  const synopsisScreen = document.getElementById('synopsisScreen');
+  const synopsisCard = document.getElementById('synopsisCard');
+  const synopsisRank = document.getElementById('synopsisRank');
+  const synopsisRecord = document.getElementById('synopsisRecord');
+  const synopsisVerdict = document.getElementById('synopsisVerdict');
+  const synopsisScore = document.getElementById('synopsisScore');
+  const synopsisTeam = document.getElementById('synopsisTeam');
+  const synopsisNewGameBtn = document.getElementById('synopsisNewGameBtn');
 
 
   function renderTally() {
@@ -1024,7 +1172,6 @@
       }
     }
 
-    seasonSection.style.display = (team.length === TEAM_SIZE) ? 'block' : 'none';
   }
 
   function realTypeLabel(p) {
@@ -1050,11 +1197,38 @@
     });
     if (sortKey === 'name') {
       list.sort((a, b) => formatName(a.n).localeCompare(formatName(b.n)));
+    } else if (sortKey === 'gen') {
+      list.sort((a, b) => a.g - b.g || formatName(a.n).localeCompare(formatName(b.n)));
+    } else if (sortKey === 'dexnum') {
+      list.sort((a, b) => a.id - b.id);
     } else {
       const statKey = { hp: 'hp', atk: 'atk', def: 'def', spa: 'spa', spd: 'spd', spe: 'spe' }[sortKey];
       list.sort((a, b) => b.s[statKey] - a.s[statKey]);
     }
     return list;
+  }
+
+  function renderCandidateDetail() {
+    const p = currentEligible.find(x => x.id === selectedId);
+    if (!p) {
+      candidateDetail.innerHTML = '';
+      return;
+    }
+    candidateDetail.innerHTML = `
+      <img src="${spriteUrl(p.id)}" alt="" onerror="this.style.display='none'">
+      <div class="candidate-detail-main">
+        <div class="candidate-detail-name" style="color: ${TYPE_COLOR[p.t] || 'var(--ink)'};">${formatName(p.n)}</div>
+        <div class="candidate-detail-sub">#${p.id} \u00b7 Gen ${p.g} \u00b7 ${realTypeLabel(p)}</div>
+        <div class="stat-row">
+          <span class="stat">HP <b>${p.s.hp}</b></span>
+          <span class="stat">ATK <b>${p.s.atk}</b></span>
+          <span class="stat">DEF <b>${p.s.def}</b></span>
+          <span class="stat">SP.ATK <b>${p.s.spa}</b></span>
+          <span class="stat">SP.DEF <b>${p.s.spd}</b></span>
+          <span class="stat">SPD <b>${p.s.spe}</b></span>
+        </div>
+      </div>
+    `;
   }
 
   function renderCandidateList() {
@@ -1074,15 +1248,7 @@
           <div class="candidate-row-main">
             <div class="candidate-row-name" style="color: ${TYPE_COLOR[p.t] || 'var(--ink)'};">
               ${formatName(p.n)}
-              <span class="candidate-row-gen">Gen ${p.g} \u00b7 ${realTypeLabel(p)}</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat">HP <b>${p.s.hp}</b></span>
-              <span class="stat">ATK <b>${p.s.atk}</b></span>
-              <span class="stat">DEF <b>${p.s.def}</b></span>
-              <span class="stat">SP.ATK <b>${p.s.spa}</b></span>
-              <span class="stat">SP.DEF <b>${p.s.spd}</b></span>
-              <span class="stat">SPD <b>${p.s.spe}</b></span>
+              <span class="candidate-row-gen">#${p.id} \u00b7 Gen ${p.g} \u00b7 ${realTypeLabel(p)}</span>
             </div>
           </div>
         </div>
@@ -1094,6 +1260,8 @@
         });
       });
     }
+
+    renderCandidateDetail();
 
     draftBtn.disabled = selectedId === null;
   }
@@ -1304,7 +1472,8 @@
     candidatesBlock.style.display = 'none';
     spinBtn.disabled = false;
 
-    seasonResults.style.display = 'none';
+    synopsisScreen.style.display = 'none';
+    document.querySelector('.layout-grid').style.display = '';
 
     renderTally();
     renderTeam();
@@ -1321,71 +1490,82 @@
     return { combined, effective: combined };
   }
 
+  // Season letter ranks, colored to feel like a real grading scale.
+  const RANKS = [
+    { min: 13, label: 'S',  color: 'var(--gold)' },
+    { min: 12, label: 'A+', color: '#2f8f4e' },
+    { min: 11, label: 'A',  color: '#3f9d5c' },
+    { min: 10, label: 'A-', color: '#5aab74' },
+    { min: 9,  label: 'B+', color: '#4a7fb5' },
+    { min: 8,  label: 'B',  color: '#6b93b8' },
+    { min: 0,  label: 'B-', color: '#8a8a8a' }
+  ];
+  function rankFor(wins) {
+    return RANKS.find(r => wins >= r.min);
+  }
+
   function runSeason() {
     const rating = computeTeamRating();
-    const results = [];
     let wins = 0;
 
     for (let s = 0; s < STAGE_LABELS.length; s++) {
       const difficulty = Math.round(STAGE_TARGET_FRACTIONS[s] * REFERENCE_RATING);
-      const won = rating.effective >= difficulty;
-      if (won) wins++;
-      results.push({ label: STAGE_LABELS[s], tier: STAGE_TIERS[s], difficulty, won });
+      if (rating.effective >= difficulty) wins++;
     }
 
-    renderSeason(results, wins, rating);
+    showSynopsis(wins, rating);
   }
 
-  function renderSeason(results, wins, rating) {
-    seasonResults.style.display = 'block';
+  function showSynopsis(wins, rating) {
+    document.querySelector('.layout-grid').style.display = 'none';
+    synopsisScreen.style.display = 'block';
 
-    const losses = results.length - wins;
-    recordValue.textContent = `${wins}–${losses}`;
-
+    const losses = SEASON_LENGTH - wins;
+    const rank = rankFor(wins);
     const perfect = wins === SEASON_LENGTH;
-    recordBanner.classList.toggle('perfect', perfect);
-    recordVerdict.textContent = perfect
-      ? `Perfect ${SEASON_LENGTH}-stage season — Champion defeated!`
+
+    synopsisRank.textContent = rank.label;
+    synopsisRank.style.color = rank.color;
+    synopsisRecord.textContent = `${wins}–${losses}`;
+    synopsisVerdict.textContent = perfect
+      ? 'Perfect season — Champion defeated!'
       : `${wins} of ${SEASON_LENGTH} stages won`;
+    synopsisScore.textContent = `Team Rating: ${rating.combined}`;
 
-    matchList.innerHTML = results.map((r) => {
-      const margin = rating.effective - r.difficulty;
-      const marginText = margin >= 0 ? `+${margin} margin` : `${margin} margin`;
-      return `
-      <li class="match-item">
-        <details>
-          <summary>
-            <span class="match-badge ${r.won ? 'win' : 'loss'}">${r.won ? 'WIN' : 'LOSS'}</span>
-            <span class="match-stage">${r.label}</span>
-            <span class="match-opp">difficulty ${r.difficulty} vs. your rating ${rating.effective}</span>
-            <span class="match-score">${marginText}</span>
-          </summary>
-          <div class="match-log">
-            <div class="match-log-line">Your Team Rating (<b>${rating.effective}</b>) vs. this stage's Difficulty (<b>${r.difficulty}</b>) — you clear a stage whenever your rating is equal or higher. Result: <b>${r.won ? 'WIN' : 'LOSS'}</b>.</div>
-          </div>
-        </details>
-      </li>
-    `;
-    }).join('');
+    synopsisTeam.innerHTML = team.map(p => `
+      <div class="synopsis-mon">
+        <img src="${spriteUrl(p.id)}" alt="" onerror="this.style.display='none'">
+        <div class="synopsis-mon-name" style="color: ${TYPE_COLOR[p.battleType.toLowerCase()] || 'var(--ink)'};">${p.name}</div>
+        <div class="synopsis-mon-slot">${p.slotLabel}</div>
+      </div>
+    `).join('');
 
-    matchList.innerHTML += `
-      <li class="match-item">
-        <details open>
-          <summary>
-            <span class="match-badge" style="background:var(--ink);">RATING</span>
-            <span class="match-opp">How your Team Rating was calculated</span>
-          </summary>
-          <div class="match-log">
-            <div class="match-log-line">Combined power score: <b>${rating.combined}</b></div>
-            <div class="match-log-line">Team Rating: <b>${rating.effective}</b></div>
-          </div>
-        </details>
-      </li>
-    `;
+    synopsisCard.classList.toggle('perfect', perfect);
+    if (perfect) launchConfetti(synopsisCard);
+  }
+
+  function launchConfetti(container) {
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const colors = ['var(--gold)', '#e07a2f', '#4a7fb5', '#5aab74', '#c94f4f'];
+    for (let i = 0; i < 28; i++) {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.left = Math.random() * 100 + '%';
+      el.style.background = colors[Math.floor(Math.random() * colors.length)];
+      el.style.animationDelay = (Math.random() * 0.4) + 's';
+      el.style.animationDuration = (1.6 + Math.random() * 1.2) + 's';
+      container.appendChild(el);
+    }
+    setTimeout(() => {
+      container.querySelectorAll('.confetti-piece').forEach(e => e.remove());
+    }, 3200);
   }
 
   spinBtn.addEventListener('click', spin);
   resetBtn.addEventListener('click', resetAll);
+  synopsisNewGameBtn.addEventListener('click', resetAll);
   filterNameInput.addEventListener('input', () => { filterName = filterNameInput.value; renderCandidateList(); });
   filterGenSelect.addEventListener('change', () => { filterGen = filterGenSelect.value; renderCandidateList(); });
   sortKeySelect.addEventListener('change', () => { sortKey = sortKeySelect.value; renderCandidateList(); });
@@ -1394,9 +1574,11 @@
 
   const themeToggle = document.getElementById('themeToggle');
   let darkMode = false;
+  try { darkMode = localStorage.getItem('pokedrafter-theme') === 'dark'; } catch (e) {}
   function applyTheme() {
     document.body.classList.toggle('dark-mode', darkMode);
     themeToggle.innerHTML = darkMode ? '&#9728;&#65039; Light Mode' : '&#127769; Dark Mode';
+    try { localStorage.setItem('pokedrafter-theme', darkMode ? 'dark' : 'light'); } catch (e) {}
   }
   themeToggle.addEventListener('click', () => { darkMode = !darkMode; applyTheme(); });
   applyTheme();

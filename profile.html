@@ -153,7 +153,7 @@
 
   <div class="empty-state">
     <h2>Profiles are coming soon</h2>
-    <p>Profile sections are being worked on currently!</p>
+    <p>Saving your draft history and past records across visits needs accounts and a backend — neither exists yet. For now, each season you play only lasts for your current visit.</p>
   </div>
 
 </div>
@@ -161,9 +161,11 @@
 <script>
   const themeToggle = document.getElementById('themeToggle');
   let darkMode = false;
+  try { darkMode = localStorage.getItem('pokedrafter-theme') === 'dark'; } catch (e) {}
   function applyTheme() {
     document.body.classList.toggle('dark-mode', darkMode);
     themeToggle.innerHTML = darkMode ? '&#9728;&#65039; Light Mode' : '&#127769; Dark Mode';
+    try { localStorage.setItem('pokedrafter-theme', darkMode ? 'dark' : 'light'); } catch (e) {}
   }
   themeToggle.addEventListener('click', () => { darkMode = !darkMode; applyTheme(); });
   applyTheme();
