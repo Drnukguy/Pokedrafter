@@ -130,6 +130,73 @@
     margin: 0 auto;
     line-height: 1.5;
   }
+
+  .board-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .board-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+  }
+  .board-row:last-child { border-bottom: none; }
+
+  .board-date {
+    font-size: 0.78rem;
+    opacity: 0.6;
+    width: 90px;
+    flex: none;
+  }
+
+  .board-grade {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    width: 40px;
+    flex: none;
+    text-align: center;
+  }
+
+  .board-record {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    width: 60px;
+    flex: none;
+    text-align: center;
+  }
+
+  .board-team-preview {
+    display: flex;
+    gap: 1px;
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  .board-team-preview img {
+    width: 24px;
+    height: 24px;
+    image-rendering: pixelated;
+  }
+
+  .board-score {
+    font-size: 0.78rem;
+    opacity: 0.6;
+    width: 70px;
+    flex: none;
+    text-align: right;
+  }
+
+  @media (max-width: 640px) {
+    .board-team-preview { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -153,8 +220,10 @@
     </nav>
   </header>
 
-  <div class="empty-state">
-    <h2>Profiles are coming soon</h2>
+  <div id="profileContent">
+    <div class="empty-state">
+      <h2>Loading...</h2>
+    </div>
   </div>
 
 </div>
@@ -189,6 +258,67 @@
     }
   }
   loadAuthStatus();
+
+  const RANK_COLORS = {
+    'S': 'var(--gold)', 'A+': '#2f8f4e', 'A': '#3f9d5c', 'A-': '#5aab74',
+    'B+': '#4a7fb5', 'B': '#6b93b8', 'B-': '#8a8a8a'
+  };
+
+  function spriteUrl(id) {
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  function formatDate(ts) {
+    return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  async function loadProfile() {
+    const container = document.getElementById('profileContent');
+
+    let authData;
+    try {
+      const meRes = await fetch('/api/auth/me');
+      authData = await meRes.json();
+    } catch (err) {
+      container.innerHTML = '<div class="empty-state"><h2>Could not check sign-in status</h2><p>Please try refreshing the page.</p></div>';
+      return;
+    }
+
+    if (!authData.loggedIn) {
+      container.innerHTML = '<div class="empty-state"><h2>Sign in to see your profile</h2><p><a href="/api/auth/login" style="color:inherit; text-decoration:underline;">Sign in with Google</a> to track your draft history and past season records.</p></div>';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/profile/history');
+      if (!res.ok) throw new Error('Request failed');
+      const data = await res.json();
+
+      if (!data.history || data.history.length === 0) {
+        container.innerHTML = '<div class="empty-state"><h2>No runs yet</h2><p>Play a season on the Play page and it will show up here.</p></div>';
+        return;
+      }
+
+      container.innerHTML = '<ul class="board-list">' + data.history.map(run => `
+        <li class="board-row">
+          <span class="board-date">${formatDate(run.createdAt)}</span>
+          <span class="board-grade" style="color: ${RANK_COLORS[run.rank] || 'var(--ink)'};">${escapeHtml(run.rank)}</span>
+          <span class="board-record">${run.wins}\u2013${run.losses}</span>
+          <span class="board-team-preview">${run.team.map(p => `<img src="${spriteUrl(p.id)}" alt="" onerror="this.style.display='none'">`).join('')}</span>
+          <span class="board-score">${run.combinedScore} pts</span>
+        </li>
+      `).join('') + '</ul>';
+    } catch (err) {
+      container.innerHTML = '<div class="empty-state"><h2>Could not load your history</h2><p>Please try refreshing the page.</p></div>';
+    }
+  }
+  loadProfile();
 </script>
 </body>
 </html>
