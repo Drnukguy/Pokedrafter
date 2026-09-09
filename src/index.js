@@ -7,6 +7,8 @@ import { onRequestGet as leaderboardGet } from '../Functions/api/leaderboard.js'
 import { onRequestGet as profileHistory } from '../Functions/api/profile/history.js';
 import { onRequestGet as profileSettingsGet, onRequestPost as profileSettingsPost } from '../Functions/api/profile/settings.js';
 import { onRequestPost as profileDelete } from '../Functions/api/profile/delete.js';
+import { onRequestGet as profileStats } from '../Functions/api/profile/stats.js';
+import { onRequestGet as publicProfile } from '../Functions/api/public-profile.js';
 
 const ROUTES = [
   { method: 'GET', path: '/api/auth/login', handler: authLogin },
@@ -18,7 +20,9 @@ const ROUTES = [
   { method: 'GET', path: '/api/profile/history', handler: profileHistory },
   { method: 'GET', path: '/api/profile/settings', handler: profileSettingsGet },
   { method: 'POST', path: '/api/profile/settings', handler: profileSettingsPost },
-  { method: 'POST', path: '/api/profile/delete', handler: profileDelete }
+  { method: 'POST', path: '/api/profile/delete', handler: profileDelete },
+  { method: 'GET', path: '/api/profile/stats', handler: profileStats },
+  { method: 'GET', path: '/api/public-profile', handler: publicProfile }
 ];
 
 export default {
@@ -34,6 +38,14 @@ export default {
           status: 500
         });
       }
+    }
+
+    // Shareable public profile URLs (/u/42) don't correspond to a real file -
+    // serve public-profile.html instead, while the browser's address bar keeps
+    // showing /u/42 so the page's own script can read the id back out of it.
+    if (request.method === 'GET' && url.pathname.startsWith('/u/')) {
+      const rewritten = new Request(new URL('/public-profile.html', url), request);
+      return env.ASSETS.fetch(rewritten);
     }
 
     // Not an API route - serve the matching static file (index.html, game.html, etc.)
