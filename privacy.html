@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Leaderboard — Pokédrafter</title>
+<title>Privacy Policy — Pokédrafter</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
 
@@ -208,6 +208,30 @@
   @media (max-width: 640px) {
     .board-team-preview { display: none; }
   }
+
+  .policy-content {
+    max-width: 720px;
+  }
+  .policy-content h2 {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-left: 3px solid var(--gold);
+    padding-left: 10px;
+    margin: 32px 0 12px;
+  }
+  .policy-content h2:first-child { margin-top: 0; }
+  .policy-content p, .policy-content li {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    opacity: 0.85;
+  }
+  .policy-content ul { padding-left: 22px; margin: 10px 0; }
+  .policy-content .updated-note {
+    font-size: 0.8rem;
+    opacity: 0.55;
+    margin-bottom: 30px;
+  }
   .site-footer {
     margin-top: 50px;
     padding-top: 20px;
@@ -239,15 +263,50 @@
     <nav class="site-nav">
       <a href="index.html">Home</a>
       <a href="game.html">Play</a>
-      <a href="leaderboard.html" class="current">Leaderboard</a>
+      <a href="leaderboard.html">Leaderboard</a>
       <a href="profile.html">Profile</a>
     </nav>
   </header>
 
-  <div id="leaderboardContent">
-    <div class="empty-state">
-      <h2>Loading leaderboard...</h2>
-    </div>
+  <div class="policy-content">
+    <h1 style="font-family:'Chakra Petch',sans-serif; font-size:1.5rem; margin-bottom:4px;">Privacy Policy</h1>
+    <div class="updated-note">Last updated: September 2026</div>
+
+    <p>Pokédrafter is an independent, non-commercial fan project built and run by one person as a hobby. It is not affiliated with, endorsed by, or connected to Nintendo, Game Freak, or The Pokémon Company. This policy explains what information is collected when you use the site, why, and how it's handled.</p>
+
+    <h2>Information We Collect</h2>
+    <p>When you sign in with Google, we receive your email address, the name on your Google account, and your Google profile picture. We don't see or store your Google password.</p>
+    <p>When you complete a season in the game, we store the team you drafted, your combined score, your win/loss record, and your letter rank, tied to your account.</p>
+    <p>As with any website, our hosting provider (Cloudflare) automatically processes standard technical information as part of running the service, such as IP addresses and request logs. We don't separately collect or analyze this ourselves.</p>
+
+    <h2>How We Use This Information</h2>
+    <ul>
+      <li>To create and maintain your account</li>
+      <li>To show your results on the public leaderboard and your private profile history</li>
+      <li>To let you set a custom display name, if you choose to</li>
+      <li>To independently verify submitted results on our server, so the leaderboard reflects real, unmodified game outcomes rather than anything a player could fake in their browser</li>
+    </ul>
+
+    <h2>What's Public vs. Private</h2>
+    <p>If you sign in and complete a season, your best result (display name, team, score, record, and rank) appears on the public Leaderboard page, visible to anyone who visits the site. Your full history of past runs is private and only visible to you when signed in, on your Profile page.</p>
+
+    <h2>Data Sharing</h2>
+    <p>We do not sell your information or share it with advertisers. We don't run ads or third-party tracking scripts on this site. Google (as our sign-in provider) and Cloudflare (as our hosting provider) process data as necessary to provide those underlying services, under their own respective privacy policies.</p>
+
+    <h2>Data Retention and Deletion</h2>
+    <p>We keep your account and game history for as long as your account exists. If you'd like your account and associated data deleted, contact us at the email below and we'll remove it. There is currently no automatic self-service deletion option.</p>
+
+    <h2>Children's Privacy</h2>
+    <p>Pokédrafter is not directed at children and is not intended for use by anyone who does not meet Google's minimum age requirements for a Google Account. If you believe a child has created an account, please contact us and we will remove it.</p>
+
+    <h2>Security</h2>
+    <p>We take reasonable steps to protect your information, including signed, tamper-resistant session cookies and server-side verification of all submitted results. However, no website can guarantee perfect security.</p>
+
+    <h2>Changes to This Policy</h2>
+    <p>If this policy changes, we'll update the date at the top of this page.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about this policy, or requests to access or delete your data, can be sent to: <strong>[your contact email here]</strong></p>
   </div>
 
   <footer class="site-footer">
@@ -274,61 +333,15 @@
       const res = await fetch('/api/auth/me');
       const data = await res.json();
       if (data.loggedIn) {
-        window.pokedrafterUser = data.user;
         authStatus.innerHTML = data.user.name + ' &middot; <a href="/api/auth/logout?redirect=' + encodeURIComponent(location.pathname) + '" style="color:inherit;">Sign out</a>';
       } else {
-        window.pokedrafterUser = null;
         authStatus.innerHTML = '<a href="/api/auth/login" style="color:inherit; text-decoration:underline;">Sign in with Google</a>';
       }
     } catch (e) {
-      window.pokedrafterUser = null;
       authStatus.innerHTML = '';
     }
   }
   loadAuthStatus();
-
-  const RANK_COLORS = {
-    'S': 'var(--gold)', 'A+': '#2f8f4e', 'A': '#3f9d5c', 'A-': '#5aab74',
-    'B+': '#4a7fb5', 'B': '#6b93b8', 'B-': '#8a8a8a'
-  };
-
-  function spriteUrl(id) {
-    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
-  }
-
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str == null ? '' : String(str);
-    return div.innerHTML;
-  }
-
-  async function loadLeaderboard() {
-    const container = document.getElementById('leaderboardContent');
-    try {
-      const res = await fetch('/api/leaderboard');
-      if (!res.ok) throw new Error('Request failed');
-      const data = await res.json();
-
-      if (!data.entries || data.entries.length === 0) {
-        container.innerHTML = '<div class="empty-state"><h2>No results yet</h2><p>Be the first to complete a season and claim the top spot.</p></div>';
-        return;
-      }
-
-      container.innerHTML = '<ul class="board-list">' + data.entries.map((e, i) => `
-        <li class="board-row">
-          <span class="board-rank-num">#${i + 1}</span>
-          <span class="board-name">${escapeHtml(e.name)}</span>
-          <span class="board-grade" style="color: ${RANK_COLORS[e.rank] || 'var(--ink)'};">${escapeHtml(e.rank)}</span>
-          <span class="board-record">${e.wins}\u2013${e.losses}</span>
-          <span class="board-team-preview">${e.team.map(p => `<img src="${spriteUrl(p.id)}" alt="" onerror="this.style.display='none'">`).join('')}</span>
-          <span class="board-score">${e.combinedScore} pts</span>
-        </li>
-      `).join('') + '</ul>';
-    } catch (err) {
-      container.innerHTML = '<div class="empty-state"><h2>Could not load the leaderboard</h2><p>Please try refreshing the page.</p></div>';
-    }
-  }
-  loadLeaderboard();
 </script>
 </body>
 </html>

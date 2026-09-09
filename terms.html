@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Leaderboard — Pokédrafter</title>
+<title>Terms of Service — Pokédrafter</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
 
@@ -208,6 +208,30 @@
   @media (max-width: 640px) {
     .board-team-preview { display: none; }
   }
+
+  .policy-content {
+    max-width: 720px;
+  }
+  .policy-content h2 {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-left: 3px solid var(--gold);
+    padding-left: 10px;
+    margin: 32px 0 12px;
+  }
+  .policy-content h2:first-child { margin-top: 0; }
+  .policy-content p, .policy-content li {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    opacity: 0.85;
+  }
+  .policy-content ul { padding-left: 22px; margin: 10px 0; }
+  .policy-content .updated-note {
+    font-size: 0.8rem;
+    opacity: 0.55;
+    margin-bottom: 30px;
+  }
   .site-footer {
     margin-top: 50px;
     padding-top: 20px;
@@ -239,15 +263,51 @@
     <nav class="site-nav">
       <a href="index.html">Home</a>
       <a href="game.html">Play</a>
-      <a href="leaderboard.html" class="current">Leaderboard</a>
+      <a href="leaderboard.html">Leaderboard</a>
       <a href="profile.html">Profile</a>
     </nav>
   </header>
 
-  <div id="leaderboardContent">
-    <div class="empty-state">
-      <h2>Loading leaderboard...</h2>
-    </div>
+  <div class="policy-content">
+    <h1 style="font-family:'Chakra Petch',sans-serif; font-size:1.5rem; margin-bottom:4px;">Terms of Service</h1>
+    <div class="updated-note">Last updated: September 2026</div>
+
+    <h2>1. About This Service</h2>
+    <p>Pokédrafter is a free, independent fan-made web game. It is not affiliated with, endorsed by, sponsored by, or connected in any way to Nintendo, Game Freak, or The Pokémon Company. All Pokémon names, designs, and related intellectual property belong to their respective owners. Pokédrafter's own original code, game design, and branding belong to its creator.</p>
+
+    <h2>2. Acceptance of These Terms</h2>
+    <p>By accessing or using Pokédrafter, you agree to these Terms of Service. If you don't agree with them, please don't use the site.</p>
+
+    <h2>3. Eligibility</h2>
+    <p>You must meet Google's own minimum age requirements to sign in with a Google Account, and must be at least 13 years old to use Pokédrafter.</p>
+
+    <h2>4. Accounts</h2>
+    <p>Accounts are created and managed through Google Sign-In. You're responsible for any activity that happens under your account. Please use one account per person - creating multiple accounts to manipulate the leaderboard is not permitted.</p>
+
+    <h2>5. Acceptable Use</h2>
+    <p>When using Pokédrafter, please don't:</p>
+    <ul>
+      <li>Attempt to manipulate, exploit, or interfere with the scoring, drafting, or leaderboard systems</li>
+      <li>Use the service for any unlawful purpose</li>
+      <li>Choose a display name that is offensive, impersonates another person, or infringes on someone else's rights</li>
+      <li>Attempt to disrupt or overload the service</li>
+    </ul>
+    <p>We may reset a display name or remove access for violations of these terms.</p>
+
+    <h2>6. No Warranty</h2>
+    <p>Pokédrafter is provided "as is," as a hobby project, without warranties of any kind, express or implied. We don't guarantee the service will be uninterrupted, error-free, or available at all times.</p>
+
+    <h2>7. Limitation of Liability</h2>
+    <p>To the fullest extent permitted by law, Pokédrafter and its creator are not liable for any damages arising from your use of, or inability to use, the service.</p>
+
+    <h2>8. Changes to the Service</h2>
+    <p>We may modify, suspend, or discontinue any part of Pokédrafter at any time, including game balance, features, or availability, without prior notice.</p>
+
+    <h2>9. Changes to These Terms</h2>
+    <p>We may update these terms from time to time. Continuing to use Pokédrafter after changes are posted means you accept the updated terms. We'll update the date at the top of this page when that happens.</p>
+
+    <h2>10. Contact</h2>
+    <p>Questions about these terms can be sent to: <strong>[your contact email here]</strong></p>
   </div>
 
   <footer class="site-footer">
@@ -274,61 +334,15 @@
       const res = await fetch('/api/auth/me');
       const data = await res.json();
       if (data.loggedIn) {
-        window.pokedrafterUser = data.user;
         authStatus.innerHTML = data.user.name + ' &middot; <a href="/api/auth/logout?redirect=' + encodeURIComponent(location.pathname) + '" style="color:inherit;">Sign out</a>';
       } else {
-        window.pokedrafterUser = null;
         authStatus.innerHTML = '<a href="/api/auth/login" style="color:inherit; text-decoration:underline;">Sign in with Google</a>';
       }
     } catch (e) {
-      window.pokedrafterUser = null;
       authStatus.innerHTML = '';
     }
   }
   loadAuthStatus();
-
-  const RANK_COLORS = {
-    'S': 'var(--gold)', 'A+': '#2f8f4e', 'A': '#3f9d5c', 'A-': '#5aab74',
-    'B+': '#4a7fb5', 'B': '#6b93b8', 'B-': '#8a8a8a'
-  };
-
-  function spriteUrl(id) {
-    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
-  }
-
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str == null ? '' : String(str);
-    return div.innerHTML;
-  }
-
-  async function loadLeaderboard() {
-    const container = document.getElementById('leaderboardContent');
-    try {
-      const res = await fetch('/api/leaderboard');
-      if (!res.ok) throw new Error('Request failed');
-      const data = await res.json();
-
-      if (!data.entries || data.entries.length === 0) {
-        container.innerHTML = '<div class="empty-state"><h2>No results yet</h2><p>Be the first to complete a season and claim the top spot.</p></div>';
-        return;
-      }
-
-      container.innerHTML = '<ul class="board-list">' + data.entries.map((e, i) => `
-        <li class="board-row">
-          <span class="board-rank-num">#${i + 1}</span>
-          <span class="board-name">${escapeHtml(e.name)}</span>
-          <span class="board-grade" style="color: ${RANK_COLORS[e.rank] || 'var(--ink)'};">${escapeHtml(e.rank)}</span>
-          <span class="board-record">${e.wins}\u2013${e.losses}</span>
-          <span class="board-team-preview">${e.team.map(p => `<img src="${spriteUrl(p.id)}" alt="" onerror="this.style.display='none'">`).join('')}</span>
-          <span class="board-score">${e.combinedScore} pts</span>
-        </li>
-      `).join('') + '</ul>';
-    } catch (err) {
-      container.innerHTML = '<div class="empty-state"><h2>Could not load the leaderboard</h2><p>Please try refreshing the page.</p></div>';
-    }
-  }
-  loadLeaderboard();
 </script>
 </body>
 </html>
