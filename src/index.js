@@ -45,7 +45,20 @@ export default {
     // showing /u/42 so the page's own script can read the id back out of it.
     if (request.method === 'GET' && url.pathname.startsWith('/u/')) {
       const rewritten = new Request(new URL('/public-profile.html', url), request);
-      return env.ASSETS.fetch(rewritten);
+      let assetResponse = await env.ASSETS.fetch(rewritten);
+
+      // Cloudflare's asset serving redirects /file.html -> /file by default.
+      // That redirect would otherwise reach the browser and blow away the real
+      // /u/42 URL (and the id in it) - so resolve it ourselves right here and
+      // hand back the final page content directly instead of passing it on.
+      if (assetResponse.status >= 300 && assetResponse.status < 400) {
+        const location = assetResponse.headers.get('Location');
+        if (location) {
+          assetResponse = await env.ASSETS.fetch(new Request(new URL(location, url), request));
+        }
+      }
+
+      return assetResponse;
     }
 
     // Not an API route - serve the matching static file (index.html, game.html, etc.)
