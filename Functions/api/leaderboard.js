@@ -32,17 +32,10 @@ export async function onRequestGet({ request, env }) {
 
     env.DB.prepare(`SELECT COUNT(DISTINCT user_id) AS total FROM results`).first(),
 
-    env.DB.prepare(`
-      WITH ranked AS (
-        SELECT r.user_id, r.wins,
-          ROW_NUMBER() OVER (
-            PARTITION BY r.user_id
-            ORDER BY r.wins DESC, r.combined_score DESC, r.created_at ASC
-          ) AS rn
-        FROM results r
-      )
-      SELECT COUNT(*) AS perfect FROM ranked WHERE rn = 1 AND wins = 13
-    `).first()
+    // Every 13-0 submission that's ever happened, not just each player's single
+    // best attempt - a player who's gone perfect twice should count as 2 here,
+    // even though the leaderboard itself only ever shows their best row once.
+    env.DB.prepare(`SELECT COUNT(*) AS perfect FROM results WHERE wins = 13`).first()
   ]);
 
   const entries = mainResult.results.map(row => ({
