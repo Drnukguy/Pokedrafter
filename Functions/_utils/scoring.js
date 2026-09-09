@@ -68,7 +68,7 @@ function slotMatches(slotKey, p) {
   return !(p.leg || p.myt) && p.st === 'final' && !PARADOX_IDS.includes(p.id);
 }
 
-const REFERENCE_RATING = 1528;
+const REFERENCE_RATING = 1500;
 const STAGE_TARGET_FRACTIONS = [
   0.30, 0.40, 0.48, 0.55, 0.62, 0.69, 0.75, 0.81,
   0.85, 0.89, 0.93, 0.96,
