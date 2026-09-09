@@ -21,16 +21,16 @@ const SCORE_MIN = 1;
 const SCORE_MAX = 300;
 
 const POPULARITY_BONUS = {
-  greninja: 15, frogadier: 15, froakie: 15,
-  lucario: 13, riolu: 13,
+  greninja: 30, frogadier: 15, froakie: 15,
+  lucario: 20, riolu: 13,
   mimikyu: 11,
-  charizard: 10, charmeleon: 10, charmander: 10,
-  umbreon: 8, eevee: 8,
-  sylveon: 7,
-  garchomp: 6, gabite: 6, gible: 6,
-  rayquaza: 5,
-  gardevoir: 4, kirlia: 4, ralts: 4,
-  gengar: 3, haunter: 3, gastly: 3
+  charizard: 20, charmeleon: 10, charmander: 10,
+  umbreon: 15, eevee: 8,
+  sylveon: 15,
+  garchomp: 20, gabite: 6, gible: 6,
+  rayquaza: 10,
+  gardevoir: 10, kirlia: 4, ralts: 4,
+  gengar: 15, haunter: 3, gastly: 3
 };
 
 POKEDEX.forEach(p => { p.bst = bstOf(p); p.balance = balanceMetric(p); });
@@ -68,7 +68,7 @@ function slotMatches(slotKey, p) {
   return !(p.leg || p.myt) && p.st === 'final' && !PARADOX_IDS.includes(p.id);
 }
 
-const REFERENCE_RATING = 1526;
+const REFERENCE_RATING = 1528;
 const STAGE_TARGET_FRACTIONS = [
   0.30, 0.40, 0.48, 0.55, 0.62, 0.69, 0.75, 0.81,
   0.85, 0.89, 0.93, 0.96,
