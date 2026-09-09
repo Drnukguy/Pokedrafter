@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3038546684457553"
-     crossorigin="anonymous"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pokédrafter</title>
+<title>Pokédrafter — Draft. Battle. Climb the leaderboard.</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
 
@@ -43,10 +41,11 @@
     padding: 32px 20px 60px;
   }
 
+  /* ---------- Header / nav ---------- */
   .hero {
     border-bottom: 2px solid var(--ink);
     padding-bottom: 20px;
-    margin-bottom: 40px;
+    margin-bottom: 56px;
   }
 
   .hero-top {
@@ -56,35 +55,14 @@
     gap: 16px;
   }
 
-  .hero-brand {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-  }
-
-  .hero-brand h1 {
-    font-family: 'Chakra Petch', sans-serif;
-    font-weight: 700;
-    font-size: 1.7rem;
-    letter-spacing: 0.01em;
-    margin: 0;
-  }
-
-  .hero-mark {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--gold);
-    flex: none;
-  }
+  .hero-brand img { display: block; }
 
   .hero-tagline {
-    font-size: 0.95rem;
-    opacity: 0.7;
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    opacity: 0.55;
     margin: 14px 0 0;
-    max-width: 56ch;
-    line-height: 1.5;
   }
 
   .nav-btn {
@@ -99,12 +77,257 @@
   }
   .nav-btn:hover { opacity: 0.85; }
 
+  .site-nav {
+    display: flex;
+    gap: 18px;
+    margin-top: 14px;
+  }
+  .site-nav a {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+    opacity: 0.6;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 2px;
+  }
+  .site-nav a:hover { opacity: 1; }
+  .site-nav a.current { opacity: 1; border-bottom-color: var(--gold); }
+
+  /* ---------- Big hero pitch ---------- */
+  .pitch {
+    text-align: center;
+    padding: 10px 0 50px;
+  }
+
+  .pitch h1 {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.9rem, 5vw, 3.1rem);
+    line-height: 1.15;
+    margin: 0 auto 18px;
+    max-width: 16ch;
+  }
+
+  .pitch h1 .accent { color: var(--gold); }
+
+  .pitch p {
+    font-size: 1.02rem;
+    opacity: 0.75;
+    max-width: 52ch;
+    margin: 0 auto 30px;
+    line-height: 1.6;
+  }
+
+  .pitch-ctas {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-cta-primary {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    background: var(--ink);
+    color: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 14px 30px;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform 0.1s ease, border-color 0.15s ease;
+  }
+  .btn-cta-primary:hover { border-color: var(--gold); transform: translateY(-2px); }
+
+  .btn-cta-secondary {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    background: transparent;
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 14px 26px;
+    text-decoration: none;
+    display: inline-block;
+    opacity: 0.85;
+    transition: opacity 0.15s ease, transform 0.1s ease;
+  }
+  .btn-cta-secondary:hover { opacity: 1; transform: translateY(-2px); }
+
+  /* ---------- Stat highlights ---------- */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 58px;
+  }
+  @media (min-width: 700px) {
+    .stat-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .stat-card {
+    background: var(--panel);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 20px 16px;
+    text-align: center;
+  }
+
+  .stat-card .stat-num {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 2rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .stat-card .stat-label {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 0.82rem;
+    margin: 8px 0 6px;
+  }
+
+  .stat-card .stat-desc {
+    font-size: 0.78rem;
+    opacity: 0.65;
+    line-height: 1.45;
+  }
+
+  /* ---------- Section headings ---------- */
+  .section-label {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    border-left: 3px solid var(--gold);
+    padding-left: 10px;
+    margin-bottom: 22px;
+  }
+
+  /* ---------- How it works ---------- */
+  .steps-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 58px;
+  }
+  @media (min-width: 700px) {
+    .steps-row { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .step-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 18px 16px;
+  }
+
+  .step-num {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    opacity: 0.35;
+  }
+
+  .step-item h3 {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin: 6px 0 6px;
+  }
+
+  .step-item p {
+    font-size: 0.82rem;
+    opacity: 0.7;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* ---------- Live leaderboard preview ---------- */
+  .board-preview {
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .board-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+  }
+  .board-row:last-child { border-bottom: none; }
+
+  .board-rank-num {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    width: 28px;
+    flex: none;
+    opacity: 0.6;
+  }
+
+  .board-name {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .board-grade {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    width: 40px;
+    flex: none;
+    text-align: center;
+  }
+
+  .board-record {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    width: 56px;
+    flex: none;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  .board-empty {
+    padding: 30px 16px;
+    text-align: center;
+    font-size: 0.85rem;
+    opacity: 0.6;
+  }
+
+  .board-view-all {
+    display: block;
+    text-align: center;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink);
+    opacity: 0.7;
+    text-decoration: underline;
+    margin-bottom: 58px;
+  }
+  .board-view-all:hover { opacity: 1; }
+
+  /* ---------- Explore cards ---------- */
   .card-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 18px;
+    margin-bottom: 20px;
   }
-
   @media (min-width: 700px) {
     .card-grid { grid-template-columns: repeat(3, 1fr); }
   }
@@ -119,11 +342,7 @@
     padding: 26px 22px;
     transition: transform 0.1s ease, border-color 0.15s ease;
   }
-
-  .card:hover {
-    border-color: var(--gold);
-    transform: translateY(-2px);
-  }
+  .card:hover { border-color: var(--gold); transform: translateY(-2px); }
 
   .card-eyebrow {
     font-family: 'Chakra Petch', sans-serif;
@@ -156,14 +375,18 @@
   .card.primary p { opacity: 0.75; }
   .card.primary:hover { border-color: var(--gold); }
 
+  /* ---------- Footer ---------- */
   .data-note {
-    margin-top: 40px;
-    font-size: 0.72rem;
-    opacity: 0.4;
+    margin-top: 46px;
+    font-size: 0.75rem;
+    opacity: 0.5;
     text-align: center;
+    max-width: 60ch;
+    margin-left: auto;
+    margin-right: auto;
   }
   .site-footer {
-    margin-top: 50px;
+    margin-top: 24px;
     padding-top: 20px;
     border-top: 1px solid var(--line);
     text-align: center;
@@ -183,34 +406,104 @@
   <header class="hero">
     <div class="hero-top">
       <div class="hero-brand">
-  <img src="pokedrafter-logo.svg" alt="Pokédrafter" style="height:65px;">
-</div>
+        <a href="index.html"><img src="pokedrafter-logo.svg" alt="Pokédrafter" style="height:72px; display:block;"></a>
+      </div>
       <div style="display:flex; align-items:center; gap:12px;">
         <span id="authStatus" style="font-size:0.8rem;"></span>
         <button class="nav-btn" id="themeToggle">&#127769; Dark Mode</button>
       </div>
     </div>
     <p class="hero-tagline">Gotta Draft Em' All!</p>
+    <nav class="site-nav">
+      <a href="index.html" class="current">Home</a>
+      <a href="game.html">Play</a>
+      <a href="leaderboard.html">Leaderboard</a>
+      <a href="profile.html">Profile</a>
+    </nav>
   </header>
 
+  <section class="pitch">
+    <h1>Draft your team. Battle the <span class="accent">season</span>. Prove it on the leaderboard.</h1>
+    <p>A free fantasy-draft game built entirely around real Pokémon stats. Spin for type, draft a team of six, then find out if you're good enough to go undefeated against 8 Gym Leaders, the Elite Four, and the Champion.</p>
+    <div class="pitch-ctas">
+      <a href="game.html" class="btn-cta-primary">Start Drafting →</a>
+      <a href="leaderboard.html" class="btn-cta-secondary">See the Leaderboard</a>
+    </div>
+  </section>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-num">573</div>
+      <div class="stat-label">Draftable Pokémon</div>
+      <div class="stat-desc">Every fully-evolved species and Legendary, ranked by real base stats</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">13</div>
+      <div class="stat-label">Stage Season</div>
+      <div class="stat-desc">8 Gym Leaders, the Elite Four, and the Champion — deterministic, no dice rolls</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">100%</div>
+      <div class="stat-label">Verified Results</div>
+      <div class="stat-desc">Every submission is recomputed on our server — nobody can fake a score</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">$0</div>
+      <div class="stat-label">Free, No Ads</div>
+      <div class="stat-desc">Sign in with Google. No ads, no tracking, no catch</div>
+    </div>
+  </div>
+
+  <div class="section-label">How it works</div>
+  <div class="steps-row">
+    <div class="step-item">
+      <div class="step-num">01</div>
+      <h3>Sign in with Google</h3>
+      <p>Free, one click, and your results are saved to your own profile.</p>
+    </div>
+    <div class="step-item">
+      <div class="step-num">02</div>
+      <h3>Draft your team of six</h3>
+      <p>Spin for a type, then draft any eligible Pokémon — five open rounds plus one Legendary round.</p>
+    </div>
+    <div class="step-item">
+      <div class="step-num">03</div>
+      <h3>Simulate your season</h3>
+      <p>Your team's rating is checked against all 13 stages, instantly and automatically.</p>
+    </div>
+    <div class="step-item">
+      <div class="step-num">04</div>
+      <h3>Climb the leaderboard</h3>
+      <p>Your best run gets ranked against every other player's, from B- up to a perfect S.</p>
+    </div>
+  </div>
+
+  <div class="section-label">Current champions</div>
+  <div class="board-preview" id="boardPreview">
+    <div class="board-empty">Loading...</div>
+  </div>
+  <a href="leaderboard.html" class="board-view-all">View the full leaderboard →</a>
+
+  <div class="section-label">Explore</div>
   <div class="card-grid">
     <a href="game.html" class="card primary">
       <div class="card-eyebrow">Start here</div>
       <h2>Play</h2>
+      <p>Jump straight into a draft.</p>
     </a>
-
     <a href="leaderboard.html" class="card">
       <div class="card-eyebrow">Rankings</div>
       <h2>Leaderboard</h2>
+      <p>See who's topped the season so far.</p>
     </a>
-
     <a href="profile.html" class="card">
       <div class="card-eyebrow">Your history</div>
       <h2>Profile</h2>
+      <p>Track your past runs and personal bests.</p>
     </a>
   </div>
 
-  <div class="data-note">Pokédrafter is an independent fan project and is not affiliated with Nintendo, Game Freak, or The Pokémon Company.</div>
+  <div class="data-note">Pokédrafter is an independent fan project and is not affiliated with Nintendo, Game Freak, or The Pokémon Company. No ads, no third-party tracking.</div>
 
   <footer class="site-footer">
     <a href="privacy.html">Privacy Policy</a> &middot; <a href="terms.html">Terms of Service</a>
@@ -248,6 +541,44 @@
     }
   }
   loadAuthStatus();
+
+  const RANK_COLORS = {
+    'S': 'var(--gold)', 'A+': '#2f8f4e', 'A': '#3f9d5c', 'A-': '#5aab74',
+    'B+': '#4a7fb5', 'B': '#6b93b8', 'B-': '#8a8a8a'
+  };
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  async function loadBoardPreview() {
+    const container = document.getElementById('boardPreview');
+    try {
+      const res = await fetch('/api/leaderboard');
+      if (!res.ok) throw new Error('Request failed');
+      const data = await res.json();
+
+      if (!data.entries || data.entries.length === 0) {
+        container.innerHTML = '<div class="board-empty">No results yet — be the first to complete a season and claim the top spot.</div>';
+        return;
+      }
+
+      const top5 = data.entries.slice(0, 5);
+      container.innerHTML = top5.map((e, i) => `
+        <div class="board-row">
+          <span class="board-rank-num">#${i + 1}</span>
+          <span class="board-name">${escapeHtml(e.name)}</span>
+          <span class="board-grade" style="color: ${RANK_COLORS[e.rank] || 'var(--ink)'};">${escapeHtml(e.rank)}</span>
+          <span class="board-record">${e.wins}–${e.losses}</span>
+        </div>
+      `).join('');
+    } catch (err) {
+      container.innerHTML = '<div class="board-empty">Could not load the leaderboard right now.</div>';
+    }
+  }
+  loadBoardPreview();
 </script>
 </body>
 </html>
