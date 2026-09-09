@@ -258,7 +258,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: inherit;
+    text-decoration: none;
   }
+  .board-name:hover { text-decoration: underline; }
 
   .board-grade {
     font-family: 'Chakra Petch', sans-serif;
@@ -526,7 +529,7 @@
         <li class="board-row" data-idx="${i}">
           <span class="board-rank-num">#${rankOffset + i + 1}</span>
           ${avatarHtml(e)}
-          <span class="board-name">${escapeHtml(e.name)}</span>
+          <a class="board-name" href="/u/${e.id}" style="${e.nameColor ? 'color:' + escapeHtml(e.nameColor) + ';' : ''}" onclick="event.stopPropagation();">${escapeHtml(e.name)}</a>
           <span class="board-grade" style="color: ${RANK_COLORS[e.rank] || 'var(--ink)'}; background: ${RANK_BG[e.rank] || 'transparent'};">${escapeHtml(e.rank)}</span>
           <span class="board-record">${e.wins}\u2013${e.losses}</span>
           <span class="board-score">${e.combinedScore} pts</span>
