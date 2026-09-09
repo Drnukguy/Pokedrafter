@@ -131,6 +131,70 @@
     line-height: 1.5;
   }
 
+  /* ---------- Stat banner ---------- */
+  .board-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 26px;
+  }
+
+  .stat-chip {
+    background: var(--panel);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-chip-num {
+    display: block;
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 1.7rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .stat-chip-label {
+    display: block;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    opacity: 0.6;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- Tabs (structured so future filters slot in cleanly) ---------- */
+  .board-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .board-tab {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    background: var(--panel);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 8px 18px;
+    cursor: pointer;
+    opacity: 0.6;
+  }
+  .board-tab.active {
+    opacity: 1;
+    border-color: var(--gold);
+    background: var(--gold);
+    color: #1b1b1f;
+  }
+  .board-tab:hover:not(.active) { opacity: 0.85; }
+
   .board-list {
     list-style: none;
     margin: 0;
@@ -143,20 +207,47 @@
   .board-row {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     padding: 14px 16px;
     background: var(--panel);
     border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    touch-action: manipulation;
   }
-  .board-row:last-child { border-bottom: none; }
+  .board-row:hover { background: var(--paper); }
+  .board-list > li:last-child { border-bottom: none; }
 
   .board-rank-num {
     font-family: 'Chakra Petch', sans-serif;
     font-weight: 700;
     font-size: 1.1rem;
-    width: 32px;
+    width: 30px;
     flex: none;
     opacity: 0.6;
+  }
+
+  .board-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    flex: none;
+    background: var(--line);
+    object-fit: cover;
+  }
+
+  .board-avatar-fallback {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    flex: none;
+    background: var(--ink);
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
   }
 
   .board-name {
@@ -172,42 +263,111 @@
   .board-grade {
     font-family: 'Chakra Petch', sans-serif;
     font-weight: 700;
-    width: 40px;
+    font-size: 0.8rem;
+    width: 34px;
     flex: none;
     text-align: center;
+    border-radius: 20px;
+    padding: 3px 0;
   }
 
   .board-record {
     font-family: 'Chakra Petch', sans-serif;
     font-weight: 700;
-    width: 60px;
+    width: 56px;
     flex: none;
     text-align: center;
-  }
-
-  .board-team-preview {
-    display: flex;
-    gap: 1px;
-    flex: none;
-  }
-
-  .board-team-preview img {
-    width: 24px;
-    height: 24px;
-    image-rendering: pixelated;
+    font-size: 0.9rem;
   }
 
   .board-score {
     font-size: 0.78rem;
     opacity: 0.6;
-    width: 70px;
+    width: 66px;
     flex: none;
     text-align: right;
   }
 
-  @media (max-width: 640px) {
-    .board-team-preview { display: none; }
+  .board-expand-icon {
+    flex: none;
+    opacity: 0.4;
+    font-size: 0.75rem;
+    width: 14px;
+    text-align: center;
+    transition: transform 0.15s ease;
   }
+  .board-row.expanded .board-expand-icon { transform: rotate(180deg); }
+
+  .board-detail-row {
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+  .board-detail-row:last-child { border-bottom: none; }
+
+  .board-detail-team {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 16px 14px 56px;
+  }
+
+  .board-detail-mon {
+    text-align: center;
+    width: 64px;
+  }
+
+  .board-detail-mon img {
+    width: 40px;
+    height: 40px;
+    image-rendering: pixelated;
+  }
+
+  .board-detail-mon .mon-name {
+    font-size: 0.68rem;
+    opacity: 0.75;
+    line-height: 1.3;
+    margin-top: 2px;
+  }
+
+  .board-detail-mon .mon-slot {
+    font-size: 0.6rem;
+    opacity: 0.5;
+  }
+
+  @media (max-width: 640px) {
+    .board-score { display: none; }
+  }
+
+  /* ---------- Pagination ---------- */
+  .board-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 20px;
+  }
+
+  .page-btn {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    background: var(--panel);
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  .page-btn:hover:not(:disabled) { border-color: var(--gold); }
+  .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .page-indicator {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.85rem;
+    opacity: 0.7;
+    font-variant-numeric: tabular-nums;
+  }
+
   .site-footer {
     margin-top: 50px;
     padding-top: 20px;
@@ -244,10 +404,32 @@
     </nav>
   </header>
 
+  <div class="board-stats">
+    <div class="stat-chip">
+      <span class="stat-chip-num" id="statPerfect">—</span>
+      <span class="stat-chip-label">Perfect Seasons</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-chip-num" id="statPlayers">—</span>
+      <span class="stat-chip-label">Total Players</span>
+    </div>
+  </div>
+
+  <div class="board-tabs">
+    <button class="board-tab active" data-tab="alltime">All-Time</button>
+    <!-- Future filters (This Week, By Type, etc.) can be added as siblings here -->
+  </div>
+
   <div id="leaderboardContent">
     <div class="empty-state">
       <h2>Loading leaderboard...</h2>
     </div>
+  </div>
+
+  <div class="board-pagination" id="boardPagination" style="display:none;">
+    <button class="page-btn" id="prevPageBtn">&larr; Prev</button>
+    <span class="page-indicator" id="pageIndicator">Page 1 of 1</span>
+    <button class="page-btn" id="nextPageBtn">Next &rarr;</button>
   </div>
 
   <footer class="site-footer">
@@ -291,6 +473,11 @@
     'S': 'var(--gold)', 'A+': '#2f8f4e', 'A': '#3f9d5c', 'A-': '#5aab74',
     'B+': '#4a7fb5', 'B': '#6b93b8', 'B-': '#8a8a8a'
   };
+  const RANK_BG = {
+    'S': 'color-mix(in srgb, var(--gold) 20%, transparent)',
+    'A+': 'rgba(47,143,78,0.15)', 'A': 'rgba(63,157,92,0.15)', 'A-': 'rgba(90,171,116,0.15)',
+    'B+': 'rgba(74,127,181,0.15)', 'B': 'rgba(107,147,184,0.15)', 'B-': 'rgba(138,138,138,0.15)'
+  };
 
   function spriteUrl(id) {
     return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
@@ -302,33 +489,95 @@
     return div.innerHTML;
   }
 
-  async function loadLeaderboard() {
+  function avatarHtml(e) {
+    if (e.avatar) {
+      return `<img class="board-avatar" src="${escapeHtml(e.avatar)}" alt="" onerror="this.outerHTML='<div class=&quot;board-avatar-fallback&quot;>${escapeHtml(e.name.charAt(0).toUpperCase())}</div>';">`;
+    }
+    return `<div class="board-avatar-fallback">${escapeHtml(e.name.charAt(0).toUpperCase())}</div>`;
+  }
+
+  let currentPage = 1;
+  let currentEntries = [];
+
+  async function loadLeaderboard(page) {
+    currentPage = page || 1;
     const container = document.getElementById('leaderboardContent');
+    const pagination = document.getElementById('boardPagination');
+
     try {
-      const res = await fetch('/api/leaderboard');
+      const res = await fetch('/api/leaderboard?page=' + currentPage);
       if (!res.ok) throw new Error('Request failed');
       const data = await res.json();
 
-      if (!data.entries || data.entries.length === 0) {
+      document.getElementById('statPerfect').textContent = data.perfectRuns;
+      document.getElementById('statPlayers').textContent = data.totalPlayers;
+
+      currentEntries = data.entries || [];
+
+      if (currentEntries.length === 0) {
         container.innerHTML = '<div class="empty-state"><h2>No results yet</h2><p>Be the first to complete a season and claim the top spot.</p></div>';
+        pagination.style.display = 'none';
         return;
       }
 
-      container.innerHTML = '<ul class="board-list">' + data.entries.map((e, i) => `
-        <li class="board-row">
-          <span class="board-rank-num">#${i + 1}</span>
+      const rankOffset = (currentPage - 1) * 20;
+
+      container.innerHTML = '<ul class="board-list">' + currentEntries.map((e, i) => `
+        <li class="board-row" data-idx="${i}">
+          <span class="board-rank-num">#${rankOffset + i + 1}</span>
+          ${avatarHtml(e)}
           <span class="board-name">${escapeHtml(e.name)}</span>
-          <span class="board-grade" style="color: ${RANK_COLORS[e.rank] || 'var(--ink)'};">${escapeHtml(e.rank)}</span>
+          <span class="board-grade" style="color: ${RANK_COLORS[e.rank] || 'var(--ink)'}; background: ${RANK_BG[e.rank] || 'transparent'};">${escapeHtml(e.rank)}</span>
           <span class="board-record">${e.wins}\u2013${e.losses}</span>
-          <span class="board-team-preview">${e.team.map(p => `<img src="${spriteUrl(p.id)}" alt="" onerror="this.style.display='none'">`).join('')}</span>
           <span class="board-score">${e.combinedScore} pts</span>
+          <span class="board-expand-icon">&#9660;</span>
         </li>
+        <li class="board-detail-row" id="detail-${i}" style="display:none;"></li>
       `).join('') + '</ul>';
+
+      container.querySelectorAll('.board-row').forEach(row => {
+        row.addEventListener('click', () => {
+          const idx = parseInt(row.dataset.idx, 10);
+          const detailRow = document.getElementById('detail-' + idx);
+          const isOpen = detailRow.style.display !== 'none';
+
+          if (isOpen) {
+            detailRow.style.display = 'none';
+            row.classList.remove('expanded');
+            return;
+          }
+
+          const entry = currentEntries[idx];
+          detailRow.innerHTML = `<div class="board-detail-team">${entry.team.map(p => `
+            <div class="board-detail-mon">
+              <img src="${spriteUrl(p.id)}" alt="" onerror="this.style.display='none'">
+              <div class="mon-name">${escapeHtml(p.name)}</div>
+              <div class="mon-slot">${escapeHtml(p.slotLabel || '')}</div>
+            </div>
+          `).join('')}</div>`;
+          detailRow.style.display = 'block';
+          row.classList.add('expanded');
+        });
+      });
+
+      pagination.style.display = 'flex';
+      document.getElementById('pageIndicator').textContent = `Page ${data.page} of ${data.totalPages}`;
+      document.getElementById('prevPageBtn').disabled = data.page <= 1;
+      document.getElementById('nextPageBtn').disabled = data.page >= data.totalPages;
     } catch (err) {
       container.innerHTML = '<div class="empty-state"><h2>Could not load the leaderboard</h2><p>Please try refreshing the page.</p></div>';
+      pagination.style.display = 'none';
     }
   }
-  loadLeaderboard();
+
+  document.getElementById('prevPageBtn').addEventListener('click', () => {
+    if (currentPage > 1) loadLeaderboard(currentPage - 1);
+  });
+  document.getElementById('nextPageBtn').addEventListener('click', () => {
+    loadLeaderboard(currentPage + 1);
+  });
+
+  loadLeaderboard(1);
 </script>
 </body>
 </html>
