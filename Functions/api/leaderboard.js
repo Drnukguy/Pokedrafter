@@ -16,7 +16,7 @@ export async function onRequestGet({ request, env }) {
       WITH ranked AS (
         SELECT
           r.user_id, r.team_json, r.combined_score, r.wins, r.losses, r.rank_label, r.created_at,
-          u.display_name, u.custom_display_name, u.avatar_url, u.favorite_pokemon_id,
+          u.display_name, u.custom_display_name, u.avatar_url, u.favorite_pokemon_id, u.name_color,
           ROW_NUMBER() OVER (
             PARTITION BY r.user_id
             ORDER BY r.wins DESC, r.combined_score DESC, r.created_at ASC
@@ -48,6 +48,7 @@ export async function onRequestGet({ request, env }) {
   const entries = mainResult.results.map(row => ({
     name: row.custom_display_name || row.display_name,
     avatar: resolveAvatarUrl(row),
+    nameColor: row.name_color || null,
     team: JSON.parse(row.team_json),
     combinedScore: row.combined_score,
     wins: row.wins,
