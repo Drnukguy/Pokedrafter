@@ -16,13 +16,13 @@ export async function onRequestGet({ request, env }) {
   }
 
   const user = await env.DB.prepare(
-    'SELECT id, COALESCE(custom_display_name, display_name) as display_name, avatar_url, favorite_pokemon_id FROM users WHERE id = ?'
+    'SELECT id, COALESCE(custom_display_name, display_name) as display_name, avatar_url, favorite_pokemon_id, name_color FROM users WHERE id = ?'
   ).bind(payload.userId).first();
 
   if (!user) return json({ loggedIn: false });
 
   return json({
     loggedIn: true,
-    user: { id: user.id, name: user.display_name, avatar: resolveAvatarUrl(user) }
+    user: { id: user.id, name: user.display_name, avatar: resolveAvatarUrl(user), nameColor: user.name_color || null }
   });
 }
