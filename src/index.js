@@ -6,6 +6,7 @@ import { onRequestPost as resultsSubmit } from '../Functions/api/results/submit.
 import { onRequestGet as leaderboardGet } from '../Functions/api/leaderboard.js';
 import { onRequestGet as profileHistory } from '../Functions/api/profile/history.js';
 import { onRequestGet as profileSettingsGet, onRequestPost as profileSettingsPost } from '../Functions/api/profile/settings.js';
+import { onRequestPost as profileDelete } from '../Functions/api/profile/delete.js';
 
 const ROUTES = [
   { method: 'GET', path: '/api/auth/login', handler: authLogin },
@@ -16,7 +17,8 @@ const ROUTES = [
   { method: 'GET', path: '/api/leaderboard', handler: leaderboardGet },
   { method: 'GET', path: '/api/profile/history', handler: profileHistory },
   { method: 'GET', path: '/api/profile/settings', handler: profileSettingsGet },
-  { method: 'POST', path: '/api/profile/settings', handler: profileSettingsPost }
+  { method: 'POST', path: '/api/profile/settings', handler: profileSettingsPost },
+  { method: 'POST', path: '/api/profile/delete', handler: profileDelete }
 ];
 
 export default {
