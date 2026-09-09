@@ -122,11 +122,15 @@
 
   .tally {
     font-family: 'Chakra Petch', sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
-    opacity: 0.75;
     white-space: nowrap;
-    text-align: right;
+    display: inline-block;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 6px 16px;
     margin-top: 14px;
   }
 
@@ -180,9 +184,17 @@
     background: var(--panel);
     border: 2px solid var(--ink);
     border-radius: 4px;
-    padding: 32px 24px;
+    padding: 36px 28px;
     text-align: center;
     transition: border-color 0.3s ease;
+  }
+
+  .slot-heading {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 18px;
+    opacity: 0.85;
   }
 
   .slot-row {
@@ -196,6 +208,7 @@
     flex: 1;
     max-width: 220px;
     border: 2px solid var(--ink);
+    border-top: 4px solid var(--gold);
     border-radius: 4px;
     padding: 20px 10px 14px;
     background: var(--paper);
@@ -211,7 +224,7 @@
   .slot-value {
     font-family: 'Chakra Petch', sans-serif;
     font-weight: 700;
-    font-size: 1.4rem;
+    font-size: 1.55rem;
     line-height: 1.15;
     min-height: 1.3em;
   }
@@ -235,19 +248,19 @@
 
   .spin-btn {
     font-family: 'Chakra Petch', sans-serif;
-    font-weight: 600;
-    font-size: 1rem;
+    font-weight: 700;
+    font-size: 1.05rem;
     letter-spacing: 0.03em;
     background: var(--ink);
     color: var(--paper);
-    border: none;
+    border: 2px solid var(--ink);
     border-radius: 4px;
-    padding: 13px 38px;
+    padding: 14px 40px;
     cursor: pointer;
-    transition: transform 0.08s ease, opacity 0.2s ease;
+    transition: transform 0.1s ease, border-color 0.15s ease, opacity 0.2s ease;
   }
 
-  .spin-btn:hover:not(:disabled) { opacity: 0.85; }
+  .spin-btn:hover:not(:disabled) { border-color: var(--gold); transform: translateY(-2px); }
   .spin-btn:active:not(:disabled) { transform: scale(0.97); }
   .spin-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
@@ -420,18 +433,19 @@
 
   .draft-btn {
     font-family: 'Chakra Petch', sans-serif;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.9rem;
     letter-spacing: 0.02em;
     background: var(--ink);
     color: var(--paper);
-    border: none;
+    border: 2px solid var(--ink);
     border-radius: 4px;
     padding: 10px 22px;
     cursor: pointer;
     flex: 1;
+    transition: transform 0.1s ease, border-color 0.15s ease;
   }
-  .draft-btn:hover:not(:disabled) { opacity: 0.85; }
+  .draft-btn:hover:not(:disabled) { border-color: var(--gold); transform: translateY(-1px); }
   .draft-btn:active:not(:disabled) { transform: scale(0.98); }
   .draft-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
@@ -871,7 +885,7 @@
   <div class="layout-grid">
     <main class="draft-column">
       <div class="stage" id="stage">
-        <div class="slot-heading" id="slotHeading" style="font-family:'Chakra Petch',sans-serif; font-weight:600; font-size:0.95rem; margin-bottom:14px; opacity:0.85;">Now drafting: Legendary / Mythical</div>
+        <div class="slot-heading" id="slotHeading">Now drafting: Legendary / Mythical</div>
         <div class="slot-row">
           <div class="slot" id="typeSlotBox">
             <div class="slot-label">TYPE</div>
@@ -885,7 +899,7 @@
         </div>
 
         <button class="spin-btn" id="spinBtn">Spin</button>
-        <button class="reset-link" id="resetBtn">start a new game</button>
+        <button class="spin-btn" id="resetBtn" style="margin-top:16px; background:var(--panel); color:var(--ink);">Start New Game</button>
         <div class="status-note" id="statusNote"></div>
 
         <div class="candidates" id="candidatesBlock" style="display:none;">
@@ -1085,11 +1099,11 @@
   // assigned role, no bench) plus 1 dedicated Legendary round (region-only spin,
   // unchanged from before) at the end.
   const SLOTS = [
-    { key: 'open', label: 'Draft Round 1', dims: ['type'], match: isOpenPoolMon },
-    { key: 'open', label: 'Draft Round 2', dims: ['type'], match: isOpenPoolMon },
-    { key: 'open', label: 'Draft Round 3', dims: ['type'], match: isOpenPoolMon },
-    { key: 'open', label: 'Draft Round 4', dims: ['type'], match: isOpenPoolMon },
-    { key: 'open', label: 'Draft Round 5', dims: ['type'], match: isOpenPoolMon },
+    { key: 'open', label: 'Round 1', dims: ['type'], match: isOpenPoolMon },
+    { key: 'open', label: 'Round 2', dims: ['type'], match: isOpenPoolMon },
+    { key: 'open', label: 'Round 3', dims: ['type'], match: isOpenPoolMon },
+    { key: 'open', label: 'Round 4', dims: ['type'], match: isOpenPoolMon },
+    { key: 'open', label: 'Round 5', dims: ['type'], match: isOpenPoolMon },
     { key: 'legendary', label: 'Legendary / Mythical', dims: ['gen'], match: isLegendaryPoolMon }
   ];
 
