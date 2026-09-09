@@ -19,7 +19,7 @@ export async function onRequestGet({ request, env }) {
     FROM results
     WHERE user_id = ?
     ORDER BY created_at DESC
-    LIMIT 100
+    LIMIT 5
   `).bind(payload.userId).all();
 
   const history = results.map(row => ({
