@@ -46,6 +46,7 @@ export async function onRequestGet({ request, env }) {
   ]);
 
   const entries = mainResult.results.map(row => ({
+    id: row.user_id,
     name: row.custom_display_name || row.display_name,
     avatar: resolveAvatarUrl(row),
     nameColor: row.name_color || null,
