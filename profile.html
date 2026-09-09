@@ -181,8 +181,8 @@
   }
 
   .board-team-preview img {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     image-rendering: pixelated;
   }
 
@@ -209,6 +209,107 @@
 
   .settings-panel {
     margin-bottom: 34px;
+  }
+
+  /* ---------- Player identity header ---------- */
+  .player-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--panel);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 26px;
+    flex-wrap: wrap;
+  }
+
+  .player-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--line);
+    flex: none;
+  }
+
+  .player-avatar-fallback {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 1.8rem;
+    flex: none;
+  }
+
+  .player-name {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+  }
+
+  .player-member-since {
+    font-size: 0.82rem;
+    opacity: 0.6;
+    margin-top: 4px;
+  }
+
+  /* ---------- Stat grid (shared visual language with the leaderboard) ---------- */
+  .board-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 26px;
+  }
+  @media (max-width: 560px) {
+    .board-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .stat-chip {
+    background: var(--panel);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-chip-num {
+    display: block;
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 1.7rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .stat-chip-label {
+    display: block;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    opacity: 0.6;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- Achievements (placeholder for now) ---------- */
+  .achievements-placeholder {
+    background: var(--panel);
+    border: 2px dashed var(--line);
+    border-radius: 4px;
+    padding: 30px 24px;
+    text-align: center;
+    margin-bottom: 26px;
+  }
+  .achievements-placeholder p {
+    font-size: 0.85rem;
+    opacity: 0.6;
+    margin: 6px 0 0;
   }
 
   .text-input {
@@ -246,6 +347,19 @@
     padding: 0;
   }
   .link-btn:hover { opacity: 1; }
+
+  .picker-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--line);
+    touch-action: manipulation;
+  }
+  .picker-row:last-child { border-bottom: none; }
+  .picker-row:hover { background: var(--paper); }
+  .picker-row img { width: 28px; height: 28px; image-rendering: pixelated; flex: none; }
 
   .danger-zone {
     margin-top: 50px;
@@ -287,7 +401,7 @@
   <header class="hero">
     <div class="hero-top">
       <div class="hero-brand">
-  <a href="index.html"><img src="pokedrafter-logo.svg" alt="Pokédrafter" style="height:65px; display:block;"></a>
+  <img src="pokedrafter-logo.svg" alt="Pokédrafter" style="height:65px;">
 </div>
       <div style="display:flex; align-items:center; gap:12px;">
         <span id="authStatus" style="font-size:0.8rem;"></span>
@@ -364,6 +478,76 @@
     return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
+  // Trimmed id+name list (no stats) for the favorite-Pokemon picker - covers all
+  // 1025 species, not just the 573 draftable ones, since a favorite can be anyone.
+  const POKEMON_NAMES = [{"id":1,"n":"bulbasaur"},{"id":2,"n":"ivysaur"},{"id":3,"n":"venusaur"},{"id":4,"n":"charmander"},{"id":5,"n":"charmeleon"},{"id":6,"n":"charizard"},{"id":7,"n":"squirtle"},{"id":8,"n":"wartortle"},{"id":9,"n":"blastoise"},{"id":10,"n":"caterpie"},{"id":11,"n":"metapod"},{"id":12,"n":"butterfree"},{"id":13,"n":"weedle"},{"id":14,"n":"kakuna"},{"id":15,"n":"beedrill"},{"id":16,"n":"pidgey"},{"id":17,"n":"pidgeotto"},{"id":18,"n":"pidgeot"},{"id":19,"n":"rattata"},{"id":20,"n":"raticate"},{"id":21,"n":"spearow"},{"id":22,"n":"fearow"},{"id":23,"n":"ekans"},{"id":24,"n":"arbok"},{"id":25,"n":"pikachu"},{"id":26,"n":"raichu"},{"id":27,"n":"sandshrew"},{"id":28,"n":"sandslash"},{"id":29,"n":"nidoran-f"},{"id":30,"n":"nidorina"},{"id":31,"n":"nidoqueen"},{"id":32,"n":"nidoran-m"},{"id":33,"n":"nidorino"},{"id":34,"n":"nidoking"},{"id":35,"n":"clefairy"},{"id":36,"n":"clefable"},{"id":37,"n":"vulpix"},{"id":38,"n":"ninetales"},{"id":39,"n":"jigglypuff"},{"id":40,"n":"wigglytuff"},{"id":41,"n":"zubat"},{"id":42,"n":"golbat"},{"id":43,"n":"oddish"},{"id":44,"n":"gloom"},{"id":45,"n":"vileplume"},{"id":46,"n":"paras"},{"id":47,"n":"parasect"},{"id":48,"n":"venonat"},{"id":49,"n":"venomoth"},{"id":50,"n":"diglett"},{"id":51,"n":"dugtrio"},{"id":52,"n":"meowth"},{"id":53,"n":"persian"},{"id":54,"n":"psyduck"},{"id":55,"n":"golduck"},{"id":56,"n":"mankey"},{"id":57,"n":"primeape"},{"id":58,"n":"growlithe"},{"id":59,"n":"arcanine"},{"id":60,"n":"poliwag"},{"id":61,"n":"poliwhirl"},{"id":62,"n":"poliwrath"},{"id":63,"n":"abra"},{"id":64,"n":"kadabra"},{"id":65,"n":"alakazam"},{"id":66,"n":"machop"},{"id":67,"n":"machoke"},{"id":68,"n":"machamp"},{"id":69,"n":"bellsprout"},{"id":70,"n":"weepinbell"},{"id":71,"n":"victreebel"},{"id":72,"n":"tentacool"},{"id":73,"n":"tentacruel"},{"id":74,"n":"geodude"},{"id":75,"n":"graveler"},{"id":76,"n":"golem"},{"id":77,"n":"ponyta"},{"id":78,"n":"rapidash"},{"id":79,"n":"slowpoke"},{"id":80,"n":"slowbro"},{"id":81,"n":"magnemite"},{"id":82,"n":"magneton"},{"id":83,"n":"farfetchd"},{"id":84,"n":"doduo"},{"id":85,"n":"dodrio"},{"id":86,"n":"seel"},{"id":87,"n":"dewgong"},{"id":88,"n":"grimer"},{"id":89,"n":"muk"},{"id":90,"n":"shellder"},{"id":91,"n":"cloyster"},{"id":92,"n":"gastly"},{"id":93,"n":"haunter"},{"id":94,"n":"gengar"},{"id":95,"n":"onix"},{"id":96,"n":"drowzee"},{"id":97,"n":"hypno"},{"id":98,"n":"krabby"},{"id":99,"n":"kingler"},{"id":100,"n":"voltorb"},{"id":101,"n":"electrode"},{"id":102,"n":"exeggcute"},{"id":103,"n":"exeggutor"},{"id":104,"n":"cubone"},{"id":105,"n":"marowak"},{"id":106,"n":"hitmonlee"},{"id":107,"n":"hitmonchan"},{"id":108,"n":"lickitung"},{"id":109,"n":"koffing"},{"id":110,"n":"weezing"},{"id":111,"n":"rhyhorn"},{"id":112,"n":"rhydon"},{"id":113,"n":"chansey"},{"id":114,"n":"tangela"},{"id":115,"n":"kangaskhan"},{"id":116,"n":"horsea"},{"id":117,"n":"seadra"},{"id":118,"n":"goldeen"},{"id":119,"n":"seaking"},{"id":120,"n":"staryu"},{"id":121,"n":"starmie"},{"id":122,"n":"mr-mime"},{"id":123,"n":"scyther"},{"id":124,"n":"jynx"},{"id":125,"n":"electabuzz"},{"id":126,"n":"magmar"},{"id":127,"n":"pinsir"},{"id":128,"n":"tauros"},{"id":129,"n":"magikarp"},{"id":130,"n":"gyarados"},{"id":131,"n":"lapras"},{"id":132,"n":"ditto"},{"id":133,"n":"eevee"},{"id":134,"n":"vaporeon"},{"id":135,"n":"jolteon"},{"id":136,"n":"flareon"},{"id":137,"n":"porygon"},{"id":138,"n":"omanyte"},{"id":139,"n":"omastar"},{"id":140,"n":"kabuto"},{"id":141,"n":"kabutops"},{"id":142,"n":"aerodactyl"},{"id":143,"n":"snorlax"},{"id":144,"n":"articuno"},{"id":145,"n":"zapdos"},{"id":146,"n":"moltres"},{"id":147,"n":"dratini"},{"id":148,"n":"dragonair"},{"id":149,"n":"dragonite"},{"id":150,"n":"mewtwo"},{"id":151,"n":"mew"},{"id":152,"n":"chikorita"},{"id":153,"n":"bayleef"},{"id":154,"n":"meganium"},{"id":155,"n":"cyndaquil"},{"id":156,"n":"quilava"},{"id":157,"n":"typhlosion"},{"id":158,"n":"totodile"},{"id":159,"n":"croconaw"},{"id":160,"n":"feraligatr"},{"id":161,"n":"sentret"},{"id":162,"n":"furret"},{"id":163,"n":"hoothoot"},{"id":164,"n":"noctowl"},{"id":165,"n":"ledyba"},{"id":166,"n":"ledian"},{"id":167,"n":"spinarak"},{"id":168,"n":"ariados"},{"id":169,"n":"crobat"},{"id":170,"n":"chinchou"},{"id":171,"n":"lanturn"},{"id":172,"n":"pichu"},{"id":173,"n":"cleffa"},{"id":174,"n":"igglybuff"},{"id":175,"n":"togepi"},{"id":176,"n":"togetic"},{"id":177,"n":"natu"},{"id":178,"n":"xatu"},{"id":179,"n":"mareep"},{"id":180,"n":"flaaffy"},{"id":181,"n":"ampharos"},{"id":182,"n":"bellossom"},{"id":183,"n":"marill"},{"id":184,"n":"azumarill"},{"id":185,"n":"sudowoodo"},{"id":186,"n":"politoed"},{"id":187,"n":"hoppip"},{"id":188,"n":"skiploom"},{"id":189,"n":"jumpluff"},{"id":190,"n":"aipom"},{"id":191,"n":"sunkern"},{"id":192,"n":"sunflora"},{"id":193,"n":"yanma"},{"id":194,"n":"wooper"},{"id":195,"n":"quagsire"},{"id":196,"n":"espeon"},{"id":197,"n":"umbreon"},{"id":198,"n":"murkrow"},{"id":199,"n":"slowking"},{"id":200,"n":"misdreavus"},{"id":201,"n":"unown"},{"id":202,"n":"wobbuffet"},{"id":203,"n":"girafarig"},{"id":204,"n":"pineco"},{"id":205,"n":"forretress"},{"id":206,"n":"dunsparce"},{"id":207,"n":"gligar"},{"id":208,"n":"steelix"},{"id":209,"n":"snubbull"},{"id":210,"n":"granbull"},{"id":211,"n":"qwilfish"},{"id":212,"n":"scizor"},{"id":213,"n":"shuckle"},{"id":214,"n":"heracross"},{"id":215,"n":"sneasel"},{"id":216,"n":"teddiursa"},{"id":217,"n":"ursaring"},{"id":218,"n":"slugma"},{"id":219,"n":"magcargo"},{"id":220,"n":"swinub"},{"id":221,"n":"piloswine"},{"id":222,"n":"corsola"},{"id":223,"n":"remoraid"},{"id":224,"n":"octillery"},{"id":225,"n":"delibird"},{"id":226,"n":"mantine"},{"id":227,"n":"skarmory"},{"id":228,"n":"houndour"},{"id":229,"n":"houndoom"},{"id":230,"n":"kingdra"},{"id":231,"n":"phanpy"},{"id":232,"n":"donphan"},{"id":233,"n":"porygon2"},{"id":234,"n":"stantler"},{"id":235,"n":"smeargle"},{"id":236,"n":"tyrogue"},{"id":237,"n":"hitmontop"},{"id":238,"n":"smoochum"},{"id":239,"n":"elekid"},{"id":240,"n":"magby"},{"id":241,"n":"miltank"},{"id":242,"n":"blissey"},{"id":243,"n":"raikou"},{"id":244,"n":"entei"},{"id":245,"n":"suicune"},{"id":246,"n":"larvitar"},{"id":247,"n":"pupitar"},{"id":248,"n":"tyranitar"},{"id":249,"n":"lugia"},{"id":250,"n":"ho-oh"},{"id":251,"n":"celebi"},{"id":252,"n":"treecko"},{"id":253,"n":"grovyle"},{"id":254,"n":"sceptile"},{"id":255,"n":"torchic"},{"id":256,"n":"combusken"},{"id":257,"n":"blaziken"},{"id":258,"n":"mudkip"},{"id":259,"n":"marshtomp"},{"id":260,"n":"swampert"},{"id":261,"n":"poochyena"},{"id":262,"n":"mightyena"},{"id":263,"n":"zigzagoon"},{"id":264,"n":"linoone"},{"id":265,"n":"wurmple"},{"id":266,"n":"silcoon"},{"id":267,"n":"beautifly"},{"id":268,"n":"cascoon"},{"id":269,"n":"dustox"},{"id":270,"n":"lotad"},{"id":271,"n":"lombre"},{"id":272,"n":"ludicolo"},{"id":273,"n":"seedot"},{"id":274,"n":"nuzleaf"},{"id":275,"n":"shiftry"},{"id":276,"n":"taillow"},{"id":277,"n":"swellow"},{"id":278,"n":"wingull"},{"id":279,"n":"pelipper"},{"id":280,"n":"ralts"},{"id":281,"n":"kirlia"},{"id":282,"n":"gardevoir"},{"id":283,"n":"surskit"},{"id":284,"n":"masquerain"},{"id":285,"n":"shroomish"},{"id":286,"n":"breloom"},{"id":287,"n":"slakoth"},{"id":288,"n":"vigoroth"},{"id":289,"n":"slaking"},{"id":290,"n":"nincada"},{"id":291,"n":"ninjask"},{"id":292,"n":"shedinja"},{"id":293,"n":"whismur"},{"id":294,"n":"loudred"},{"id":295,"n":"exploud"},{"id":296,"n":"makuhita"},{"id":297,"n":"hariyama"},{"id":298,"n":"azurill"},{"id":299,"n":"nosepass"},{"id":300,"n":"skitty"},{"id":301,"n":"delcatty"},{"id":302,"n":"sableye"},{"id":303,"n":"mawile"},{"id":304,"n":"aron"},{"id":305,"n":"lairon"},{"id":306,"n":"aggron"},{"id":307,"n":"meditite"},{"id":308,"n":"medicham"},{"id":309,"n":"electrike"},{"id":310,"n":"manectric"},{"id":311,"n":"plusle"},{"id":312,"n":"minun"},{"id":313,"n":"volbeat"},{"id":314,"n":"illumise"},{"id":315,"n":"roselia"},{"id":316,"n":"gulpin"},{"id":317,"n":"swalot"},{"id":318,"n":"carvanha"},{"id":319,"n":"sharpedo"},{"id":320,"n":"wailmer"},{"id":321,"n":"wailord"},{"id":322,"n":"numel"},{"id":323,"n":"camerupt"},{"id":324,"n":"torkoal"},{"id":325,"n":"spoink"},{"id":326,"n":"grumpig"},{"id":327,"n":"spinda"},{"id":328,"n":"trapinch"},{"id":329,"n":"vibrava"},{"id":330,"n":"flygon"},{"id":331,"n":"cacnea"},{"id":332,"n":"cacturne"},{"id":333,"n":"swablu"},{"id":334,"n":"altaria"},{"id":335,"n":"zangoose"},{"id":336,"n":"seviper"},{"id":337,"n":"lunatone"},{"id":338,"n":"solrock"},{"id":339,"n":"barboach"},{"id":340,"n":"whiscash"},{"id":341,"n":"corphish"},{"id":342,"n":"crawdaunt"},{"id":343,"n":"baltoy"},{"id":344,"n":"claydol"},{"id":345,"n":"lileep"},{"id":346,"n":"cradily"},{"id":347,"n":"anorith"},{"id":348,"n":"armaldo"},{"id":349,"n":"feebas"},{"id":350,"n":"milotic"},{"id":351,"n":"castform"},{"id":352,"n":"kecleon"},{"id":353,"n":"shuppet"},{"id":354,"n":"banette"},{"id":355,"n":"duskull"},{"id":356,"n":"dusclops"},{"id":357,"n":"tropius"},{"id":358,"n":"chimecho"},{"id":359,"n":"absol"},{"id":360,"n":"wynaut"},{"id":361,"n":"snorunt"},{"id":362,"n":"glalie"},{"id":363,"n":"spheal"},{"id":364,"n":"sealeo"},{"id":365,"n":"walrein"},{"id":366,"n":"clamperl"},{"id":367,"n":"huntail"},{"id":368,"n":"gorebyss"},{"id":369,"n":"relicanth"},{"id":370,"n":"luvdisc"},{"id":371,"n":"bagon"},{"id":372,"n":"shelgon"},{"id":373,"n":"salamence"},{"id":374,"n":"beldum"},{"id":375,"n":"metang"},{"id":376,"n":"metagross"},{"id":377,"n":"regirock"},{"id":378,"n":"regice"},{"id":379,"n":"registeel"},{"id":380,"n":"latias"},{"id":381,"n":"latios"},{"id":382,"n":"kyogre"},{"id":383,"n":"groudon"},{"id":384,"n":"rayquaza"},{"id":385,"n":"jirachi"},{"id":386,"n":"deoxys"},{"id":387,"n":"turtwig"},{"id":388,"n":"grotle"},{"id":389,"n":"torterra"},{"id":390,"n":"chimchar"},{"id":391,"n":"monferno"},{"id":392,"n":"infernape"},{"id":393,"n":"piplup"},{"id":394,"n":"prinplup"},{"id":395,"n":"empoleon"},{"id":396,"n":"starly"},{"id":397,"n":"staravia"},{"id":398,"n":"staraptor"},{"id":399,"n":"bidoof"},{"id":400,"n":"bibarel"},{"id":401,"n":"kricketot"},{"id":402,"n":"kricketune"},{"id":403,"n":"shinx"},{"id":404,"n":"luxio"},{"id":405,"n":"luxray"},{"id":406,"n":"budew"},{"id":407,"n":"roserade"},{"id":408,"n":"cranidos"},{"id":409,"n":"rampardos"},{"id":410,"n":"shieldon"},{"id":411,"n":"bastiodon"},{"id":412,"n":"burmy"},{"id":413,"n":"wormadam"},{"id":414,"n":"mothim"},{"id":415,"n":"combee"},{"id":416,"n":"vespiquen"},{"id":417,"n":"pachirisu"},{"id":418,"n":"buizel"},{"id":419,"n":"floatzel"},{"id":420,"n":"cherubi"},{"id":421,"n":"cherrim"},{"id":422,"n":"shellos"},{"id":423,"n":"gastrodon"},{"id":424,"n":"ambipom"},{"id":425,"n":"drifloon"},{"id":426,"n":"drifblim"},{"id":427,"n":"buneary"},{"id":428,"n":"lopunny"},{"id":429,"n":"mismagius"},{"id":430,"n":"honchkrow"},{"id":431,"n":"glameow"},{"id":432,"n":"purugly"},{"id":433,"n":"chingling"},{"id":434,"n":"stunky"},{"id":435,"n":"skuntank"},{"id":436,"n":"bronzor"},{"id":437,"n":"bronzong"},{"id":438,"n":"bonsly"},{"id":439,"n":"mime-jr"},{"id":440,"n":"happiny"},{"id":441,"n":"chatot"},{"id":442,"n":"spiritomb"},{"id":443,"n":"gible"},{"id":444,"n":"gabite"},{"id":445,"n":"garchomp"},{"id":446,"n":"munchlax"},{"id":447,"n":"riolu"},{"id":448,"n":"lucario"},{"id":449,"n":"hippopotas"},{"id":450,"n":"hippowdon"},{"id":451,"n":"skorupi"},{"id":452,"n":"drapion"},{"id":453,"n":"croagunk"},{"id":454,"n":"toxicroak"},{"id":455,"n":"carnivine"},{"id":456,"n":"finneon"},{"id":457,"n":"lumineon"},{"id":458,"n":"mantyke"},{"id":459,"n":"snover"},{"id":460,"n":"abomasnow"},{"id":461,"n":"weavile"},{"id":462,"n":"magnezone"},{"id":463,"n":"lickilicky"},{"id":464,"n":"rhyperior"},{"id":465,"n":"tangrowth"},{"id":466,"n":"electivire"},{"id":467,"n":"magmortar"},{"id":468,"n":"togekiss"},{"id":469,"n":"yanmega"},{"id":470,"n":"leafeon"},{"id":471,"n":"glaceon"},{"id":472,"n":"gliscor"},{"id":473,"n":"mamoswine"},{"id":474,"n":"porygon-z"},{"id":475,"n":"gallade"},{"id":476,"n":"probopass"},{"id":477,"n":"dusknoir"},{"id":478,"n":"froslass"},{"id":479,"n":"rotom"},{"id":480,"n":"uxie"},{"id":481,"n":"mesprit"},{"id":482,"n":"azelf"},{"id":483,"n":"dialga"},{"id":484,"n":"palkia"},{"id":485,"n":"heatran"},{"id":486,"n":"regigigas"},{"id":487,"n":"giratina"},{"id":488,"n":"cresselia"},{"id":489,"n":"phione"},{"id":490,"n":"manaphy"},{"id":491,"n":"darkrai"},{"id":492,"n":"shaymin"},{"id":493,"n":"arceus"},{"id":494,"n":"victini"},{"id":495,"n":"snivy"},{"id":496,"n":"servine"},{"id":497,"n":"serperior"},{"id":498,"n":"tepig"},{"id":499,"n":"pignite"},{"id":500,"n":"emboar"},{"id":501,"n":"oshawott"},{"id":502,"n":"dewott"},{"id":503,"n":"samurott"},{"id":504,"n":"patrat"},{"id":505,"n":"watchog"},{"id":506,"n":"lillipup"},{"id":507,"n":"herdier"},{"id":508,"n":"stoutland"},{"id":509,"n":"purrloin"},{"id":510,"n":"liepard"},{"id":511,"n":"pansage"},{"id":512,"n":"simisage"},{"id":513,"n":"pansear"},{"id":514,"n":"simisear"},{"id":515,"n":"panpour"},{"id":516,"n":"simipour"},{"id":517,"n":"munna"},{"id":518,"n":"musharna"},{"id":519,"n":"pidove"},{"id":520,"n":"tranquill"},{"id":521,"n":"unfezant"},{"id":522,"n":"blitzle"},{"id":523,"n":"zebstrika"},{"id":524,"n":"roggenrola"},{"id":525,"n":"boldore"},{"id":526,"n":"gigalith"},{"id":527,"n":"woobat"},{"id":528,"n":"swoobat"},{"id":529,"n":"drilbur"},{"id":530,"n":"excadrill"},{"id":531,"n":"audino"},{"id":532,"n":"timburr"},{"id":533,"n":"gurdurr"},{"id":534,"n":"conkeldurr"},{"id":535,"n":"tympole"},{"id":536,"n":"palpitoad"},{"id":537,"n":"seismitoad"},{"id":538,"n":"throh"},{"id":539,"n":"sawk"},{"id":540,"n":"sewaddle"},{"id":541,"n":"swadloon"},{"id":542,"n":"leavanny"},{"id":543,"n":"venipede"},{"id":544,"n":"whirlipede"},{"id":545,"n":"scolipede"},{"id":546,"n":"cottonee"},{"id":547,"n":"whimsicott"},{"id":548,"n":"petilil"},{"id":549,"n":"lilligant"},{"id":550,"n":"basculin"},{"id":551,"n":"sandile"},{"id":552,"n":"krokorok"},{"id":553,"n":"krookodile"},{"id":554,"n":"darumaka"},{"id":555,"n":"darmanitan"},{"id":556,"n":"maractus"},{"id":557,"n":"dwebble"},{"id":558,"n":"crustle"},{"id":559,"n":"scraggy"},{"id":560,"n":"scrafty"},{"id":561,"n":"sigilyph"},{"id":562,"n":"yamask"},{"id":563,"n":"cofagrigus"},{"id":564,"n":"tirtouga"},{"id":565,"n":"carracosta"},{"id":566,"n":"archen"},{"id":567,"n":"archeops"},{"id":568,"n":"trubbish"},{"id":569,"n":"garbodor"},{"id":570,"n":"zorua"},{"id":571,"n":"zoroark"},{"id":572,"n":"minccino"},{"id":573,"n":"cinccino"},{"id":574,"n":"gothita"},{"id":575,"n":"gothorita"},{"id":576,"n":"gothitelle"},{"id":577,"n":"solosis"},{"id":578,"n":"duosion"},{"id":579,"n":"reuniclus"},{"id":580,"n":"ducklett"},{"id":581,"n":"swanna"},{"id":582,"n":"vanillite"},{"id":583,"n":"vanillish"},{"id":584,"n":"vanilluxe"},{"id":585,"n":"deerling"},{"id":586,"n":"sawsbuck"},{"id":587,"n":"emolga"},{"id":588,"n":"karrablast"},{"id":589,"n":"escavalier"},{"id":590,"n":"foongus"},{"id":591,"n":"amoonguss"},{"id":592,"n":"frillish"},{"id":593,"n":"jellicent"},{"id":594,"n":"alomomola"},{"id":595,"n":"joltik"},{"id":596,"n":"galvantula"},{"id":597,"n":"ferroseed"},{"id":598,"n":"ferrothorn"},{"id":599,"n":"klink"},{"id":600,"n":"klang"},{"id":601,"n":"klinklang"},{"id":602,"n":"tynamo"},{"id":603,"n":"eelektrik"},{"id":604,"n":"eelektross"},{"id":605,"n":"elgyem"},{"id":606,"n":"beheeyem"},{"id":607,"n":"litwick"},{"id":608,"n":"lampent"},{"id":609,"n":"chandelure"},{"id":610,"n":"axew"},{"id":611,"n":"fraxure"},{"id":612,"n":"haxorus"},{"id":613,"n":"cubchoo"},{"id":614,"n":"beartic"},{"id":615,"n":"cryogonal"},{"id":616,"n":"shelmet"},{"id":617,"n":"accelgor"},{"id":618,"n":"stunfisk"},{"id":619,"n":"mienfoo"},{"id":620,"n":"mienshao"},{"id":621,"n":"druddigon"},{"id":622,"n":"golett"},{"id":623,"n":"golurk"},{"id":624,"n":"pawniard"},{"id":625,"n":"bisharp"},{"id":626,"n":"bouffalant"},{"id":627,"n":"rufflet"},{"id":628,"n":"braviary"},{"id":629,"n":"vullaby"},{"id":630,"n":"mandibuzz"},{"id":631,"n":"heatmor"},{"id":632,"n":"durant"},{"id":633,"n":"deino"},{"id":634,"n":"zweilous"},{"id":635,"n":"hydreigon"},{"id":636,"n":"larvesta"},{"id":637,"n":"volcarona"},{"id":638,"n":"cobalion"},{"id":639,"n":"terrakion"},{"id":640,"n":"virizion"},{"id":641,"n":"tornadus"},{"id":642,"n":"thundurus"},{"id":643,"n":"reshiram"},{"id":644,"n":"zekrom"},{"id":645,"n":"landorus"},{"id":646,"n":"kyurem"},{"id":647,"n":"keldeo"},{"id":648,"n":"meloetta"},{"id":649,"n":"genesect"},{"id":650,"n":"chespin"},{"id":651,"n":"quilladin"},{"id":652,"n":"chesnaught"},{"id":653,"n":"fennekin"},{"id":654,"n":"braixen"},{"id":655,"n":"delphox"},{"id":656,"n":"froakie"},{"id":657,"n":"frogadier"},{"id":658,"n":"greninja"},{"id":659,"n":"bunnelby"},{"id":660,"n":"diggersby"},{"id":661,"n":"fletchling"},{"id":662,"n":"fletchinder"},{"id":663,"n":"talonflame"},{"id":664,"n":"scatterbug"},{"id":665,"n":"spewpa"},{"id":666,"n":"vivillon"},{"id":667,"n":"litleo"},{"id":668,"n":"pyroar"},{"id":669,"n":"flabebe"},{"id":670,"n":"floette"},{"id":671,"n":"florges"},{"id":672,"n":"skiddo"},{"id":673,"n":"gogoat"},{"id":674,"n":"pancham"},{"id":675,"n":"pangoro"},{"id":676,"n":"furfrou"},{"id":677,"n":"espurr"},{"id":678,"n":"meowstic"},{"id":679,"n":"honedge"},{"id":680,"n":"doublade"},{"id":681,"n":"aegislash"},{"id":682,"n":"spritzee"},{"id":683,"n":"aromatisse"},{"id":684,"n":"swirlix"},{"id":685,"n":"slurpuff"},{"id":686,"n":"inkay"},{"id":687,"n":"malamar"},{"id":688,"n":"binacle"},{"id":689,"n":"barbaracle"},{"id":690,"n":"skrelp"},{"id":691,"n":"dragalge"},{"id":692,"n":"clauncher"},{"id":693,"n":"clawitzer"},{"id":694,"n":"helioptile"},{"id":695,"n":"heliolisk"},{"id":696,"n":"tyrunt"},{"id":697,"n":"tyrantrum"},{"id":698,"n":"amaura"},{"id":699,"n":"aurorus"},{"id":700,"n":"sylveon"},{"id":701,"n":"hawlucha"},{"id":702,"n":"dedenne"},{"id":703,"n":"carbink"},{"id":704,"n":"goomy"},{"id":705,"n":"sliggoo"},{"id":706,"n":"goodra"},{"id":707,"n":"klefki"},{"id":708,"n":"phantump"},{"id":709,"n":"trevenant"},{"id":710,"n":"pumpkaboo"},{"id":711,"n":"gourgeist"},{"id":712,"n":"bergmite"},{"id":713,"n":"avalugg"},{"id":714,"n":"noibat"},{"id":715,"n":"noivern"},{"id":716,"n":"xerneas"},{"id":717,"n":"yveltal"},{"id":718,"n":"zygarde"},{"id":719,"n":"diancie"},{"id":720,"n":"hoopa"},{"id":721,"n":"volcanion"},{"id":722,"n":"rowlet"},{"id":723,"n":"dartrix"},{"id":724,"n":"decidueye"},{"id":725,"n":"litten"},{"id":726,"n":"torracat"},{"id":727,"n":"incineroar"},{"id":728,"n":"popplio"},{"id":729,"n":"brionne"},{"id":730,"n":"primarina"},{"id":731,"n":"pikipek"},{"id":732,"n":"trumbeak"},{"id":733,"n":"toucannon"},{"id":734,"n":"yungoos"},{"id":735,"n":"gumshoos"},{"id":736,"n":"grubbin"},{"id":737,"n":"charjabug"},{"id":738,"n":"vikavolt"},{"id":739,"n":"crabrawler"},{"id":740,"n":"crabominable"},{"id":741,"n":"oricorio"},{"id":742,"n":"cutiefly"},{"id":743,"n":"ribombee"},{"id":744,"n":"rockruff"},{"id":745,"n":"lycanroc"},{"id":746,"n":"wishiwashi"},{"id":747,"n":"mareanie"},{"id":748,"n":"toxapex"},{"id":749,"n":"mudbray"},{"id":750,"n":"mudsdale"},{"id":751,"n":"dewpider"},{"id":752,"n":"araquanid"},{"id":753,"n":"fomantis"},{"id":754,"n":"lurantis"},{"id":755,"n":"morelull"},{"id":756,"n":"shiinotic"},{"id":757,"n":"salandit"},{"id":758,"n":"salazzle"},{"id":759,"n":"stufful"},{"id":760,"n":"bewear"},{"id":761,"n":"bounsweet"},{"id":762,"n":"steenee"},{"id":763,"n":"tsareena"},{"id":764,"n":"comfey"},{"id":765,"n":"oranguru"},{"id":766,"n":"passimian"},{"id":767,"n":"wimpod"},{"id":768,"n":"golisopod"},{"id":769,"n":"sandygast"},{"id":770,"n":"palossand"},{"id":771,"n":"pyukumuku"},{"id":772,"n":"type-null"},{"id":773,"n":"silvally"},{"id":774,"n":"minior"},{"id":775,"n":"komala"},{"id":776,"n":"turtonator"},{"id":777,"n":"togedemaru"},{"id":778,"n":"mimikyu"},{"id":779,"n":"bruxish"},{"id":780,"n":"drampa"},{"id":781,"n":"dhelmise"},{"id":782,"n":"jangmo-o"},{"id":783,"n":"hakamo-o"},{"id":784,"n":"kommo-o"},{"id":785,"n":"tapu-koko"},{"id":786,"n":"tapu-lele"},{"id":787,"n":"tapu-bulu"},{"id":788,"n":"tapu-fini"},{"id":789,"n":"cosmog"},{"id":790,"n":"cosmoem"},{"id":791,"n":"solgaleo"},{"id":792,"n":"lunala"},{"id":793,"n":"nihilego"},{"id":794,"n":"buzzwole"},{"id":795,"n":"pheromosa"},{"id":796,"n":"xurkitree"},{"id":797,"n":"celesteela"},{"id":798,"n":"kartana"},{"id":799,"n":"guzzlord"},{"id":800,"n":"necrozma"},{"id":801,"n":"magearna"},{"id":802,"n":"marshadow"},{"id":803,"n":"poipole"},{"id":804,"n":"naganadel"},{"id":805,"n":"stakataka"},{"id":806,"n":"blacephalon"},{"id":807,"n":"zeraora"},{"id":808,"n":"meltan"},{"id":809,"n":"melmetal"},{"id":810,"n":"grookey"},{"id":811,"n":"thwackey"},{"id":812,"n":"rillaboom"},{"id":813,"n":"scorbunny"},{"id":814,"n":"raboot"},{"id":815,"n":"cinderace"},{"id":816,"n":"sobble"},{"id":817,"n":"drizzile"},{"id":818,"n":"inteleon"},{"id":819,"n":"skwovet"},{"id":820,"n":"greedent"},{"id":821,"n":"rookidee"},{"id":822,"n":"corvisquire"},{"id":823,"n":"corviknight"},{"id":824,"n":"blipbug"},{"id":825,"n":"dottler"},{"id":826,"n":"orbeetle"},{"id":827,"n":"nickit"},{"id":828,"n":"thievul"},{"id":829,"n":"gossifleur"},{"id":830,"n":"eldegoss"},{"id":831,"n":"wooloo"},{"id":832,"n":"dubwool"},{"id":833,"n":"chewtle"},{"id":834,"n":"drednaw"},{"id":835,"n":"yamper"},{"id":836,"n":"boltund"},{"id":837,"n":"rolycoly"},{"id":838,"n":"carkol"},{"id":839,"n":"coalossal"},{"id":840,"n":"applin"},{"id":841,"n":"flapple"},{"id":842,"n":"appletun"},{"id":843,"n":"silicobra"},{"id":844,"n":"sandaconda"},{"id":845,"n":"cramorant"},{"id":846,"n":"arrokuda"},{"id":847,"n":"barraskewda"},{"id":848,"n":"toxel"},{"id":849,"n":"toxtricity"},{"id":850,"n":"sizzlipede"},{"id":851,"n":"centiskorch"},{"id":852,"n":"clobbopus"},{"id":853,"n":"grapploct"},{"id":854,"n":"sinistea"},{"id":855,"n":"polteageist"},{"id":856,"n":"hatenna"},{"id":857,"n":"hattrem"},{"id":858,"n":"hatterene"},{"id":859,"n":"impidimp"},{"id":860,"n":"morgrem"},{"id":861,"n":"grimmsnarl"},{"id":862,"n":"obstagoon"},{"id":863,"n":"perrserker"},{"id":864,"n":"cursola"},{"id":865,"n":"sirfetchd"},{"id":866,"n":"mr-rime"},{"id":867,"n":"runerigus"},{"id":868,"n":"milcery"},{"id":869,"n":"alcremie"},{"id":870,"n":"falinks"},{"id":871,"n":"pincurchin"},{"id":872,"n":"snom"},{"id":873,"n":"frosmoth"},{"id":874,"n":"stonjourner"},{"id":875,"n":"eiscue"},{"id":876,"n":"indeedee"},{"id":877,"n":"morpeko"},{"id":878,"n":"cufant"},{"id":879,"n":"copperajah"},{"id":880,"n":"dracozolt"},{"id":881,"n":"arctozolt"},{"id":882,"n":"dracovish"},{"id":883,"n":"arctovish"},{"id":884,"n":"duraludon"},{"id":885,"n":"dreepy"},{"id":886,"n":"drakloak"},{"id":887,"n":"dragapult"},{"id":888,"n":"zacian"},{"id":889,"n":"zamazenta"},{"id":890,"n":"eternatus"},{"id":891,"n":"kubfu"},{"id":892,"n":"urshifu"},{"id":893,"n":"zarude"},{"id":894,"n":"regieleki"},{"id":895,"n":"regidrago"},{"id":896,"n":"glastrier"},{"id":897,"n":"spectrier"},{"id":898,"n":"calyrex"},{"id":899,"n":"wyrdeer"},{"id":900,"n":"kleavor"},{"id":901,"n":"ursaluna"},{"id":902,"n":"basculegion"},{"id":903,"n":"sneasler"},{"id":904,"n":"overqwil"},{"id":905,"n":"enamorus"},{"id":906,"n":"sprigatito"},{"id":907,"n":"floragato"},{"id":908,"n":"meowscarada"},{"id":909,"n":"fuecoco"},{"id":910,"n":"crocalor"},{"id":911,"n":"skeledirge"},{"id":912,"n":"quaxly"},{"id":913,"n":"quaxwell"},{"id":914,"n":"quaquaval"},{"id":915,"n":"lechonk"},{"id":916,"n":"oinkologne"},{"id":917,"n":"tarountula"},{"id":918,"n":"spidops"},{"id":919,"n":"nymble"},{"id":920,"n":"lokix"},{"id":921,"n":"pawmi"},{"id":922,"n":"pawmo"},{"id":923,"n":"pawmot"},{"id":924,"n":"tandemaus"},{"id":925,"n":"maushold"},{"id":926,"n":"fidough"},{"id":927,"n":"dachsbun"},{"id":928,"n":"smoliv"},{"id":929,"n":"dolliv"},{"id":930,"n":"arboliva"},{"id":931,"n":"squawkabilly"},{"id":932,"n":"nacli"},{"id":933,"n":"naclstack"},{"id":934,"n":"garganacl"},{"id":935,"n":"charcadet"},{"id":936,"n":"armarouge"},{"id":937,"n":"ceruledge"},{"id":938,"n":"tadbulb"},{"id":939,"n":"bellibolt"},{"id":940,"n":"wattrel"},{"id":941,"n":"kilowattrel"},{"id":942,"n":"maschiff"},{"id":943,"n":"mabosstiff"},{"id":944,"n":"shroodle"},{"id":945,"n":"grafaiai"},{"id":946,"n":"bramblin"},{"id":947,"n":"brambleghast"},{"id":948,"n":"toedscool"},{"id":949,"n":"toedscruel"},{"id":950,"n":"klawf"},{"id":951,"n":"capsakid"},{"id":952,"n":"scovillain"},{"id":953,"n":"rellor"},{"id":954,"n":"rabsca"},{"id":955,"n":"flittle"},{"id":956,"n":"espathra"},{"id":957,"n":"tinkatink"},{"id":958,"n":"tinkatuff"},{"id":959,"n":"tinkaton"},{"id":960,"n":"wiglett"},{"id":961,"n":"wugtrio"},{"id":962,"n":"bombirdier"},{"id":963,"n":"finizen"},{"id":964,"n":"palafin"},{"id":965,"n":"varoom"},{"id":966,"n":"revavroom"},{"id":967,"n":"cyclizar"},{"id":968,"n":"orthworm"},{"id":969,"n":"glimmet"},{"id":970,"n":"glimmora"},{"id":971,"n":"greavard"},{"id":972,"n":"houndstone"},{"id":973,"n":"flamigo"},{"id":974,"n":"cetoddle"},{"id":975,"n":"cetitan"},{"id":976,"n":"veluza"},{"id":977,"n":"dondozo"},{"id":978,"n":"tatsugiri"},{"id":979,"n":"annihilape"},{"id":980,"n":"clodsire"},{"id":981,"n":"farigiraf"},{"id":982,"n":"dudunsparce"},{"id":983,"n":"kingambit"},{"id":984,"n":"great-tusk"},{"id":985,"n":"scream-tail"},{"id":986,"n":"brute-bonnet"},{"id":987,"n":"flutter-mane"},{"id":988,"n":"slither-wing"},{"id":989,"n":"sandy-shocks"},{"id":990,"n":"iron-treads"},{"id":991,"n":"iron-bundle"},{"id":992,"n":"iron-hands"},{"id":993,"n":"iron-jugulis"},{"id":994,"n":"iron-moth"},{"id":995,"n":"iron-thorns"},{"id":996,"n":"frigibax"},{"id":997,"n":"arctibax"},{"id":998,"n":"baxcalibur"},{"id":999,"n":"gimmighoul"},{"id":1000,"n":"gholdengo"},{"id":1001,"n":"wo-chien"},{"id":1002,"n":"chien-pao"},{"id":1003,"n":"ting-lu"},{"id":1004,"n":"chi-yu"},{"id":1005,"n":"roaring-moon"},{"id":1006,"n":"iron-valiant"},{"id":1007,"n":"koraidon"},{"id":1008,"n":"miraidon"},{"id":1009,"n":"walking-wake"},{"id":1010,"n":"iron-leaves"},{"id":1011,"n":"dipplin"},{"id":1012,"n":"poltchageist"},{"id":1013,"n":"sinistcha"},{"id":1014,"n":"okidogi"},{"id":1015,"n":"munkidori"},{"id":1016,"n":"fezandipiti"},{"id":1017,"n":"ogerpon"},{"id":1018,"n":"archaludon"},{"id":1019,"n":"hydrapple"},{"id":1020,"n":"gouging-fire"},{"id":1021,"n":"raging-bolt"},{"id":1022,"n":"iron-boulder"},{"id":1023,"n":"iron-crown"},{"id":1024,"n":"terapagos"},{"id":1025,"n":"pecharunt"}];
+
+  function formatMonName(raw) {
+    return raw.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
+  function findMonById(id) {
+    return POKEMON_NAMES.find(p => p.id === id);
+  }
+
+  function renderFavoritePreview(favId) {
+    const preview = document.getElementById('favoritePreview');
+    const clearBtn = document.getElementById('clearFavoriteBtn');
+    if (favId) {
+      const mon = findMonById(favId);
+      preview.innerHTML = `<img src="${spriteUrl(favId)}" alt="" style="width:40px;height:40px;image-rendering:pixelated;" onerror="this.style.display='none'"><span style="font-family:'Chakra Petch',sans-serif; font-weight:700;">${escapeHtml(mon ? formatMonName(mon.n) : 'Unknown')}</span>`;
+      clearBtn.style.display = '';
+    } else {
+      preview.innerHTML = '<span style="opacity:0.55; font-size:0.9rem;">No favorite selected</span>';
+      clearBtn.style.display = 'none';
+    }
+  }
+
+  function renderFavoriteResults(query) {
+    const resultsEl = document.getElementById('favoriteResults');
+    const q = query.trim().toLowerCase();
+    let matches = POKEMON_NAMES;
+    if (q) matches = matches.filter(p => p.n.toLowerCase().includes(q));
+    matches = matches.slice(0, 40); // cap rendered rows for performance
+
+    if (matches.length === 0) {
+      resultsEl.innerHTML = '<div style="padding:14px; text-align:center; opacity:0.6; font-size:0.85rem;">No matches.</div>';
+      return;
+    }
+
+    resultsEl.innerHTML = matches.map(p => `
+      <div class="picker-row" data-id="${p.id}">
+        <img src="${spriteUrl(p.id)}" alt="" onerror="this.style.display='none'">
+        <span>${escapeHtml(formatMonName(p.n))}</span>
+      </div>
+    `).join('');
+
+    resultsEl.querySelectorAll('.picker-row').forEach(row => {
+      row.addEventListener('click', async () => {
+        const id = parseInt(row.dataset.id, 10);
+        const status = document.getElementById('favoriteSaveStatus');
+        status.textContent = 'Saving...';
+        try {
+          const res = await fetch('/api/profile/settings', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ favoritePokemonId: id })
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            renderFavoritePreview(data.favoritePokemonId);
+            document.getElementById('favoritePicker').style.display = 'none';
+            status.textContent = 'Saved!';
+            loadAuthStatus();
+          } else {
+            status.textContent = data.error || 'Could not save.';
+          }
+        } catch (err) {
+          status.textContent = 'Could not reach the server.';
+        }
+      });
+    });
+  }
+
   async function loadProfile() {
     const container = document.getElementById('profileContent');
 
@@ -381,7 +565,7 @@
       return;
     }
 
-    let settingsData = { effectiveName: authData.user.name, customName: null };
+    let settingsData = { effectiveName: authData.user.name, customName: null, favoritePokemonId: null };
     try {
       const settingsRes = await fetch('/api/profile/settings');
       if (settingsRes.ok) settingsData = await settingsRes.json();
@@ -389,7 +573,54 @@
       // fall back to the name already shown in the header
     }
 
+    let statsData = { memberSince: Date.now(), nameColor: null, publicProfileId: authData.user.id, totalSeasons: 0, perfectRuns: 0, bestResult: null };
+    try {
+      const statsRes = await fetch('/api/profile/stats');
+      if (statsRes.ok) statsData = await statsRes.json();
+    } catch (err) {
+      // fall back to the defaults above
+    }
+
+    const nameStyle = statsData.nameColor ? `color: ${escapeHtml(statsData.nameColor)};` : '';
+    const avatarHtml = authData.user.avatar
+      ? `<img class="player-avatar" src="${escapeHtml(authData.user.avatar)}" alt="" onerror="this.outerHTML='<div class=&quot;player-avatar-fallback&quot;>${escapeHtml(settingsData.effectiveName.charAt(0).toUpperCase())}</div>';">`
+      : `<div class="player-avatar-fallback">${escapeHtml(settingsData.effectiveName.charAt(0).toUpperCase())}</div>`;
+    const publicProfileUrl = location.origin + '/u/' + statsData.publicProfileId;
+
     container.innerHTML = `
+      <div class="player-card">
+        ${avatarHtml}
+        <div>
+          <div class="player-name" style="${nameStyle}">${escapeHtml(settingsData.effectiveName)}</div>
+          <div class="player-member-since">Member since ${formatDate(statsData.memberSince)}</div>
+        </div>
+      </div>
+
+      <div class="board-stats">
+        <div class="stat-chip">
+          <span class="stat-chip-num">${statsData.totalSeasons}</span>
+          <span class="stat-chip-label">Seasons Played</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-chip-num">${statsData.perfectRuns}</span>
+          <span class="stat-chip-label">Perfect Seasons</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-chip-num">${statsData.bestResult ? escapeHtml(statsData.bestResult.rank) : '\u2014'}</span>
+          <span class="stat-chip-label">Best Rank</span>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <div class="section-label">Share your profile</div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <input type="text" id="publicProfileUrl" class="text-input" readonly style="flex:1; min-width:200px;" value="${escapeHtml(publicProfileUrl)}">
+          <button class="btn-primary" id="copyProfileLinkBtn">Copy Link</button>
+          <a href="/u/${statsData.publicProfileId}" target="_blank" class="link-btn">View Public Profile &rarr;</a>
+        </div>
+        <div class="status-note" id="copyLinkStatus" style="margin-top:8px; font-size:0.8rem; opacity:0.7;"></div>
+      </div>
+
       <div class="settings-panel">
         <div class="section-label">Display name</div>
         <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
@@ -398,6 +629,26 @@
           ${settingsData.customName ? '<button class="link-btn" id="resetNameBtn">Reset to Google name</button>' : ''}
         </div>
         <div class="status-note" id="nameSaveStatus" style="margin-top:8px; font-size:0.8rem; opacity:0.7;"></div>
+      </div>
+
+      <div class="settings-panel">
+        <div class="section-label">Favorite Pok\u00e9mon</div>
+        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+          <div id="favoritePreview" style="display:flex; align-items:center; gap:10px; min-height:40px;"></div>
+          <button class="btn-primary" id="chooseFavoriteBtn">Choose</button>
+          <button class="link-btn" id="clearFavoriteBtn" style="display:none;">Clear</button>
+        </div>
+        <div id="favoritePicker" style="display:none; margin-top:14px;">
+          <input type="text" id="favoriteSearchInput" class="text-input" placeholder="Search Pok\u00e9mon..." style="width:100%; margin-bottom:10px;">
+          <div id="favoriteResults" style="max-height:260px; overflow-y:auto; border:1px solid var(--line); border-radius:4px;"></div>
+        </div>
+        <div class="status-note" id="favoriteSaveStatus" style="margin-top:8px; font-size:0.8rem; opacity:0.7;"></div>
+      </div>
+
+      <div class="section-label">Achievements</div>
+      <div class="achievements-placeholder">
+        <div style="font-family:'Chakra Petch',sans-serif; font-weight:700;">Coming soon</div>
+        <p>Achievements and rewards are on the way.</p>
       </div>
 
       <div class="section-label">Your history</div>
@@ -410,6 +661,53 @@
         <div class="status-note" id="deleteStatus" style="margin-top:10px; font-size:0.8rem;"></div>
       </div>
     `;
+
+    document.getElementById('copyProfileLinkBtn').addEventListener('click', async () => {
+      const status = document.getElementById('copyLinkStatus');
+      try {
+        await navigator.clipboard.writeText(publicProfileUrl);
+        status.textContent = 'Copied!';
+      } catch (err) {
+        status.textContent = 'Could not copy automatically - select and copy the link above.';
+      }
+    });
+
+    renderFavoritePreview(settingsData.favoritePokemonId);
+
+    document.getElementById('chooseFavoriteBtn').addEventListener('click', () => {
+      const picker = document.getElementById('favoritePicker');
+      const isOpen = picker.style.display !== 'none';
+      picker.style.display = isOpen ? 'none' : 'block';
+      if (!isOpen) {
+        document.getElementById('favoriteSearchInput').value = '';
+        renderFavoriteResults('');
+      }
+    });
+
+    document.getElementById('favoriteSearchInput').addEventListener('input', (e) => {
+      renderFavoriteResults(e.target.value);
+    });
+
+    document.getElementById('clearFavoriteBtn').addEventListener('click', async () => {
+      const status = document.getElementById('favoriteSaveStatus');
+      status.textContent = 'Clearing...';
+      try {
+        const res = await fetch('/api/profile/settings', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clearFavorite: true })
+        });
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          renderFavoritePreview(null);
+          status.textContent = 'Cleared.';
+          loadAuthStatus();
+        } else {
+          status.textContent = data.error || 'Could not clear.';
+        }
+      } catch (err) {
+        status.textContent = 'Could not reach the server.';
+      }
+    });
 
     document.getElementById('deleteAccountBtn').addEventListener('click', async () => {
       const confirmed = confirm('Are you sure you want to permanently delete your Pok\u00e9drafter account? This will remove your profile and all saved game history, and cannot be undone.');
