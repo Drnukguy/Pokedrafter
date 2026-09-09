@@ -15,7 +15,7 @@ export async function onRequestGet({ request, env }) {
   }
 
   const user = await env.DB.prepare(
-    'SELECT id, display_name, avatar_url FROM users WHERE id = ?'
+    'SELECT id, COALESCE(custom_display_name, display_name) as display_name, avatar_url FROM users WHERE id = ?'
   ).bind(payload.userId).first();
 
   if (!user) return json({ loggedIn: false });
