@@ -5,6 +5,7 @@ import { onRequestGet as authMe } from '../Functions/api/auth/me.js';
 import { onRequestPost as resultsSubmit } from '../Functions/api/results/submit.js';
 import { onRequestGet as leaderboardGet } from '../Functions/api/leaderboard.js';
 import { onRequestGet as profileHistory } from '../Functions/api/profile/history.js';
+import { onRequestGet as profileSettingsGet, onRequestPost as profileSettingsPost } from '../Functions/api/profile/settings.js';
 
 const ROUTES = [
   { method: 'GET', path: '/api/auth/login', handler: authLogin },
@@ -13,7 +14,9 @@ const ROUTES = [
   { method: 'GET', path: '/api/auth/me', handler: authMe },
   { method: 'POST', path: '/api/results/submit', handler: resultsSubmit },
   { method: 'GET', path: '/api/leaderboard', handler: leaderboardGet },
-  { method: 'GET', path: '/api/profile/history', handler: profileHistory }
+  { method: 'GET', path: '/api/profile/history', handler: profileHistory },
+  { method: 'GET', path: '/api/profile/settings', handler: profileSettingsGet },
+  { method: 'POST', path: '/api/profile/settings', handler: profileSettingsPost }
 ];
 
 export default {
