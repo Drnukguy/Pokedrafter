@@ -963,7 +963,7 @@
   // the hardest stage. A team at or above this rating clears the whole board; below
   // it, they'll fall short somewhere. Raise this to make the season easier for a given
   // team; lower it to make it harder.
-  const REFERENCE_RATING = 1526;
+  const REFERENCE_RATING = 1500;
 
   // Each stage's difficulty is this fraction of REFERENCE_RATING. 13 entries: 8 Gym
   // Leaders, 4 Elite Four, 1 Champion. Raise/lower these to retune the difficulty curve.
@@ -1012,16 +1012,16 @@
   // Where a pre-evolution feeds into more than one bonused Pokemon (Eevee), it gets
   // the higher of the two bonuses rather than both added together.
   const POPULARITY_BONUS = {
-    greninja: 15, frogadier: 15, froakie: 15,
-    lucario: 13, riolu: 13,
+    greninja: 30, frogadier: 15, froakie: 15,
+    lucario: 20, riolu: 13,
     mimikyu: 11,
-    charizard: 10, charmeleon: 10, charmander: 10,
-    umbreon: 8, eevee: 8,
-    sylveon: 7,
-    garchomp: 6, gabite: 6, gible: 6,
-    rayquaza: 5,
-    gardevoir: 4, kirlia: 4, ralts: 4,
-    gengar: 3, haunter: 3, gastly: 3
+    charizard: 20, charmeleon: 10, charmander: 10,
+    umbreon: 15, eevee: 8,
+    sylveon: 15,
+    garchomp: 20, gabite: 6, gible: 6,
+    rayquaza: 10,
+    gardevoir: 10, kirlia: 4, ralts: 4,
+    gengar: 15, haunter: 3, gastly: 3
   };
 
   function scoreFromBalance(balance) {
