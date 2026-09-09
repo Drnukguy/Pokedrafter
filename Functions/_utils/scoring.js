@@ -59,7 +59,7 @@ const PARADOX_IDS = [984, 985, 986, 987, 988, 989, 990, 991, 992, 993, 994, 995,
 // 1 dedicated Legendary round (real Legendary/Mythical flags, plus the Paradox mons).
 const SLOT_KEYS = ['open', 'open', 'open', 'open', 'open', 'legendary'];
 const SLOT_DISPLAY_LABELS = [
-  'Draft Round 1', 'Draft Round 2', 'Draft Round 3', 'Draft Round 4', 'Draft Round 5',
+  'Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5',
   'Legendary / Mythical'
 ];
 
