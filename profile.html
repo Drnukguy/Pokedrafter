@@ -181,8 +181,8 @@
   }
 
   .board-team-preview img {
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     image-rendering: pixelated;
   }
 
@@ -197,6 +197,55 @@
   @media (max-width: 640px) {
     .board-team-preview { display: none; }
   }
+
+  .section-label {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    border-left: 3px solid var(--gold);
+    padding-left: 10px;
+    margin-bottom: 14px;
+  }
+
+  .settings-panel {
+    margin-bottom: 34px;
+  }
+
+  .text-input {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 10px 12px;
+    color: var(--ink);
+  }
+
+  .btn-primary {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+
+  .link-btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    color: var(--ink);
+    opacity: 0.6;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  .link-btn:hover { opacity: 1; }
 </style>
 </head>
 <body>
@@ -295,17 +344,87 @@
       return;
     }
 
+    let settingsData = { effectiveName: authData.user.name, customName: null };
+    try {
+      const settingsRes = await fetch('/api/profile/settings');
+      if (settingsRes.ok) settingsData = await settingsRes.json();
+    } catch (err) {
+      // fall back to the name already shown in the header
+    }
+
+    container.innerHTML = `
+      <div class="settings-panel">
+        <div class="section-label">Display name</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <input type="text" id="displayNameInput" class="text-input" maxlength="20" style="flex:1; min-width:160px;" value="${escapeHtml(settingsData.effectiveName)}">
+          <button class="btn-primary" id="saveNameBtn">Save</button>
+          ${settingsData.customName ? '<button class="link-btn" id="resetNameBtn">Reset to Google name</button>' : ''}
+        </div>
+        <div class="status-note" id="nameSaveStatus" style="margin-top:8px; font-size:0.8rem; opacity:0.7;"></div>
+      </div>
+
+      <div class="section-label">Your history</div>
+      <div id="historyContent"><div class="empty-state"><h2>Loading...</h2></div></div>
+    `;
+
+    document.getElementById('saveNameBtn').addEventListener('click', async () => {
+      const input = document.getElementById('displayNameInput');
+      const status = document.getElementById('nameSaveStatus');
+      status.textContent = 'Saving...';
+      try {
+        const res = await fetch('/api/profile/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ displayName: input.value })
+        });
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          loadAuthStatus();
+          loadProfile();
+        } else {
+          status.textContent = data.error || 'Could not save.';
+        }
+      } catch (err) {
+        status.textContent = 'Could not reach the server.';
+      }
+    });
+
+    const resetBtn = document.getElementById('resetNameBtn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', async () => {
+        const status = document.getElementById('nameSaveStatus');
+        status.textContent = 'Resetting...';
+        try {
+          const res = await fetch('/api/profile/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reset: true })
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            loadAuthStatus();
+            loadProfile();
+          } else {
+            status.textContent = data.error || 'Could not reset.';
+          }
+        } catch (err) {
+          status.textContent = 'Could not reach the server.';
+        }
+      });
+    }
+
+    const historyContainer = document.getElementById('historyContent');
     try {
       const res = await fetch('/api/profile/history');
       if (!res.ok) throw new Error('Request failed');
       const data = await res.json();
 
       if (!data.history || data.history.length === 0) {
-        container.innerHTML = '<div class="empty-state"><h2>No runs yet</h2><p>Play a season on the Play page and it will show up here.</p></div>';
+        historyContainer.innerHTML = '<div class="empty-state"><h2>No runs yet</h2><p>Play a season on the Play page and it will show up here.</p></div>';
         return;
       }
 
-      container.innerHTML = '<ul class="board-list">' + data.history.map(run => `
+      historyContainer.innerHTML = '<ul class="board-list">' + data.history.map(run => `
         <li class="board-row">
           <span class="board-date">${formatDate(run.createdAt)}</span>
           <span class="board-grade" style="color: ${RANK_COLORS[run.rank] || 'var(--ink)'};">${escapeHtml(run.rank)}</span>
@@ -315,7 +434,7 @@
         </li>
       `).join('') + '</ul>';
     } catch (err) {
-      container.innerHTML = '<div class="empty-state"><h2>Could not load your history</h2><p>Please try refreshing the page.</p></div>';
+      historyContainer.innerHTML = '<div class="empty-state"><h2>Could not load your history</h2><p>Please try refreshing the page.</p></div>';
     }
   }
   loadProfile();
