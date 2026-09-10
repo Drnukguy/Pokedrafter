@@ -668,7 +668,7 @@
       // fall back to the name already shown in the header
     }
 
-    let statsData = { memberSince: Date.now(), nameColor: null, nameEffect: null, publicProfileId: authData.user.id, totalSeasons: 0, perfectRuns: 0, bestResult: null, achievements: [], canPickCustomColor: false, hasCustomColor: false };
+    let statsData = { memberSince: Date.now(), nameColor: null, nameEffect: null, publicProfileId: authData.user.id, totalSeasons: 0, perfectRuns: 0, bestResult: null, achievements: [], canPickCustomColor: false, hasCustomColor: false, availableRewards: { colors: [], effects: [] } };
     try {
       const statsRes = await fetch('/api/profile/stats');
       if (statsRes.ok) statsData = await statsRes.json();
@@ -749,6 +749,31 @@
           <button class="btn-primary" id="saveCustomColorBtn">Save Color</button>
         </div>
         <div class="status-note" id="customColorStatus" style="margin-top:8px; font-size:0.8rem; opacity:0.7;"></div>
+      </div>
+      ` : ''}
+
+      ${(statsData.availableRewards.colors.length > 0 || statsData.availableRewards.effects.length > 0) ? `
+      <div class="settings-panel">
+        <div class="section-label">Choose Your Rewards</div>
+        <p style="font-size:0.85rem; opacity:0.75; margin-bottom:14px;">Pick which earned color and effect to actually use - doesn't have to be your highest tier.</p>
+        ${statsData.availableRewards.colors.length > 0 ? `
+        <div style="margin-bottom:14px;">
+          <label style="display:block; font-family:'Chakra Petch',sans-serif; font-weight:600; font-size:0.85rem; margin-bottom:6px;">Name Color</label>
+          <select id="colorSelect" class="text-input" style="width:100%; max-width:300px;">
+            ${statsData.availableRewards.colors.map(c => `<option value="${escapeHtml(c.value)}" style="color:${escapeHtml(c.value)};" ${statsData.nameColor === c.value ? 'selected' : ''}>\u25CF ${escapeHtml(c.fromAchievement)} (${escapeHtml(c.value)})</option>`).join('')}
+          </select>
+        </div>
+        ` : ''}
+        ${statsData.availableRewards.effects.length > 0 ? `
+        <div>
+          <label style="display:block; font-family:'Chakra Petch',sans-serif; font-weight:600; font-size:0.85rem; margin-bottom:6px;">Name Effect</label>
+          <select id="effectSelect" class="text-input" style="width:100%; max-width:300px;">
+            <option value="__none__" ${!statsData.nameEffect ? 'selected' : ''}>None</option>
+            ${statsData.availableRewards.effects.map(e => `<option value="${escapeHtml(e.value)}" ${statsData.nameEffect === e.value ? 'selected' : ''}>${escapeHtml(e.fromAchievement)} (${escapeHtml(e.value)})</option>`).join('')}
+          </select>
+        </div>
+        ` : ''}
+        <div class="status-note" id="rewardSelectStatus" style="margin-top:10px; font-size:0.8rem; opacity:0.7;"></div>
       </div>
       ` : ''}
 
@@ -896,6 +921,57 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ customColor: color })
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            status.textContent = 'Saved!';
+            loadAuthStatus();
+            loadProfile();
+          } else {
+            status.textContent = data.error || 'Could not save.';
+          }
+        } catch (err) {
+          status.textContent = 'Could not reach the server.';
+        }
+      });
+    }
+
+    const colorSelect = document.getElementById('colorSelect');
+    if (colorSelect) {
+      colorSelect.addEventListener('change', async () => {
+        const status = document.getElementById('rewardSelectStatus');
+        status.textContent = 'Saving...';
+        try {
+          const res = await fetch('/api/profile/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ selectColor: colorSelect.value })
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            status.textContent = 'Saved!';
+            loadAuthStatus();
+            loadProfile();
+          } else {
+            status.textContent = data.error || 'Could not save.';
+          }
+        } catch (err) {
+          status.textContent = 'Could not reach the server.';
+        }
+      });
+    }
+
+    const effectSelect = document.getElementById('effectSelect');
+    if (effectSelect) {
+      effectSelect.addEventListener('change', async () => {
+        const status = document.getElementById('rewardSelectStatus');
+        status.textContent = 'Saving...';
+        const value = effectSelect.value === '__none__' ? null : effectSelect.value;
+        try {
+          const res = await fetch('/api/profile/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ selectEffect: value })
           });
           const data = await res.json();
           if (res.ok && data.ok) {
