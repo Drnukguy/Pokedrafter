@@ -760,7 +760,7 @@
         <div style="margin-bottom:14px;">
           <label style="display:block; font-family:'Chakra Petch',sans-serif; font-weight:600; font-size:0.85rem; margin-bottom:6px;">Name Color</label>
           <select id="colorSelect" class="text-input" style="width:100%; max-width:300px;">
-            ${statsData.availableRewards.colors.map(c => `<option value="${escapeHtml(c.value)}" style="color:${escapeHtml(c.value)};" ${statsData.nameColor === c.value ? 'selected' : ''}>\u25CF ${escapeHtml(c.fromAchievement)} (${escapeHtml(c.value)})</option>`).join('')}
+        ${statsData.availableRewards.colors.map(c => `<option value="${escapeHtml(c.value)}" style="color:${escapeHtml(c.value)};" ${statsData.nameColor === c.value ? 'selected' : ''}>● ${escapeHtml(c.fromAchievement)}</option>`).join('')}
           </select>
         </div>
         ` : ''}
