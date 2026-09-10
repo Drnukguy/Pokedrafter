@@ -312,6 +312,73 @@
     margin: 6px 0 0;
   }
 
+  .trophy-case {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 26px;
+  }
+  .trophy-badge {
+    width: 84px;
+    text-align: center;
+    background: var(--panel);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 10px 6px;
+  }
+  .trophy-badge img { width: 40px; height: 40px; image-rendering: pixelated; }
+  .trophy-fallback {
+    width: 40px; height: 40px; font-size: 1.6rem;
+    display: none; align-items: center; justify-content: center; margin: 0 auto;
+  }
+  .trophy-name {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 600;
+    margin-top: 6px;
+    line-height: 1.25;
+  }
+  .trophy-empty { font-size: 0.85rem; opacity: 0.6; }
+
+  /* ---------- Name color/effect rewards (auto-applied by achievements) ---------- */
+  @keyframes name-glow {
+    0%, 100% { text-shadow: 0 0 4px currentColor; }
+    50% { text-shadow: 0 0 10px currentColor, 0 0 16px currentColor; }
+  }
+  .name-effect-glow { animation: name-glow 2.4s ease-in-out infinite; }
+
+  @keyframes name-glow-strong {
+    0%, 100% { text-shadow: 0 0 6px currentColor, 0 0 2px currentColor; }
+    50% { text-shadow: 0 0 16px currentColor, 0 0 26px currentColor; }
+  }
+  .name-effect-glow-strong { animation: name-glow-strong 1.8s ease-in-out infinite; }
+
+  @keyframes name-shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .name-effect-shimmer,
+  .name-effect-shimmer-strong {
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .name-effect-shimmer {
+    background-image: linear-gradient(90deg, var(--name-c, var(--ink)) 25%, #fff 50%, var(--name-c, var(--ink)) 75%);
+    animation: name-shimmer 2.6s linear infinite;
+  }
+  .name-effect-shimmer-strong {
+    background-image: linear-gradient(90deg, var(--name-c, var(--ink)) 15%, #fff 50%, var(--name-c, var(--ink)) 85%);
+    animation: name-shimmer 1.4s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .name-effect-glow, .name-effect-glow-strong, .name-effect-shimmer, .name-effect-shimmer-strong {
+      animation: none;
+    }
+  }
+
   .text-input {
     font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
@@ -474,6 +541,34 @@
     return div.innerHTML;
   }
 
+  function nameEffectAttrs(color, effect) {
+    const c = color || 'inherit';
+    if (effect === 'shimmer' || effect === 'shimmer-strong') {
+      return { cls: 'name-effect-' + effect, style: `--name-c:${c};` };
+    }
+    if (effect === 'glow' || effect === 'glow-strong') {
+      return { cls: 'name-effect-' + effect, style: `color:${c};` };
+    }
+    return { cls: '', style: `color:${c};` };
+  }
+
+  function itemSpriteUrl(iconPath) {
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/${iconPath}`;
+  }
+
+  function trophyCaseHtml(achievements) {
+    if (!achievements || achievements.length === 0) {
+      return '<p class="trophy-empty">No achievements unlocked yet - keep playing!</p>';
+    }
+    return '<div class="trophy-case">' + achievements.map(a => `
+      <div class="trophy-badge" title="${escapeHtml(a.name)}: ${escapeHtml(a.description)}">
+        <img src="${itemSpriteUrl(a.icon)}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="trophy-fallback">&#127942;</div>
+        <div class="trophy-name">${escapeHtml(a.name)}</div>
+      </div>
+    `).join('') + '</div>';
+  }
+
   function formatDate(ts) {
     return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   }
@@ -573,7 +668,7 @@
       // fall back to the name already shown in the header
     }
 
-    let statsData = { memberSince: Date.now(), nameColor: null, publicProfileId: authData.user.id, totalSeasons: 0, perfectRuns: 0, bestResult: null };
+    let statsData = { memberSince: Date.now(), nameColor: null, nameEffect: null, publicProfileId: authData.user.id, totalSeasons: 0, perfectRuns: 0, bestResult: null, achievements: [], canPickCustomColor: false, hasCustomColor: false };
     try {
       const statsRes = await fetch('/api/profile/stats');
       if (statsRes.ok) statsData = await statsRes.json();
@@ -581,7 +676,7 @@
       // fall back to the defaults above
     }
 
-    const nameStyle = statsData.nameColor ? `color: ${escapeHtml(statsData.nameColor)};` : '';
+    const nameFx = nameEffectAttrs(statsData.nameColor, statsData.nameEffect);
     const avatarHtml = authData.user.avatar
       ? `<img class="player-avatar" src="${escapeHtml(authData.user.avatar)}" alt="" onerror="this.outerHTML='<div class=&quot;player-avatar-fallback&quot;>${escapeHtml(settingsData.effectiveName.charAt(0).toUpperCase())}</div>';">`
       : `<div class="player-avatar-fallback">${escapeHtml(settingsData.effectiveName.charAt(0).toUpperCase())}</div>`;
@@ -591,7 +686,7 @@
       <div class="player-card">
         ${avatarHtml}
         <div>
-          <div class="player-name" style="${nameStyle}">${escapeHtml(settingsData.effectiveName)}</div>
+          <div class="player-name ${nameFx.cls}" style="${nameFx.style}">${escapeHtml(settingsData.effectiveName)}</div>
           <div class="player-member-since">Member since ${formatDate(statsData.memberSince)}</div>
         </div>
       </div>
@@ -616,7 +711,7 @@
         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
           <input type="text" id="publicProfileUrl" class="text-input" readonly style="flex:1; min-width:200px;" value="${escapeHtml(publicProfileUrl)}">
           <button class="btn-primary" id="copyProfileLinkBtn">Copy Link</button>
-          <a href="/u/${statsData.publicProfileId}" target="_blank" class="link-btn">View Public Profile &rarr;</a>
+          <a href="/u/${statsData.publicProfileId}" target="_blank" rel="noopener noreferrer" class="link-btn">View Public Profile &rarr;</a>
         </div>
         <div class="status-note" id="copyLinkStatus" style="margin-top:8px; font-size:0.8rem; opacity:0.7;"></div>
       </div>
@@ -645,11 +740,20 @@
         <div class="status-note" id="favoriteSaveStatus" style="margin-top:8px; font-size:0.8rem; opacity:0.7;"></div>
       </div>
 
-      <div class="section-label">Achievements</div>
-      <div class="achievements-placeholder">
-        <div style="font-family:'Chakra Petch',sans-serif; font-weight:700;">Coming soon</div>
-        <p>Achievements and rewards are on the way.</p>
+      ${statsData.canPickCustomColor ? `
+      <div class="settings-panel">
+        <div class="section-label">Custom Name Color</div>
+        <p style="font-size:0.85rem; opacity:0.75; margin-bottom:14px;">You've unlocked a custom name color! Pick any color you like.</p>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <input type="color" id="customColorInput" value="${statsData.nameColor && statsData.nameColor.match(/^#[0-9a-fA-F]{6}$/) ? statsData.nameColor : '#b3801f'}" style="width:50px; height:38px; border:2px solid var(--ink); border-radius:4px; cursor:pointer; background:none; padding:2px;">
+          <button class="btn-primary" id="saveCustomColorBtn">Save Color</button>
+        </div>
+        <div class="status-note" id="customColorStatus" style="margin-top:8px; font-size:0.8rem; opacity:0.7;"></div>
       </div>
+      ` : ''}
+
+      <div class="section-label">Achievements</div>
+      ${trophyCaseHtml(statsData.achievements)}
 
       <div class="section-label">Your history</div>
       <div id="historyContent"><div class="empty-state"><h2>Loading...</h2></div></div>
@@ -774,6 +878,32 @@
             loadProfile();
           } else {
             status.textContent = data.error || 'Could not reset.';
+          }
+        } catch (err) {
+          status.textContent = 'Could not reach the server.';
+        }
+      });
+    }
+
+    const saveColorBtn = document.getElementById('saveCustomColorBtn');
+    if (saveColorBtn) {
+      saveColorBtn.addEventListener('click', async () => {
+        const color = document.getElementById('customColorInput').value;
+        const status = document.getElementById('customColorStatus');
+        status.textContent = 'Saving...';
+        try {
+          const res = await fetch('/api/profile/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customColor: color })
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) {
+            status.textContent = 'Saved!';
+            loadAuthStatus();
+            loadProfile();
+          } else {
+            status.textContent = data.error || 'Could not save.';
           }
         } catch (err) {
           status.textContent = 'Could not reach the server.';
