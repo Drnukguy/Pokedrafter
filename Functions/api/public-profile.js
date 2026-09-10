@@ -1,5 +1,6 @@
 import { resolveAvatarUrl } from '../_utils/avatar.js';
 import { getProfileStats } from '../_utils/profileStats.js';
+import { getUnlockedAchievements } from '../_utils/achievementEngine.js';
 
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json' } });
@@ -15,19 +16,24 @@ export async function onRequestGet({ request, env }) {
 
   // Deliberately select only what's safe to show anyone - no email, no google_sub.
   const user = await env.DB.prepare(
-    'SELECT id, display_name, custom_display_name, avatar_url, favorite_pokemon_id, name_color, created_at FROM users WHERE id = ?'
+    'SELECT id, display_name, custom_display_name, avatar_url, favorite_pokemon_id, name_color, name_effect, created_at FROM users WHERE id = ?'
   ).bind(id).first();
 
   if (!user) return json({ error: 'Profile not found.' }, 404);
 
   const stats = await getProfileStats(env, id);
+  // No achievement backfill triggered here - only the account owner viewing
+  // their own profile does that. A visitor just sees whatever's already unlocked.
+  const achievements = await getUnlockedAchievements(env, id);
 
   return json({
     id: user.id,
     name: user.custom_display_name || user.display_name,
     avatar: resolveAvatarUrl(user),
     nameColor: user.name_color || null,
+    nameEffect: user.name_effect || null,
     memberSince: user.created_at,
+    achievements,
     ...stats
   });
 }
