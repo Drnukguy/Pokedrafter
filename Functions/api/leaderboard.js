@@ -11,7 +11,7 @@ export async function onRequestGet({ request, env }) {
   // Three independent queries run together: the current page of results, the
   // total distinct player count (for "page X of Y"), and how many players have
   // ever posted a perfect 13-0 - each on a "best attempt per user" basis.
-  const [mainResult, totalResult, perfectResult] = await Promise.all([
+  const [mainResult, totalResult, perfectResult, seasonsResult] = await Promise.all([
     env.DB.prepare(`
       WITH ranked AS (
         SELECT
@@ -35,7 +35,11 @@ export async function onRequestGet({ request, env }) {
     // Every 13-0 submission that's ever happened, not just each player's single
     // best attempt - a player who's gone perfect twice should count as 2 here,
     // even though the leaderboard itself only ever shows their best row once.
-    env.DB.prepare(`SELECT COUNT(*) AS perfect FROM results WHERE wins = 13`).first()
+    env.DB.prepare(`SELECT COUNT(*) AS perfect FROM results WHERE wins = 13`).first(),
+
+    // Total seasons ever completed, site-wide - a genuine activity number for
+    // the homepage, deliberately not a registered-account count.
+    env.DB.prepare(`SELECT COUNT(*) AS seasons FROM results`).first()
   ]);
 
   const entries = mainResult.results.map(row => ({
@@ -59,7 +63,8 @@ export async function onRequestGet({ request, env }) {
     page,
     totalPages,
     totalPlayers,
-    perfectRuns: perfectResult ? perfectResult.perfect : 0
+    perfectRuns: perfectResult ? perfectResult.perfect : 0,
+    totalSeasonsPlayed: seasonsResult ? seasonsResult.seasons : 0
   }), {
     headers: { 'Content-Type': 'application/json' }
   });
