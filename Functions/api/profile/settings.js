@@ -1,6 +1,7 @@
 import { verifySession } from '../../_utils/session.js';
 import { getCookie } from '../../_utils/cookies.js';
 import POKEDEX from '../../_utils/pokedex.json';
+import { getUnlockedAchievements, hasCustomColorUnlock } from '../../_utils/achievementEngine.js';
 
 const VALID_POKEMON_IDS = new Set(POKEDEX.map(p => p.id));
 
@@ -66,6 +67,26 @@ export async function onRequestPost({ request, env }) {
     }
     await env.DB.prepare('UPDATE users SET favorite_pokemon_id = ? WHERE id = ?').bind(id, payload.userId).run();
     return json({ ok: true, favoritePokemonId: id });
+  }
+
+  // Set a custom name color - only allowed once the 1000-season achievement
+  // is unlocked. Marks has_custom_color so future tier grants never overwrite it.
+  if (body.customColor !== undefined) {
+    const achievements = await getUnlockedAchievements(env, payload.userId);
+    if (!hasCustomColorUnlock(achievements.map(a => a.key))) {
+      return json({ error: 'Custom colors unlock at 1,000 completed seasons.' }, 403);
+    }
+
+    const color = typeof body.customColor === 'string' ? body.customColor.trim() : '';
+    if (!/^#[0-9a-fA-F]{6}$/.test(color)) {
+      return json({ error: 'Color must be a valid hex code, like #a1b2c3.' }, 400);
+    }
+
+    await env.DB.prepare(
+      'UPDATE users SET name_color = ?, has_custom_color = 1 WHERE id = ?'
+    ).bind(color, payload.userId).run();
+
+    return json({ ok: true, nameColor: color });
   }
 
   // Otherwise, this is a display name update
