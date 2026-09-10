@@ -1,7 +1,7 @@
 import { verifySession } from '../../_utils/session.js';
 import { getCookie } from '../../_utils/cookies.js';
 import { getProfileStats } from '../../_utils/profileStats.js';
-import { checkAndGrantAchievements, getUnlockedAchievements, hasCustomColorUnlock } from '../../_utils/achievementEngine.js';
+import { checkAndGrantAchievements, getUnlockedAchievements, hasCustomColorUnlock, getAvailableRewards } from '../../_utils/achievementEngine.js';
 
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json' } });
@@ -28,6 +28,7 @@ export async function onRequestGet({ request, env }) {
 
   const stats = await getProfileStats(env, payload.userId);
   const achievements = await getUnlockedAchievements(env, payload.userId);
+  const availableRewards = getAvailableRewards(achievements.map(a => a.key));
 
   return json({
     memberSince: user.created_at,
@@ -37,6 +38,7 @@ export async function onRequestGet({ request, env }) {
     hasCustomColor: !!user.has_custom_color,
     publicProfileId: payload.userId,
     achievements,
+    availableRewards,
     ...stats
   });
 }

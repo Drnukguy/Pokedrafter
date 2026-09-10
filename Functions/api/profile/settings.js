@@ -1,7 +1,7 @@
 import { verifySession } from '../../_utils/session.js';
 import { getCookie } from '../../_utils/cookies.js';
 import POKEDEX from '../../_utils/pokedex.json';
-import { getUnlockedAchievements, hasCustomColorUnlock } from '../../_utils/achievementEngine.js';
+import { getUnlockedAchievements, hasCustomColorUnlock, getAvailableRewards } from '../../_utils/achievementEngine.js';
 
 const VALID_POKEMON_IDS = new Set(POKEDEX.map(p => p.id));
 
@@ -67,6 +67,35 @@ export async function onRequestPost({ request, env }) {
     }
     await env.DB.prepare('UPDATE users SET favorite_pokemon_id = ? WHERE id = ?').bind(id, payload.userId).run();
     return json({ ok: true, favoritePokemonId: id });
+  }
+
+  // Choose which earned color to actually use (not necessarily the highest
+  // tier). Marks has_custom_color so future unlocks don't override the choice.
+  if (body.selectColor !== undefined) {
+    const achievements = await getUnlockedAchievements(env, payload.userId);
+    const { colors } = getAvailableRewards(achievements.map(a => a.key));
+    if (!colors.some(c => c.value === body.selectColor)) {
+      return json({ error: 'You have not earned that color yet.' }, 400);
+    }
+    await env.DB.prepare(
+      'UPDATE users SET name_color = ?, has_custom_color = 1 WHERE id = ?'
+    ).bind(body.selectColor, payload.userId).run();
+    return json({ ok: true, nameColor: body.selectColor });
+  }
+
+  // Choose which earned effect to use, or null for no effect at all.
+  if (body.selectEffect !== undefined) {
+    if (body.selectEffect !== null) {
+      const achievements = await getUnlockedAchievements(env, payload.userId);
+      const { effects } = getAvailableRewards(achievements.map(a => a.key));
+      if (!effects.some(e => e.value === body.selectEffect)) {
+        return json({ error: 'You have not earned that effect yet.' }, 400);
+      }
+    }
+    await env.DB.prepare(
+      'UPDATE users SET name_effect = ?, has_custom_effect = 1 WHERE id = ?'
+    ).bind(body.selectEffect, payload.userId).run();
+    return json({ ok: true, nameEffect: body.selectEffect });
   }
 
   // Set a custom name color - only allowed once the 1000-season achievement
