@@ -24,9 +24,10 @@ export async function checkAndGrantAchievements(env, userId) {
   const alreadyUnlocked = new Set(existingRows.map(r => r.achievement_key));
 
   const user = await env.DB.prepare(
-    'SELECT has_custom_color FROM users WHERE id = ?'
+    'SELECT has_custom_color, has_custom_effect FROM users WHERE id = ?'
   ).bind(userId).first();
   const hasCustomColor = !!(user && user.has_custom_color);
+  const hasCustomEffect = !!(user && user.has_custom_effect);
 
   const newlyUnlocked = [];
   const now = Date.now();
@@ -44,7 +45,7 @@ export async function checkAndGrantAchievements(env, userId) {
       if (ach.reward.type === 'name_color' && !hasCustomColor) {
         await env.DB.prepare('UPDATE users SET name_color = ? WHERE id = ?')
           .bind(ach.reward.value, userId).run();
-      } else if (ach.reward.type === 'name_effect') {
+      } else if (ach.reward.type === 'name_effect' && !hasCustomEffect) {
         await env.DB.prepare('UPDATE users SET name_effect = ? WHERE id = ?')
           .bind(ach.reward.value, userId).run();
       }
@@ -83,4 +84,23 @@ export async function getUnlockedAchievements(env, userId) {
 
 export function hasCustomColorUnlock(unlockedKeys) {
   return unlockedKeys.includes('seasons_1000');
+}
+
+// Every color/effect the user has actually earned, regardless of which one is
+// currently active - used to populate the "choose which reward to use" dropdowns.
+export function getAvailableRewards(unlockedKeys) {
+  const keySet = new Set(unlockedKeys);
+  const colors = [];
+  const effects = [];
+
+  for (const ach of ACHIEVEMENTS) {
+    if (!keySet.has(ach.key) || !ach.reward) continue;
+    if (ach.reward.type === 'name_color') {
+      colors.push({ value: ach.reward.value, fromAchievement: ach.name });
+    } else if (ach.reward.type === 'name_effect') {
+      effects.push({ value: ach.reward.value, fromAchievement: ach.name });
+    }
+  }
+
+  return { colors, effects };
 }
