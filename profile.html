@@ -743,7 +743,7 @@
       ${statsData.canPickCustomColor ? `
       <div class="settings-panel">
         <div class="section-label">Custom Name Color</div>
-        <p style="font-size:0.85rem; opacity:0.75; margin-bottom:14px;">You've unlocked a custom name color! Pick any color you like.</p>
+        <p style="font-size:0.85rem; opacity:0.75; margin-bottom:14px;">You've unlocked a custom name color!</p>
         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
           <input type="color" id="customColorInput" value="${statsData.nameColor && statsData.nameColor.match(/^#[0-9a-fA-F]{6}$/) ? statsData.nameColor : '#b3801f'}" style="width:50px; height:38px; border:2px solid var(--ink); border-radius:4px; cursor:pointer; background:none; padding:2px;">
           <button class="btn-primary" id="saveCustomColorBtn">Save Color</button>
@@ -754,8 +754,8 @@
 
       ${(statsData.availableRewards.colors.length > 0 || statsData.availableRewards.effects.length > 0) ? `
       <div class="settings-panel">
-        <div class="section-label">Choose Your Rewards</div>
-        <p style="font-size:0.85rem; opacity:0.75; margin-bottom:14px;">Pick which earned color and effect to actually use - doesn't have to be your highest tier.</p>
+        <div class="section-label">Achievement Rewards</div>
+        <p style="font-size:0.85rem; opacity:0.75; margin-bottom:14px;">Choose username display effects from the unlocked options below.</p>
         ${statsData.availableRewards.colors.length > 0 ? `
         <div style="margin-bottom:14px;">
           <label style="display:block; font-family:'Chakra Petch',sans-serif; font-weight:600; font-size:0.85rem; margin-bottom:6px;">Name Color</label>
