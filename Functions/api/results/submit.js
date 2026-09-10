@@ -1,6 +1,7 @@
 import { verifySession } from '../../_utils/session.js';
 import { getCookie } from '../../_utils/cookies.js';
 import { validateAndScoreTeam } from '../../_utils/scoring.js';
+import { checkAndGrantAchievements } from '../../_utils/achievementEngine.js';
 
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json' } });
@@ -45,5 +46,7 @@ export async function onRequestPost({ request, env }) {
     now
   ).run();
 
-  return json({ ok: true, result });
+  const newAchievements = await checkAndGrantAchievements(env, payload.userId);
+
+  return json({ ok: true, result, newAchievements });
 }
