@@ -94,18 +94,18 @@ export const ACHIEVEMENTS = [
   // --- Quirky: trophy-case badges only, no name reward ---
   { key: 'starters_legacy', name: "Starter's Legacy",
     description: 'Draft 5 starter final evolutions onto a single team.',
-    category: 'quirky', icon: 'badges/boulder-badge.png',
+    category: 'quirky', icon: 'pokemon/6.png',
     check: hasStarterLegacy, reward: null },
   { key: 'paradox_protocol', name: 'Paradox Protocol',
     description: 'Draft a Paradox Pok\u00e9mon into your Legendary round.',
-    category: 'quirky', icon: 'badges/cascade-badge.png',
+    category: 'quirky', icon: 'pokemon/1006.png',
     check: hasParadoxProtocol, reward: null },
   { key: 'pseudo_squad', name: 'Pseudo Squad',
     description: 'Draft 2 or more pseudo-legendaries onto a single team.',
-    category: 'quirky', icon: 'badges/thunder-badge.png',
+    category: 'quirky', icon: 'pokemon/445.png',
     check: hasPseudoSquad, reward: null },
   { key: 'efficient_champion', name: 'Efficient Champion',
     description: `Win a perfect season with a combined score of ${EFFICIENT_CHAMPION_MAX_SCORE} or less.`,
-    category: 'quirky', icon: 'badges/rainbow-badge.png',
+    category: 'quirky', icon: 'pokemon/65.png',
     check: hasEfficientChampion, reward: null }
 ];
