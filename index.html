@@ -299,6 +299,45 @@
     white-space: nowrap;
   }
 
+  /* ---------- Name color/effect rewards (auto-applied by achievements) ---------- */
+  @keyframes name-glow {
+    0%, 100% { text-shadow: 0 0 4px currentColor; }
+    50% { text-shadow: 0 0 10px currentColor, 0 0 16px currentColor; }
+  }
+  .name-effect-glow { animation: name-glow 2.4s ease-in-out infinite; }
+
+  @keyframes name-glow-strong {
+    0%, 100% { text-shadow: 0 0 6px currentColor, 0 0 2px currentColor; }
+    50% { text-shadow: 0 0 16px currentColor, 0 0 26px currentColor; }
+  }
+  .name-effect-glow-strong { animation: name-glow-strong 1.8s ease-in-out infinite; }
+
+  @keyframes name-shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .name-effect-shimmer,
+  .name-effect-shimmer-strong {
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .name-effect-shimmer {
+    background-image: linear-gradient(90deg, var(--name-c, var(--ink)) 25%, #fff 50%, var(--name-c, var(--ink)) 75%);
+    animation: name-shimmer 2.6s linear infinite;
+  }
+  .name-effect-shimmer-strong {
+    background-image: linear-gradient(90deg, var(--name-c, var(--ink)) 15%, #fff 50%, var(--name-c, var(--ink)) 85%);
+    animation: name-shimmer 1.4s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .name-effect-glow, .name-effect-glow-strong, .name-effect-shimmer, .name-effect-shimmer-strong {
+      animation: none;
+    }
+  }
+
   .board-grade {
     font-family: 'Chakra Petch', sans-serif;
     font-weight: 700;
@@ -438,7 +477,7 @@
   </header>
 
   <section class="pitch">
-    <h1>Draft your team. Run the <span class="accent">gauntlet</span>. Prove it on the leaderboard.</h1>
+    <h1>Draft your team.<br>Run the <span class="accent">gauntlet</span>. Prove it on the leaderboard.</h1>
     <p>A free fantasy-draft game built entirely around real Pokémon stats. Draft your team and see if you can go undefeated!</p>
     <div class="pitch-stats" id="pitchStats"></div>
     <div class="pitch-ctas">
@@ -569,6 +608,17 @@
     return div.innerHTML;
   }
 
+  function nameEffectAttrs(color, effect) {
+    const c = color || 'inherit';
+    if (effect === 'shimmer' || effect === 'shimmer-strong') {
+      return { cls: 'name-effect-' + effect, style: `--name-c:${c};` };
+    }
+    if (effect === 'glow' || effect === 'glow-strong') {
+      return { cls: 'name-effect-' + effect, style: `color:${c};` };
+    }
+    return { cls: '', style: `color:${c};` };
+  }
+
   async function loadBoardPreview() {
     const container = document.getElementById('boardPreview');
     const statsEl = document.getElementById('pitchStats');
@@ -590,7 +640,7 @@
       container.innerHTML = top5.map((e, i) => `
         <div class="board-row">
           <span class="board-rank-num">#${i + 1}</span>
-          <span class="board-name">${escapeHtml(e.name)}</span>
+          <span class="board-name ${nameEffectAttrs(e.nameColor, e.nameEffect).cls}" style="${nameEffectAttrs(e.nameColor, e.nameEffect).style}">${escapeHtml(e.name)}</span>
           <span class="board-grade" style="color: ${RANK_COLORS[e.rank] || 'var(--ink)'};">${escapeHtml(e.rank)}</span>
           <span class="board-record">${e.wins}–${e.losses}</span>
         </div>
