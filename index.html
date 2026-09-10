@@ -127,6 +127,21 @@
     flex-wrap: wrap;
   }
 
+  .pitch-stats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin-bottom: 26px;
+    min-height: 1.4em;
+  }
+  .pitch-stats .stat-num { color: var(--gold); }
+  .pitch-stats .stat-sep { opacity: 0.35; }
+
   .btn-cta-primary {
     font-family: 'Chakra Petch', sans-serif;
     font-weight: 700;
@@ -423,8 +438,9 @@
   </header>
 
   <section class="pitch">
-    <h1>Draft your team.  Battle <span class="accent">undefeated</span>.  Prove it on the leaderboard.</h1>
-    <p>A free fantasy draft game built entirely around Pokemon!  Draft your team of 6 and see how they stack up against 13 different battles.  Only the strongest teams can go unbeaten!</p>
+    <h1>Draft your team. Battle the <span class="accent">season</span>. Prove it on the leaderboard.</h1>
+    <p>A free fantasy-draft game built entirely around real Pokémon stats. Spin for type, draft a team of six, then find out if you're good enough to go undefeated against 8 Gym Leaders, the Elite Four, and the Champion.</p>
+    <div class="pitch-stats" id="pitchStats"></div>
     <div class="pitch-ctas">
       <a href="game.html" class="btn-cta-primary">Start Drafting →</a>
       <a href="leaderboard.html" class="btn-cta-secondary">See the Leaderboard</a>
@@ -435,22 +451,22 @@
     <div class="stat-card">
       <div class="stat-num">573</div>
       <div class="stat-label">Draftable Pokémon</div>
-      <div class="stat-desc">Every fully-evolved species and Legendary</div>
+      <div class="stat-desc">Every fully-evolved species and Legendary, ranked by real base stats</div>
     </div>
     <div class="stat-card">
       <div class="stat-num">13</div>
       <div class="stat-label">Stage Season</div>
-      <div class="stat-desc">Less than 10% can go undefeated.</div>
+      <div class="stat-desc">8 Gym Leaders, the Elite Four, and the Champion — deterministic, no dice rolls</div>
     </div>
     <div class="stat-card">
       <div class="stat-num">100%</div>
       <div class="stat-label">Verified Results</div>
-      <div class="stat-desc">Every draft is saved to our servers and uploaded to a private leaderboard.</div>
+      <div class="stat-desc">Every submission is recomputed on our server — nobody can fake a score</div>
     </div>
     <div class="stat-card">
       <div class="stat-num">$0</div>
       <div class="stat-label">Free, No Ads</div>
-      <div class="stat-desc">Create your profile with Google. No ads, no tracking, no catches</div>
+      <div class="stat-desc">Sign in with Google. No ads, no tracking, no catch</div>
     </div>
   </div>
 
@@ -458,23 +474,23 @@
   <div class="steps-row">
     <div class="step-item">
       <div class="step-num">01</div>
-      <h3>Sign up with Google</h3>
-      <p>Free and safe, one click, and your results are saved to your own custom profile.</p>
+      <h3>Sign in with Google</h3>
+      <p>Free, one click, and your results are saved to your own profile.</p>
     </div>
     <div class="step-item">
       <div class="step-num">02</div>
       <h3>Draft your team of six</h3>
-      <p>Spin for a type, then draft any eligible Pokémon. Five rounds plus one Legendary round.</p>
+      <p>Spin for a type, then draft any eligible Pokémon — five open rounds plus one Legendary round.</p>
     </div>
     <div class="step-item">
       <div class="step-num">03</div>
       <h3>Simulate your season</h3>
-      <p>Once your draft is complete, we run it through the gauntlet to see if it can come out on top.</p>
+      <p>Your team's rating is checked against all 13 stages, instantly and automatically.</p>
     </div>
     <div class="step-item">
       <div class="step-num">04</div>
       <h3>Climb the leaderboard</h3>
-      <p>Your best run gets ranked against every other player, from B- up to a perfect S rank.</p>
+      <p>Your best run gets ranked against every other player's, from B- up to a perfect S.</p>
     </div>
   </div>
 
@@ -494,7 +510,7 @@
     <a href="leaderboard.html" class="card">
       <div class="card-eyebrow">Rankings</div>
       <h2>Leaderboard</h2>
-      <p>See who's topped the board so far.</p>
+      <p>See who's topped the season so far.</p>
     </a>
     <a href="profile.html" class="card">
       <div class="card-eyebrow">Your history</div>
@@ -555,10 +571,15 @@
 
   async function loadBoardPreview() {
     const container = document.getElementById('boardPreview');
+    const statsEl = document.getElementById('pitchStats');
     try {
       const res = await fetch('/api/leaderboard');
       if (!res.ok) throw new Error('Request failed');
       const data = await res.json();
+
+      if (data.totalSeasonsPlayed > 0) {
+        statsEl.innerHTML = `<span class="stat-num">${data.totalSeasonsPlayed}</span> seasons played<span class="stat-sep">&middot;</span><span class="stat-num">${data.perfectRuns}</span> perfect runs`;
+      }
 
       if (!data.entries || data.entries.length === 0) {
         container.innerHTML = '<div class="board-empty">No results yet — be the first to complete a season and claim the top spot.</div>';
