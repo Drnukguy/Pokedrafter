@@ -26,7 +26,7 @@ const PARADOX_IDS = new Set([
   1009, 1010, 1020, 1021, 1022, 1023
 ]);
 
-const EFFICIENT_CHAMPION_MAX_SCORE = 1520;
+const EFFICIENT_CHAMPION_MAX_SCORE = 1505;
 
 function countSeasons(results) {
   return results.length;
