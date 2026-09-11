@@ -1,5 +1,6 @@
 import { signSession } from '../../../_utils/session.js';
 import { getCookie } from '../../../_utils/cookies.js';
+import { generateRandomUsername } from '../../../_utils/nameGenerator.js';
 
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
@@ -44,14 +45,27 @@ export async function onRequestGet({ request, env }) {
 
   const now = Date.now();
 
-  await env.DB.prepare(
-    `INSERT INTO users (google_sub, email, display_name, avatar_url, created_at)
-     VALUES (?, ?, ?, ?, ?)
-     ON CONFLICT(google_sub) DO UPDATE SET
-       email = excluded.email,
-       display_name = excluded.display_name,
-       avatar_url = excluded.avatar_url`
-  ).bind(profile.sub, profile.email, profile.name, profile.picture || null, now).run();
+  const existingUser = await env.DB.prepare(
+    'SELECT id FROM users WHERE google_sub = ?'
+  ).bind(profile.sub).first();
+
+  if (existingUser) {
+    // Returning user - keep whatever display_name they already have (their
+    // randomly-generated starting name, or a name they've since customized).
+    // Only email/avatar are worth keeping in sync with Google.
+    await env.DB.prepare(
+      'UPDATE users SET email = ?, avatar_url = ? WHERE google_sub = ?'
+    ).bind(profile.email, profile.picture || null, profile.sub).run();
+  } else {
+    // Brand new account - assign a random starting name rather than Google's
+    // real name, so nobody's full name ends up public by default. Google's
+    // actual name is never stored anywhere.
+    const startingName = generateRandomUsername();
+    await env.DB.prepare(
+      `INSERT INTO users (google_sub, email, display_name, avatar_url, created_at)
+       VALUES (?, ?, ?, ?, ?)`
+    ).bind(profile.sub, profile.email, startingName, profile.picture || null, now).run();
+  }
 
   const userRow = await env.DB.prepare(
     'SELECT id FROM users WHERE google_sub = ?'
