@@ -469,6 +469,56 @@
   .reroll-btn:hover:not(:disabled) { opacity: 1; border-color: var(--ink); }
   .reroll-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+  .share-btn {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    background: transparent;
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 10px 22px;
+    cursor: pointer;
+    transition: transform 0.1s ease, border-color 0.15s ease;
+  }
+  .share-btn:hover { border-color: var(--gold); transform: translateY(-1px); }
+
+  .result-message {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: 18px;
+    line-height: 1.4;
+  }
+
+  .signin-cta-btn {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    background: var(--ink);
+    color: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 12px 28px;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 10px;
+    transition: transform 0.1s ease, border-color 0.15s ease;
+  }
+  .signin-cta-btn:hover { border-color: var(--gold); transform: translateY(-1px); }
+
+  .pending-saved-toast {
+    background: var(--panel);
+    border: 2px solid var(--gold);
+    border-radius: 4px;
+    padding: 12px 18px;
+    margin-bottom: 20px;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
   .history-list, .team-list, .board-list {
     list-style: none;
     margin: 0;
@@ -945,6 +995,8 @@
     </aside>
   </div>
 
+  <div id="pendingSavedBanner"></div>
+
   <section class="synopsis" id="synopsisScreen" style="display:none;">
     <div class="synopsis-card" id="synopsisCard">
       <div class="synopsis-rank" id="synopsisRank">S</div>
@@ -952,6 +1004,7 @@
       <div class="synopsis-verdict" id="synopsisVerdict"></div>
       <div class="synopsis-score" id="synopsisScore"></div>
       <div class="synopsis-team" id="synopsisTeam"></div>
+      <button class="share-btn" id="shareResultBtn" style="margin-top:20px;">Share This Result</button>
       <div class="status-note" id="synopsisSaveStatus" style="margin-top:16px;"></div>
       <button class="draft-btn" id="synopsisNewGameBtn" style="margin-top:14px;">Start New Game</button>
     </div>
@@ -1012,7 +1065,7 @@
   // the hardest stage. A team at or above this rating clears the whole board; below
   // it, they'll fall short somewhere. Raise this to make the season easier for a given
   // team; lower it to make it harder.
-  const REFERENCE_RATING = 1500;
+  const REFERENCE_RATING = 1528;
 
   // Each stage's difficulty is this fraction of REFERENCE_RATING. 13 entries: 8 Gym
   // Leaders, 4 Elite Four, 1 Champion. Raise/lower these to retune the difficulty curve.
@@ -1204,6 +1257,8 @@
   const synopsisTeam = document.getElementById('synopsisTeam');
   const synopsisSaveStatus = document.getElementById('synopsisSaveStatus');
   const synopsisNewGameBtn = document.getElementById('synopsisNewGameBtn');
+  const shareResultBtn = document.getElementById('shareResultBtn');
+  const pendingSavedBanner = document.getElementById('pendingSavedBanner');
 
 
   function renderTally() {
@@ -1627,10 +1682,17 @@
     synopsisCard.classList.toggle('perfect', perfect);
     if (perfect) launchConfetti(synopsisCard);
 
-    submitResultIfSignedIn();
+    submitResultIfSignedIn(wins);
   }
 
-  async function submitResultIfSignedIn() {
+  function resultAwareMessage(wins) {
+    if (wins >= 13) return 'You just went <strong>PERFECT</strong>! Sign in now to save this legendary run before it\u2019s gone.';
+    if (wins >= 11) return 'Incredible run! Sign in to save it to the leaderboard.';
+    if (wins >= 9) return 'Nice work! Sign in to save your progress and start building your profile.';
+    return 'Sign in to track your runs and start climbing the leaderboard.';
+  }
+
+  async function submitResultIfSignedIn(wins) {
     synopsisSaveStatus.textContent = 'Checking sign-in status...';
 
     let authData;
@@ -1643,7 +1705,19 @@
     }
 
     if (!authData.loggedIn) {
-      synopsisSaveStatus.innerHTML = '<a href="/api/auth/login" style="color:inherit; text-decoration:underline;">Sign in with Google</a> to save this result to the leaderboard.';
+      // Preserve the run across the sign-in redirect - Google OAuth is a full
+      // page navigation, so any in-memory team data would otherwise be lost.
+      try {
+        localStorage.setItem('pokedrafter-pending-result', JSON.stringify(team.map(p => ({ id: p.id }))));
+      } catch (e) {
+        // localStorage unavailable (private browsing, etc.) - the sign-in link
+        // still works, the run just won't auto-save afterward.
+      }
+
+      synopsisSaveStatus.innerHTML = `
+        <div class="result-message">${resultAwareMessage(wins)}</div>
+        <a href="/api/auth/login" class="signin-cta-btn">Sign In &amp; Save This Run</a>
+      `;
       return;
     }
 
@@ -1664,6 +1738,73 @@
       synopsisSaveStatus.textContent = 'Could not reach the server to save this result.';
     }
   }
+
+  // Runs once on every page load. If a result was stashed before a sign-in
+  // redirect (see above) and the user is now signed in, submit it and clear
+  // it - otherwise leave it alone for next time.
+  async function checkPendingResultSubmission() {
+    let pending;
+    try {
+      const raw = localStorage.getItem('pokedrafter-pending-result');
+      if (!raw) return;
+      pending = JSON.parse(raw);
+    } catch (e) {
+      return;
+    }
+
+    let authData;
+    try {
+      const meRes = await fetch('/api/auth/me');
+      authData = await meRes.json();
+    } catch (e) {
+      return; // network hiccup - try again on the next page load
+    }
+
+    if (!authData.loggedIn) return; // still not signed in - leave it for later
+
+    try {
+      const submitRes = await fetch('/api/results/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team: pending })
+      });
+      const submitData = await submitRes.json();
+      if (submitRes.ok && submitData.ok) {
+        try { localStorage.removeItem('pokedrafter-pending-result'); } catch (e) {}
+        pendingSavedBanner.innerHTML = '<div class="pending-saved-toast">Your previous result was saved to your profile and the leaderboard!</div>';
+      } else if (submitRes.status >= 400 && submitRes.status < 500) {
+        // Genuinely invalid - retrying won't help, so stop holding onto it.
+        try { localStorage.removeItem('pokedrafter-pending-result'); } catch (e) {}
+      }
+      // Any other failure (server/network): leave it pending, retry next load.
+    } catch (e) {
+      // network error - leave it pending, retry next load
+    }
+  }
+
+  shareResultBtn.addEventListener('click', async () => {
+    const record = synopsisRecord.textContent;
+    const rank = synopsisRank.textContent;
+    const shareText = `I just went ${record} (Rank ${rank}) on Pok\u00e9drafter! Draft your own team and see if you can go undefeated.`;
+    const shareUrl = location.origin + '/';
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Pok\u00e9drafter', text: shareText, url: shareUrl });
+      } catch (e) {
+        // User cancelled the native share sheet - not an error.
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareText + ' ' + shareUrl);
+        const original = shareResultBtn.textContent;
+        shareResultBtn.textContent = 'Copied!';
+        setTimeout(() => { shareResultBtn.textContent = original; }, 2000);
+      } catch (e) {
+        // Nothing more we can do without clipboard access.
+      }
+    }
+  });
 
   function launchConfetti(container) {
     const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1722,6 +1863,7 @@
     }
   }
   loadAuthStatus();
+  checkPendingResultSubmission();
 
   resetAll();
 </script>
